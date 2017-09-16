@@ -1,0 +1,28 @@
+{
+  "name": "muddy",
+  "version": "1.0.0",
+  "description": "A Node.js MUD Framework",
+  "main": "server.js",
+  "scripts": {
+    "test": "npm start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/om-mani-padme-hum/muddy.git"
+  },
+  "keywords": [
+    "MUD",
+    "multi-user",
+    "dungeon",
+    "game"
+  ],
+  "author": "Rich Lowe",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/om-mani-padme-hum/muddy/issues"
+  },
+  "homepage": "https://github.com/om-mani-padme-hum/muddy#readme",
+  "dependencies": {
+    "mysql": "^2.14.1"
+  }
+}
