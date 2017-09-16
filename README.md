@@ -1,2 +1,2 @@
 # muddy
-A Node.js MUD Framework
+A Node.js Multi-User Dungeon (MUD) Framework
