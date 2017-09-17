@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "description": "A Node.js Multi-User Dungeon (MUD) Framework",
   "main": "muddy.js",
-  "scripts": {
-    "test": "npm start"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/om-mani-padme-hum/muddy.git"
