@@ -5,7 +5,7 @@
   "main": "muddy.js",
   "scripts": {
     "start": "node example.js",
-    "test": "npm start"
+    "test": "./node_modules/jshint/bin/jshint example.js muddy.js users.js world.js input.js"
   },
   "repository": {
     "type": "git",
@@ -25,5 +25,12 @@
   "homepage": "https://github.com/om-mani-padme-hum/muddy#readme",
   "dependencies": {
     "mysql": "^2.14.1"
+  },
+  "devDependencies": {
+    "jshint": "^2.9.5"
+  },
+  "jshintConfig": {
+    "esversion": 6,
+    "node": true
   }
 }

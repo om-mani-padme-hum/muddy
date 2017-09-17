@@ -1,6 +1,8 @@
 # muddy
 A Node.js Multi-User Dungeon (MUD) Framework
 
+[![HitCount](http://hits.dwyl.com/om-mani-padme-hum/muddy.svg)](http://hits.dwyl.com/om-mani-padme-hum/muddy)
+
 ## Current Status:
 * Operational through login until user.STATE_CONNECTED
 

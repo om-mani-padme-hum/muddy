@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 /** External modules */
 const net = require('net');
@@ -82,7 +82,7 @@ class World {
                         'Press ENTER to continue...'].join('');
 
     let defaultLoadAreas = () => {
-      world.addArea({
+      this.addArea({
         id: 1,
         name: 'Stuck in the mud',
         flags: 0,
@@ -95,7 +95,7 @@ class World {
           flags: 0
         }
       });
-    }
+    };
     
     /** Objects and values */
     this.port(data.port = null ? defaultPort : data.port);

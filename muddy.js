@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 /** Load all modules required by muddy */
 const world = require('./world');

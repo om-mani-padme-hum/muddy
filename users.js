@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 /**
  * Data model and helper class for users.
