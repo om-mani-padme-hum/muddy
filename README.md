@@ -1,4 +1,4 @@
-# muddy [![Build Status](https://www.travis-ci.org/om-mani-padme-hum/muddy.svg?branch=master)](https://www.travis-ci.org/om-mani-padme-hum/muddy) [![HitCount](http://hits.dwyl.com/om-mani-padme-hum/muddy.svg)](http://hits.dwyl.com/om-mani-padme-hum/muddy)
+# Muddy [![Build Status](https://www.travis-ci.org/om-mani-padme-hum/muddy.svg?branch=master)](https://www.travis-ci.org/om-mani-padme-hum/muddy) [![HitCount](http://hits.dwyl.com/om-mani-padme-hum/muddy.svg)](http://hits.dwyl.com/om-mani-padme-hum/muddy)
 A Node.js Multi-User Dungeon (MUD) Framework
 
 ## Current Status:
