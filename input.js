@@ -141,7 +141,7 @@ class InputProcessor {
    * @param user User object
    */
   processStateOldPassword(socket, buffer, user) {
-    var password = buffer.toString();
+    var password = buffer.toString().trim();
 
     /** Set up the crypto */
     let hash = crypto.createHmac('sha512', user.salt());
@@ -182,16 +182,16 @@ class InputProcessor {
    * @param user User object
    */
   processStateNewPassword(socket, buffer, user) {
-    let unencrypted = buffer.toString();
+    let unencrypted = buffer.toString().trim();
 
     /** Stop hiding text */
     user.send(this.world().VT100_CLEAR);
 
-    if ( password.match(/\s/i) ) {
+    if ( unencrypted.match(/\s/i) ) {
       /** Whitespaces in password not allowed */
       user.send('Your password must not contain spaces or other whitespace characters.\r\n');
       user.send('Please enter a new password: ');
-    } else if ( password.length < 8 || password.length > 32 ) { 
+    } else if ( unencrypted.length < 8 || unencrypted.length > 32 ) { 
       /** Invalid password length */
       user.send('Your password must be between 8 and 32 characters long.\r\n');
       user.send('Please enter a new password: ');
@@ -229,7 +229,7 @@ class InputProcessor {
    * @param user User object
    */
   processStateConfirmPassword(socket, buffer, user) {
-    let unencrypted = buffer.toString();
+    let unencrypted = buffer.toString().trim();
 
     /** Set up the crypto */
     let hash = crypto.createHmac('sha512', user.salt());
@@ -245,7 +245,7 @@ class InputProcessor {
 
     if ( password == user.password() ) {
       /** Password matches, proceed to the message of the day */
-      user.send(this.motd());
+      user.send(this.world().motd());
     
       /** Move on and pause until they're done reading the message of the day */
       user.state(user.STATE_MOTD);
