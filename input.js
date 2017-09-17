@@ -46,23 +46,31 @@ class InputProcessor {
     /** Grab the user from the world */
     let user = this.world().findUserBySocket(socket);
     
+    /** Just in case this happens, let's know about it */
+    if ( user == null ) {
+      console.log('User is null on process input.  Debugging...\r\n');
+      console.log('Socket dump:\r\n');
+      console.log(socket);
+      return;
+    }
+  
     /** Process data based on user state */
-    if ( user.state() == user.STATE_NAME )
+    if ( user.state() == this.world().STATE_NAME )
       /** User is at the name state, first input of the game */
       this.processStateName(socket, buffer, user);
-    else if ( user.state() == user.STATE_OLD_PASSWORD )
+    else if ( user.state() == this.world().STATE_OLD_PASSWORD )
       /** User submitted name and was found to be previously saved, require old password */
       this.processStateOldPassword(socket, buffer, user);
-    else if ( user.state() == user.STATE_NEW_PASSWORD )
+    else if ( user.state() == this.world().STATE_NEW_PASSWORD )
       /** User submitted name and is new, ask for a new password */
       this.processStateNewPassword(socket, buffer, user);
-    else if ( user.state() == user.STATE_CONFIRM_PASSWORD )
+    else if ( user.state() == this.world().STATE_CONFIRM_PASSWORD )
       /** User is new and provided a password, confirm it to be sure they typed it right */
       this.processStateConfirmPassword(socket, buffer, user);
-    else if ( user.state() == user.STATE_MOTD ) 
+    else if ( user.state() == this.world().STATE_MOTD ) 
       /** User has successfully logged in and is seeing MOTD, pause until they hit enter */
       this.processStateMOTD(socket, buffer, user);
-    else if ( user.state() == user.STATE_CONNECTED )
+    else if ( user.state() == this.world().STATE_CONNECTED )
       /** User is connected and in world */
       this.processStateConnected(socket, buffer, user);
   }
@@ -78,12 +86,12 @@ class InputProcessor {
 
     if ( !name.match(/[a-zA-Z]{1}[a-z0-9]+/i) ) {
       /** Invalid characters in name */
-      socket.write('Your name must start with a letter and contain only letters and numbers.\r\n');
-      socket.write('Please enter a new name: ');
+      user.send('Your name must start with a letter and contain only letters and numbers.\r\n');
+      user.send('Please enter a new name: ');
     } else if ( name.length < 3 || name.length > 14 ) { 
       /** Invalid name length */
-      socket.write('Your name must be between 3 and 14 characters long.\r\n');
-      socket.write('Please enter a new name: ');
+      user.send('Your name must be between 3 and 14 characters long.\r\n');
+      user.send('Please enter a new name: ');
     } else { 
       /** Query the database to see if user exists, if it does, load properties */
       this.world().db().query('SELECT id, name, password, salt, level FROM users WHERE LOWER(name) = ?', [name], function (error, results, fields) {
@@ -92,24 +100,24 @@ class InputProcessor {
 
         if ( results[0] ) {     
           /** Existing user */
-          socket.write('Please enter your password: ');
+          user.send('Please enter your password: ');
 
           /** Load the user */
           user.load(results[0]);
 
-          user.state(user.STATE_OLD_PASSWORD);
+          user.state(this.world().STATE_OLD_PASSWORD);
         } else {
           /** New user */
           user.name(name);
 
-          socket.write('Welcome to Muddy, ' + name + '!\r\n');
-          socket.write('Please choose a password: ');
+          user.send(`Welcome to Muddy, ${name}!\r\n`);
+          user.send('Please choose a password: ');
 
-          user.state(user.STATE_NEW_PASSWORD);
+          user.state(this.world().STATE_NEW_PASSWORD);
         }
 
         /** Hide text for password */
-        socket.write(this.world().VT100_HIDE_TEXT);
+        user.send(this.world().VT100_HIDE_TEXT);
       });
     }
   }
@@ -133,23 +141,14 @@ class InputProcessor {
     password = hash.digest('hex');
 
     /** Stop hiding text */
-    socket.write(this.world().VT100_CLEAR);
+    user.send(this.world().VT100_CLEAR);
 
     /** Validate password */
     if ( password == user.password() ) {
       /** Password matches, display MOTD */
-      socket.write('--------------------------------------------------------------------------------\r\n');
-      socket.write('Message of the day:\r\n');
-      socket.write('\r\n');
-      socket.write('New features:\r\n');
-      socket.write('  * Users\r\n');
-      socket.write('  * Logins\r\n');
-      socket.write('  * World\r\n');
-      socket.write('\r\n');
-      socket.write('--------------------------------------------------------------------------------\r\n');
-      socket.write('Press ENTER to continue...');
+      user.send(this.world()motd());
 
-      user.state(user.STATE_MOTD);
+      user.state(this.world().STATE_MOTD);
       
       console.log('User ' + user.name() + ' connected.');
     } else {
@@ -173,16 +172,16 @@ class InputProcessor {
     let unencrypted = buffer.toString();
 
     /** Stop hiding text */
-    socket.write(this.world().VT100_CLEAR);
+    user.send(this.world().VT100_CLEAR);
 
     if ( password.match(/\s/i) ) {
       /** Whitespaces in password not allowed */
-      socket.write('Your password must not contain spaces or other whitespace characters.\r\n');
-      socket.write('Please enter a new password: ');
+      user.send('Your password must not contain spaces or other whitespace characters.\r\n');
+      user.send('Please enter a new password: ');
     } else if ( password.length < 8 || password.length > 32 ) { 
       /** Invalid password length */
-      socket.write('Your password must be between 8 and 32 characters long.\r\n');
-      socket.write('Please enter a new password: ');
+      user.send('Your password must be between 8 and 32 characters long.\r\n');
+      user.send('Please enter a new password: ');
     } else {
       /** Generate a random salt */
       let salt = crypto.randomBytes(8).toString('hex');
@@ -199,12 +198,12 @@ class InputProcessor {
       /** Store the encrypted password and salt */
       user.password(password);
       user.salt(salt);
-      user.state(user.STATE_CONFIRM_PASSWORD);
+      user.state(this.world().STATE_CONFIRM_PASSWORD);
 
-      socket.write('Please confirm your new password: ');
+      user.send('Please confirm your new password: ');
 
       /** Hide text for password */
-      socket.write(this.world().VT100_HIDE_TEXT);
+      user.send(this.world().VT100_HIDE_TEXT);
     }
   }
   
@@ -227,17 +226,17 @@ class InputProcessor {
     let password = hash.digest('hex');
 
     /** Stop hiding text */
-    socket.write(this.world().VT100_CLEAR);
+    user.send(this.world().VT100_CLEAR);
 
     if ( password == user.password() ) {
       /** Password matches, proceed to MOTD */
-      user.state(user.STATE_MOTD);
+      user.state(this.world().STATE_MOTD);
       
       console.log('User ' + user.name() + ' connected.');
     } else {
       /** Password does not match, let's try this again */
-      socket.write('Passwords do not match, please try again!\r\n');
-      socket.write('Please choose a password: ');
+      user.send('Passwords do not match, please try again!\r\n');
+      user.send('Please choose a password: ');
     }
   }
   
@@ -248,7 +247,7 @@ class InputProcessor {
    * @param user User object
    */
   processStateMOTD(socket, buffer, user) {
-    user.state(user.STATE_CONNECTED);
+    user.state(this.world().STATE_CONNECTED);
   }
   
   /**
@@ -258,7 +257,7 @@ class InputProcessor {
    * @param user User object
    */
   processStateConnected(socket, buffer, user) {
-    socket.write('You are connected!\r\n');
+    user.send('You are connected!\r\n');
   }
 }
 

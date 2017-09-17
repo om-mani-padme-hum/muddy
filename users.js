@@ -7,15 +7,6 @@ class User {
    * @param data (optional) Configuration object
    */
   constructor(data = {}) {
-    /** Define user state flags */
-    this.STATE_NAME = 0;
-    this.STATE_OLD_PASSWORD = 1;
-    this.STATE_NEW_PASSWORD = 2;
-    this.STATE_CONFIRM_PASSWORD = 3;
-    this.STATE_MOTD = 4;
-    this.STATE_CONNECTED = 5;
-    this.STATE_DISCONNECTED = 6;
-    
     this.init(data);
   }
 
@@ -163,6 +154,20 @@ class User {
 
     /** Allow for set call chaining */
     return this;
+  }
+  
+  /**
+   * Write to user's socket (assuming it exists).
+   * @param buffer Desired output
+   * @return Socket existed true/false
+   */
+  send(buffer = '\r\n') {
+    if ( this.socket() ) {
+      this.socket().write(buffer);
+      return true;
+    }
+    
+    return false;
   }
 }
 

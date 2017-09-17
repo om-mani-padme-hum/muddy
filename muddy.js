@@ -8,6 +8,11 @@ exports.World = world.World;
 exports.User = user.User;
 exports.InputProcessor = input.InputProcessor;
 
+/** Define VT100 terminal modifiers */
+exports.VT100_CLEAR = world.VT100_CLEAR;
+exports.VT100_HIDE_TEXT = world.VT100_HIDE_TEXT;
+
+/** Define direction flags */
 exports.DIR_NORTH = world.DIR_NORTH;
 exports.DIR_NORTHEAST = world.DIR_NORTHEAST;
 exports.DIR_EAST = world.DIR_EAST;
@@ -17,20 +22,13 @@ exports.DIR_SOUTHWEST = world.DIR_SOUTHWEST;
 exports.DIR_WEST = world.DIR_WEST;
 exports.DIR_NORTHWEST = world.DIR_NORTHWEST;
 exports.DIR_UP = world.DIR_UP;
-exports.DIR_UP_AND_NORTH = world.DIR_UP_AND_NORTH;
-exports.DIR_UP_AND_NORTHEAST = world.DIR_UP_AND_NORTHEAST;
-exports.DIR_UP_AND_EAST = world.DIR_UP_AND_EAST;
-exports.DIR_UP_AND_SOUTHEAST = world.DIR_UP_AND_SOUTHEAST;
-exports.DIR_UP_AND_SOUTH = world.DIR_UP_AND_SOUTH;
-exports.DIR_UP_AND_SOUTHWEST = world.DIR_UP_AND_SOUTHWEST;
-exports.DIR_UP_AND_WEST = world.DIR_UP_AND_WEST;
-exports.DIR_UP_AND_NORTHWEST = world.DIR_UP_AND_NORTHWEST;
 exports.DIR_DOWN = world.DIR_DOWN;
-exports.DIR_DOWN_AND_NORTH = world.DIR_DOWN_AND_NORTH;
-exports.DIR_DOWN_AND_NORTHEAST = world.DIR_DOWN_AND_NORTHEAST;
-exports.DIR_DOWN_AND_EAST = world.DIR_DOWN_AND_EAST;
-exports.DIR_DOWN_AND_SOUTHEAST = world.DIR_DOWN_AND_SOUTHEAST;
-exports.DIR_DOWN_AND_SOUTH = world.DIR_DOWN_AND_SOUTH;
-exports.DIR_DOWN_AND_SOUTHWEST = world.DIR_DOWN_AND_SOUTHWEST;
-exports.DIR_DOWN_AND_WEST = world.DIR_DOWN_AND_WEST;
-exports.DIR_DOWNUP_AND_NORTHWEST = world.DIR_DOWNUP_AND_NORTHWEST;
+
+/** Define user state flags */
+exports.STATE_NAME = world.STATE_NAME;
+exports.STATE_OLD_PASSWORD = world.STATE_OLD_PASSWORD;
+exports.STATE_NEW_PASSWORD = world.STATE_NEW_PASSWORD;
+exports.STATE_CONFIRM_PASSWORD = world.STATE_CONFIRM_PASSWORD;
+exports.STATE_MOTD = world.STATE_MOTD;
+exports.STATE_CONNECTED = world.STATE_CONNECTED;
+exports.STATE_DISCONNECTED = world.STATE_DISCONNECTED;

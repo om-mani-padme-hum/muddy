@@ -27,6 +27,15 @@ class World {
     this.DIR_UP = 8;                       /**< u */
     this.DIR_DOWN = 9;                     /**< d */
 
+    /** Define user state flags */
+    this.STATE_NAME = 0;
+    this.STATE_OLD_PASSWORD = 1;
+    this.STATE_NEW_PASSWORD = 2;
+    this.STATE_CONFIRM_PASSWORD = 3;
+    this.STATE_MOTD = 4;
+    this.STATE_CONNECTED = 5;
+    this.STATE_DISCONNECTED = 6;
+    
     this.init(data);
   }
 
@@ -60,6 +69,17 @@ class World {
                    '\r\n',
                    'Hello, what is your name? '].join();
     
+    let motd = ['--------------------------------------------------------------------------------\r\n',
+                'Message of the day:\r\n',
+                '\r\n',
+                'New features:\r\n',
+                '  * Users\r\n',
+                '  * Logins\r\n',
+                '  * World\r\n',
+                '\r\n',
+                '--------------------------------------------------------------------------------\r\n',
+                'Press ENTER to continue...'].join();
+                
     this.db(data.db == null ? null : data.db);
     this.port(data.port = null ? 9000 : data.port);
     this.areas(data.areas == null ? [] : data.areas);
@@ -68,6 +88,7 @@ class World {
     this.users(data.users == null ? [] : data.users);
     this.commands(data.commands = null ? [] : data.commands);
     this.welcome(data.welcome = null ? welcome : data.welcome);
+    this.motd(data.motd = null ? motd : data.motd);
   }
 
   /**
@@ -81,25 +102,26 @@ class World {
 
     /** Create server -- net.createServer constructor parameter is new connection handler */
     this._server = net.createServer((socket) => {
-      console.log('New socket from ' + socket.address().address + '.');
+      console.log(`New socket from ${socket.address().address}.`);
 
       /** Create a new user */
       var user = new muddy.User({
         socket: socket
       });
 
-      /** Assign socket a random ID */
+      /** Assign socket a random ID because apparently sockets aren't unique enough for comparison */
       socket.id = crypto.randomBytes(32).toString('hex');
 
       /** Add user to active users list */
-      world.addUser(user);
+      this.addUser(user);
 
       /** Log user disconnects */
       socket.on('end', () => {
-        let user = world.findUserBySocket(socket);
+        let user = this.findUserBySocket(socket);
 
         if ( user ) {
-          console.log('User ' + user.name() + ' disconnected.');
+          console.log(`User ${user.name()} disconnected.`);
+          
           user.socket(null);
           user.state(user.STATE_DISCONNECTED);
         } else {
@@ -124,7 +146,7 @@ class World {
 
     /** Time to get started */
     server.listen(this.port(), () => {
-      console.log('Muddy is up and running on port 9000!');
+      console.log(`Muddy is up and running on port ${this.port()}!`);
     });
   }
   
@@ -174,6 +196,23 @@ class World {
 
     /** Setter */
     this._welcome = welcome;
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
+  /** 
+   * Message of the day (MOTD) getter/setter.
+   * @param (optional) welcome Desired message of the day
+   * @return The world for set call chaining
+   */
+  motd(motd = null) {
+    /** Getter */
+    if ( motd == null )
+      return this._motd;
+
+    /** Setter */
+    this._motd = motd;
 
     /** Allow for set call chaining */
     return this;

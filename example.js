@@ -6,7 +6,7 @@ const muddy = require('./muddy');
 
 /** Instantiate pooled MySQL DB connection */
 const db  = mysql.createPool({
-  connectionLimit : 10,
+  connectionLimit : 20,
   host            : 'localhost',
   user            : 'muddy',
   password        : 'S3cur3UrMuD!',
@@ -27,6 +27,12 @@ areas.forEach((area) => {
 world.addCommand({
   name: 'north',
   execute: (user, buffer) => {
+    let exit = user.room().exit(muddy.DIR_NORTH)
+    
+    if ( exit )
+      user.room(exit.toRoom());
+    else
+      user.send('You cannot go that way.');
   }
 });
 
