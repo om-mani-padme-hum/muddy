@@ -146,11 +146,10 @@ class InputProcessor {
     /** Validate password */
     if ( password == user.password() ) {
       /** Password matches, display MOTD */
-      user.send(this.world()motd());
-
+      user.send(this.world().motd());
       user.state(this.world().STATE_MOTD);
       
-      console.log('User ' + user.name() + ' connected.');
+      console.log(`User ${user.name()} connected.`);
     } else {
       /** Password incorrect, remove user from world and terminate socket */
       muddy.removeUser(user);
@@ -158,7 +157,7 @@ class InputProcessor {
       /** Terminate socket */
       socket.end("Incorrect password, goodbye!\r\n");
       
-      console.log("Failed login by " + user.name());
+      console.log(`Failed login by ${user.name()}.`);
     }
   }
   
@@ -231,8 +230,9 @@ class InputProcessor {
     if ( password == user.password() ) {
       /** Password matches, proceed to MOTD */
       user.state(this.world().STATE_MOTD);
+      user.send(this.motd());
       
-      console.log('User ' + user.name() + ' connected.');
+      console.log(`User ${user.name()} connected.`);
     } else {
       /** Password does not match, let's try this again */
       user.send('Passwords do not match, please try again!\r\n');
