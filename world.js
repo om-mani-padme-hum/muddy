@@ -111,9 +111,7 @@ class World {
     this.loadUserByName(data.loadUserByName == null ? (name, next) => { next(new users.User()); } : data.loadUserByName);
     this.saveUser(data.saveUser == null ? (user) => {} : data.saveUser);
     this.loadAreas(data.loadAreas == null ? (next) => { next(); } : data.loadAreas);
-    this.saveArea(data.saveArea == null ? (area) => {} : data.saveArea);
-    
-    console.log(`this.commands(): ${this.commands()}`);
+    this.saveArea(data.saveArea == null ? (area) => {} : data.saveArea);    
   }
 
   /**
