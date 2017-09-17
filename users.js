@@ -1,3 +1,5 @@
+'use strict'
+
 /**
  * Data model and helper class for users.
  */
@@ -7,6 +9,15 @@ class User {
    * @param data (optional) Configuration object
    */
   constructor(data = {}) {
+    /** Define user state flags */
+    this.STATE_NAME = 0;
+    this.STATE_OLD_PASSWORD = 1;
+    this.STATE_NEW_PASSWORD = 2;
+    this.STATE_CONFIRM_PASSWORD = 3;
+    this.STATE_MOTD = 4;
+    this.STATE_CONNECTED = 5;
+    this.STATE_DISCONNECTED = 6;
+    
     this.init(data);
   }
 
@@ -33,7 +44,8 @@ class User {
    */
   load(data = {}) {    
     Object.keys(data).forEach((key) => {
-      this[key](data[key]);
+      if ( typeof this[key] == 'function' )
+        this[key](data[key]);
     });
   }
   

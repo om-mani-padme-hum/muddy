@@ -1,5 +1,8 @@
+'use strict'
+
 /** External modules */
 const net = require('net');
+const crypto = require('crypto');
 
 /** Muddy modules */
 const input = require('./input');
@@ -29,15 +32,6 @@ class World {
     this.DIR_NORTHWEST = 7;                /**< nw */
     this.DIR_UP = 8;                       /**< u */
     this.DIR_DOWN = 9;                     /**< d */
-
-    /** Define user state flags */
-    this.STATE_NAME = 0;
-    this.STATE_OLD_PASSWORD = 1;
-    this.STATE_NEW_PASSWORD = 2;
-    this.STATE_CONFIRM_PASSWORD = 3;
-    this.STATE_MOTD = 4;
-    this.STATE_CONNECTED = 5;
-    this.STATE_DISCONNECTED = 6;
     
     this.init(data);
   }
@@ -45,53 +39,81 @@ class World {
   /**
    * Initialize the object to provided data or defaults.
    * @param data (optional) Configuration object
+   * @todo Remove users and objects from this class and put them under areas
    */
   init(data = {}) {
-    let welcome = ['\r\n',
-                   '\r\n',
-                   '\r\n',
-                   '                              W E L C O M E    T O\r\n',
-                   '\r\n',
-                   '\r\n',
-                   '                                          _     _\r\n',
-                   '                          /\\/\\  _   _  __| | __| |_   _\r\n',
-                   '                         /    \\| | | |/ _` |/ _` | | | |\r\n',
-                   '                        / /\\/\\ \\ |_| | (_| | (_| | |_| |\r\n',
-                   '                        \\/    \\/\\__,_|\\__,_|\\__,_|\\__, |\r\n',
-                   '                                                  |___/\r\n',
-                   '\r\n',
-                   '                              Created by Rich Lowe\r\n',
-                   '                                  MIT Licensed\r\n',
-                   '\r\n',
-                   '\r\n',
-                   '\r\n',
-                   '\r\n',
-                   '\r\n',
-                   '\r\n',
-                   '\r\n',
-                   '\r\n',
-                   'Hello, what is your name? '].join();
+    /** Set up some Muddy defaults */
+    let defaultPort = 9000;
     
-    let motd = ['--------------------------------------------------------------------------------\r\n',
-                'Message of the day:\r\n',
-                '\r\n',
-                'New features:\r\n',
-                '  * Users\r\n',
-                '  * Logins\r\n',
-                '  * World\r\n',
-                '\r\n',
-                '--------------------------------------------------------------------------------\r\n',
-                'Press ENTER to continue...'].join();
-                
-    this.db(data.db == null ? null : data.db);
-    this.port(data.port = null ? 9000 : data.port);
+    let defaultWelcome = ['\r\n',
+                           '\r\n',
+                           '\r\n',
+                           '                              W E L C O M E    T O\r\n',
+                           '\r\n',
+                           '\r\n',
+                           '                                          _     _\r\n',
+                           '                          /\\/\\  _   _  __| | __| |_   _\r\n',
+                           '                         /    \\| | | |/ _` |/ _` | | | |\r\n',
+                           '                        / /\\/\\ \\ |_| | (_| | (_| | |_| |\r\n',
+                           '                        \\/    \\/\\__,_|\\__,_|\\__,_|\\__, |\r\n',
+                           '                                                  |___/\r\n',
+                           '\r\n',
+                           '                              Created by Rich Lowe\r\n',
+                           '                                  MIT Licensed\r\n',
+                           '\r\n',
+                           '\r\n',
+                           '\r\n',
+                           '\r\n',
+                           '\r\n',
+                           '\r\n',
+                           '\r\n',
+                           '\r\n',
+                           'Hello, what is your name? '].join('');
+    
+    let defaultMotd = ['--------------------------------------------------------------------------------\r\n',
+                        'Message of the day:\r\n',
+                        '\r\n',
+                        'New features:\r\n',
+                        '  * Users\r\n',
+                        '  * Logins\r\n',
+                        '  * World\r\n',
+                        '\r\n',
+                        '--------------------------------------------------------------------------------\r\n',
+                        'Press ENTER to continue...'].join('');
+
+    let defaultLoadAreas = () => {
+      world.addArea({
+        id: 1,
+        name: 'Stuck in the mud',
+        flags: 0,
+        rooms: {
+          id: 1,
+          name: 'Stuck in the mud',
+          description: [`There seems to be lots to explore 'out there', but you can't do much of\r\n`,
+                        `anything as you're stuck in the mud.  Might want to pray the immortals\r\n`,
+                        `help you find a way out and back into a worthy world.\r\n`].join(''),
+          flags: 0
+        }
+      });
+    }
+    
+    /** Objects and values */
+    this.port(data.port = null ? defaultPort : data.port);
     this.areas(data.areas == null ? [] : data.areas);
     this.rooms(data.rooms == null ? [] : data.rooms);
     this.objects(data.objects == null ? [] : data.objects);
     this.users(data.users == null ? [] : data.users);
-    this.commands(data.commands = null ? [] : data.commands);
-    this.welcome(data.welcome = null ? welcome : data.welcome);
-    this.motd(data.motd = null ? motd : data.motd);
+    this.commands(data.commands == null ? [] : data.commands);
+    this.welcome(data.welcome == null ? defaultWelcome : data.welcome);
+    this.motd(data.motd == null ? defaultMotd : data.motd);
+    
+    /** Handlers */
+    this.loadUserByName(data.loadUserByName == null ? (name, next) => { next(new users.User()); } : data.loadUserByName);
+    this.saveUser(data.saveUser == null ? (user) => {} : data.saveUser);
+    this.loadAreas(data.loadAreas == null ? (next) => { next(); } : data.loadAreas);
+    this.saveArea(data.saveArea == null ? (area) => {} : data.saveArea);
+    
+    console.log(`this.commands(): ${this.commands()}`);
   }
 
   /**
@@ -99,16 +121,16 @@ class World {
    */
   listen() {
     /** Create input processor */
-    const input = new input.InputProcessor({
+    let inputProcessor = new input.InputProcessor({
       world: this
     });
 
     /** Create server -- net.createServer constructor parameter is new connection handler */
-    this._server = net.createServer((socket) => {
+    let server = net.createServer((socket) => {
       console.log(`New socket from ${socket.address().address}.`);
 
       /** Create a new user */
-      var user = new muddy.User({
+      var user = new users.User({
         socket: socket
       });
 
@@ -135,7 +157,7 @@ class World {
       /** Data received from user */
       socket.on('data', (buffer) => {    
         /** Pass input to the input processor */
-        input.process(socket, buffer);
+        inputProcessor.process(socket, buffer);
       });
 
       /** Display welcome message */
@@ -151,23 +173,6 @@ class World {
     server.listen(this.port(), () => {
       console.log(`Muddy is up and running on port ${this.port()}!`);
     });
-  }
-  
-  /** 
-   * Database MySQL object getter/setter.
-   * @param (optional) db Desired MySQL database object
-   * @return The input processor for set call chaining
-   */
-  db(db = null) {
-    /** Getter */
-    if ( db == null )
-      return this._db;
-
-    /** Setter */
-    this._db = db;
-
-    /** Allow for set call chaining */
-    return this;
   }
   
   /** 
@@ -337,12 +342,45 @@ class World {
     /** Getter */
     if ( commands == null )
       return this._commands;
-
+    
     /** Setter */
     this._commands = commands;
 
     /** Allow for set call chaining */
     return this;
+  }
+  
+  /**
+   * Add command.
+   * @param user Desired command to add
+   * @return The world for set call chaining
+   */
+  addCommand(command) {    
+    /** Push command onto list */
+    this.commands().push(command);
+    
+    /** Allow for set call chaining */
+    return this;
+  }
+  
+  /**
+   * Find command by name.
+   * @param Desired command's name
+   * @return Desired command
+   */
+  findCommandByName(name) {
+    return this.commands().find((command) => {
+      return command.name() == name;
+    });
+  }
+  
+  /**
+   * Remove command.
+   * @param Desired command to remove
+   */
+  removeCommand(command) {
+    /** Splice user from list */
+    this.commands().splice(this.commands().indexOf(command));
   }
   
   /**
@@ -381,25 +419,80 @@ class World {
   }
   
   /**
-   * Add command.
-   * @param user Desired command to add
-   * @return The world for set call chaining
-   */
-  addCommand(command) {
-    /** Push user onto list */
-    this.commands().push(command);
-    
-    /** Allow for set call chaining */
-    return this;
-  }
-  
-  /**
    * Remove user.
    * @param Desired user to remove
    */
   removeUser(user) {
     /** Splice user from list */
     this.users().splice(this.users().indexOf(user));
+  }
+  
+  /** 
+   * Load user by name handler getter/setter.
+   * @param (optional) loadUserByName Desired load user by name handler
+   * @return The world for set call chaining
+   */
+  loadUserByName(loadUserByName = null) {
+    /** Getter */
+    if ( loadUserByName == null )
+      return this._loadUserByName;
+
+    /** Setter */
+    this._loadUserByName = loadUserByName;
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
+  /** 
+   * Save user handler getter/setter.
+   * @param (optional) saveUser Desired save user handler
+   * @return The world for set call chaining
+   */
+  saveUser(saveUser = null) {
+    /** Getter */
+    if ( saveUser == null )
+      return this._saveUser;
+
+    /** Setter */
+    this._saveUser = saveUser;
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
+  /** 
+   * Load areas handler getter/setter.
+   * @param (optional) loadAreas Desired load areas handler
+   * @return The world for set call chaining
+   */
+  loadAreas(loadAreas = null) {
+    /** Getter */
+    if ( loadAreas == null )
+      return this._loadAreas;
+
+    /** Setter */
+    this._loadAreas = loadAreas;
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
+  /** 
+   * Save area handler getter/setter.
+   * @param (optional) saveArea Desired save area handler
+   * @return The world for set call chaining
+   */
+  saveArea(saveArea = null) {
+    /** Getter */
+    if ( saveArea == null )
+      return this._saveArea;
+
+    /** Setter */
+    this._saveArea = saveArea;
+
+    /** Allow for set call chaining */
+    return this;
   }
 }
 

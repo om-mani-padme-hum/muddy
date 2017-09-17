@@ -1,3 +1,5 @@
+'use strict'
+
 const crypto = require('crypto');
 
 /**
@@ -54,23 +56,28 @@ class InputProcessor {
       return;
     }
   
+    /** Debug stuff 
+    console.log(`Input received from ${user.name()} with user state ${user.state()}.`);
+    console.log(buffer.toString());
+    */
+    
     /** Process data based on user state */
-    if ( user.state() == this.world().STATE_NAME )
+    if ( user.state() == user.STATE_NAME )
       /** User is at the name state, first input of the game */
       this.processStateName(socket, buffer, user);
-    else if ( user.state() == this.world().STATE_OLD_PASSWORD )
+    else if ( user.state() == user.STATE_OLD_PASSWORD )
       /** User submitted name and was found to be previously saved, require old password */
       this.processStateOldPassword(socket, buffer, user);
-    else if ( user.state() == this.world().STATE_NEW_PASSWORD )
+    else if ( user.state() == user.STATE_NEW_PASSWORD )
       /** User submitted name and is new, ask for a new password */
       this.processStateNewPassword(socket, buffer, user);
-    else if ( user.state() == this.world().STATE_CONFIRM_PASSWORD )
+    else if ( user.state() == user.STATE_CONFIRM_PASSWORD )
       /** User is new and provided a password, confirm it to be sure they typed it right */
       this.processStateConfirmPassword(socket, buffer, user);
-    else if ( user.state() == this.world().STATE_MOTD ) 
+    else if ( user.state() == user.STATE_MOTD ) 
       /** User has successfully logged in and is seeing MOTD, pause until they hit enter */
       this.processStateMOTD(socket, buffer, user);
-    else if ( user.state() == this.world().STATE_CONNECTED )
+    else if ( user.state() == user.STATE_CONNECTED )
       /** User is connected and in world */
       this.processStateConnected(socket, buffer, user);
   }
@@ -93,19 +100,23 @@ class InputProcessor {
       user.send('Your name must be between 3 and 14 characters long.\r\n');
       user.send('Please enter a new name: ');
     } else { 
-      /** Query the database to see if user exists, if it does, load properties */
-      this.world().db().query('SELECT id, name, password, salt, level FROM users WHERE LOWER(name) = ?', [name], function (error, results, fields) {
-        /** Re-throw errors for now */
-        if (error) throw error;
-
-        if ( results[0] ) {     
+      /** Use the load user by name handler to look up the user */
+      this.world().loadUserByName()(name, (userData) => {
+        if ( userData ) {     
           /** Existing user */
           user.send('Please enter your password: ');
 
+          /** Capture the true socket so we don't overwrite it */
+          let holdSocket = user.socket();
+          
           /** Load the user */
-          user.load(results[0]);
+          user.load(userData);
 
-          user.state(this.world().STATE_OLD_PASSWORD);
+          /** Replace it after user load, so we can ditch userData */
+          user.socket(holdSocket);
+          
+          /** Move on to ask for existing password */
+          user.state(user.STATE_OLD_PASSWORD);
         } else {
           /** New user */
           user.name(name);
@@ -113,7 +124,8 @@ class InputProcessor {
           user.send(`Welcome to Muddy, ${name}!\r\n`);
           user.send('Please choose a password: ');
 
-          user.state(this.world().STATE_NEW_PASSWORD);
+          /** Move on to ask for them to pick a password */
+          user.state(user.STATE_NEW_PASSWORD);
         }
 
         /** Hide text for password */
@@ -145,14 +157,16 @@ class InputProcessor {
 
     /** Validate password */
     if ( password == user.password() ) {
-      /** Password matches, display MOTD */
+      /** Password matches, display message of the day */
       user.send(this.world().motd());
-      user.state(this.world().STATE_MOTD);
+      
+      /** Move on and pause until they're done reading the message of the day */
+      user.state(user.STATE_MOTD);
       
       console.log(`User ${user.name()} connected.`);
     } else {
       /** Password incorrect, remove user from world and terminate socket */
-      muddy.removeUser(user);
+      this.world().removeUser(user);
       
       /** Terminate socket */
       socket.end("Incorrect password, goodbye!\r\n");
@@ -197,12 +211,14 @@ class InputProcessor {
       /** Store the encrypted password and salt */
       user.password(password);
       user.salt(salt);
-      user.state(this.world().STATE_CONFIRM_PASSWORD);
-
+      
       user.send('Please confirm your new password: ');
 
       /** Hide text for password */
       user.send(this.world().VT100_HIDE_TEXT);
+      
+      /** Move on and confirm the password */
+      user.state(user.STATE_CONFIRM_PASSWORD);
     }
   }
   
@@ -228,10 +244,12 @@ class InputProcessor {
     user.send(this.world().VT100_CLEAR);
 
     if ( password == user.password() ) {
-      /** Password matches, proceed to MOTD */
-      user.state(this.world().STATE_MOTD);
+      /** Password matches, proceed to the message of the day */
       user.send(this.motd());
-      
+    
+      /** Move on and pause until they're done reading the message of the day */
+      user.state(user.STATE_MOTD);
+
       console.log(`User ${user.name()} connected.`);
     } else {
       /** Password does not match, let's try this again */
@@ -247,7 +265,8 @@ class InputProcessor {
    * @param user User object
    */
   processStateMOTD(socket, buffer, user) {
-    user.state(this.world().STATE_CONNECTED);
+    /** Move on and put user in game */
+    user.state(user.STATE_CONNECTED);
   }
   
   /**
@@ -257,6 +276,7 @@ class InputProcessor {
    * @param user User object
    */
   processStateConnected(socket, buffer, user) {
+    /** @todo Process user commands */
     user.send('You are connected!\r\n');
   }
 }
