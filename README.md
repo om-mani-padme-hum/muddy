@@ -1,7 +1,7 @@
 # muddy
 A Node.js Multi-User Dungeon (MUD) Framework
 
-## Current Status
+## Current Status:
 * Not Operational (Mid Restructuring)
 * After restructure, master branch will be kept operational
 
