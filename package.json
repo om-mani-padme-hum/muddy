@@ -2,7 +2,7 @@
   "name": "muddy",
   "version": "1.0.0",
   "description": "A Node.js Multi-User Dungeon (MUD) Framework",
-  "main": "server.js",
+  "main": "muddy.js",
   "scripts": {
     "test": "npm start"
   },

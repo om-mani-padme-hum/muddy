@@ -17,25 +17,7 @@ class InputProcessor {
    * @param data (optional) Configuration object
    */
   init(data = {}) {
-    this.db(data.db == null ? null : data.db);
     this.world(data.world == null ? null : data.world);
-  }
-  
-  /** 
-   * Database MySQL object getter/setter.
-   * @param (optional) db Desired MySQL database object
-   * @return The input processor for set call chaining
-   */
-  db(db = null) {
-    /** Getter */
-    if ( db == null )
-      return this._db;
-
-    /** Setter */
-    this._db = db;
-
-    /** Allow for set call chaining */
-    return this;
   }
   
   /** 
@@ -104,7 +86,7 @@ class InputProcessor {
       socket.write('Please enter a new name: ');
     } else { 
       /** Query the database to see if user exists, if it does, load properties */
-      this.db().query('SELECT id, name, password, salt, level FROM users WHERE LOWER(name) = ?', [name], function (error, results, fields) {
+      this.world().db().query('SELECT id, name, password, salt, level FROM users WHERE LOWER(name) = ?', [name], function (error, results, fields) {
         /** Re-throw errors for now */
         if (error) throw error;
 
@@ -127,7 +109,7 @@ class InputProcessor {
         }
 
         /** Hide text for password */
-        socket.write('\x1b[8m');
+        socket.write(this.world().VT100_HIDE_TEXT);
       });
     }
   }
@@ -151,7 +133,7 @@ class InputProcessor {
     password = hash.digest('hex');
 
     /** Stop hiding text */
-    socket.write('\x1b[0m');
+    socket.write(this.world().VT100_CLEAR);
 
     /** Validate password */
     if ( password == user.password() ) {
@@ -168,11 +150,15 @@ class InputProcessor {
       socket.write('Press ENTER to continue...');
 
       user.state(user.STATE_MOTD);
+      
       console.log('User ' + user.name() + ' connected.');
     } else {
       /** Password incorrect, remove user from world and terminate socket */
       muddy.removeUser(user);
+      
+      /** Terminate socket */
       socket.end("Incorrect password, goodbye!\r\n");
+      
       console.log("Failed login by " + user.name());
     }
   }
@@ -187,7 +173,7 @@ class InputProcessor {
     let unencrypted = buffer.toString();
 
     /** Stop hiding text */
-    socket.write('\x1b[0m');
+    socket.write(this.world().VT100_CLEAR);
 
     if ( password.match(/\s/i) ) {
       /** Whitespaces in password not allowed */
@@ -218,7 +204,7 @@ class InputProcessor {
       socket.write('Please confirm your new password: ');
 
       /** Hide text for password */
-      socket.write('\x1b[8m');
+      socket.write(this.world().VT100_HIDE_TEXT);
     }
   }
   
@@ -241,11 +227,12 @@ class InputProcessor {
     let password = hash.digest('hex');
 
     /** Stop hiding text */
-    socket.write('\x1b[0m');
+    socket.write(this.world().VT100_CLEAR);
 
     if ( password == user.password() ) {
       /** Password matches, proceed to MOTD */
       user.state(user.STATE_MOTD);
+      
       console.log('User ' + user.name() + ' connected.');
     } else {
       /** Password does not match, let's try this again */

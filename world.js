@@ -1,3 +1,7 @@
+const input = require('./input');
+const net = require('./net');
+const users = require('./users');
+
 /**
  * Data model and helper class for a Muddy world.
  */
@@ -7,6 +11,10 @@ class World {
    * @param data (optional) Configuration object
    */
   constructor(data = {}) {
+    /** Define VT100 terminal modifiers */
+    this.VT100_CLEAR = '\x1b[0m';
+    this.VT100_HIDE_TEXT = '\x1b[8m';
+    
     /** Define direction flags */
     this.DIR_NORTH = 0;                    /**< n */
     this.DIR_NORTHEAST = 1;                /**< ne */
@@ -17,24 +25,8 @@ class World {
     this.DIR_WEST = 6;                     /**< w */
     this.DIR_NORTHWEST = 7;                /**< nw */
     this.DIR_UP = 8;                       /**< u */
-    this.DIR_UP_AND_NORTH = 9;             /**< un */
-    this.DIR_UP_AND_NORTHEAST = 10;        /**< une */
-    this.DIR_UP_AND_EAST = 11;             /**< ue */
-    this.DIR_UP_AND_SOUTHEAST = 12;        /**< use */
-    this.DIR_UP_AND_SOUTH = 13;            /**< us */
-    this.DIR_UP_AND_SOUTHWEST = 14;        /**< usw */
-    this.DIR_UP_AND_WEST = 15;             /**< w */
-    this.DIR_UP_AND_NORTHWEST = 16;        /**< nw */
-    this.DIR_DOWN = 17;                    /**< d */
-    this.DIR_DOWN_AND_NORTH = 18;          /**< dn */
-    this.DIR_DOWN_AND_NORTHEAST = 19;      /**< dne */
-    this.DIR_DOWN_AND_EAST = 20;           /**< de */
-    this.DIR_DOWN_AND_SOUTHEAST = 21;      /**< dse */
-    this.DIR_DOWN_AND_SOUTH = 22;          /**< ds */
-    this.DIR_DOWN_AND_SOUTHWEST = 23;      /**< dsw */
-    this.DIR_DOWN_AND_WEST = 24;           /**< dw */
-    this.DIR_DOWNUP_AND_NORTHWEST = 25;    /**< dnw */
-    
+    this.DIR_DOWN = 9;                     /**< d */
+
     this.init(data);
   }
 
@@ -43,12 +35,150 @@ class World {
    * @param data (optional) Configuration object
    */
   init(data = {}) {
+    let welcome = ['\r\n',
+                   '\r\n',
+                   '\r\n',
+                   '                              W E L C O M E    T O\r\n',
+                   '\r\n',
+                   '\r\n',
+                   '                                          _     _\r\n',
+                   '                          /\\/\\  _   _  __| | __| |_   _\r\n',
+                   '                         /    \\| | | |/ _` |/ _` | | | |\r\n',
+                   '                        / /\\/\\ \\ |_| | (_| | (_| | |_| |\r\n',
+                   '                        \\/    \\/\\__,_|\\__,_|\\__,_|\\__, |\r\n',
+                   '                                                  |___/\r\n',
+                   '\r\n',
+                   '                              Created by Rich Lowe\r\n',
+                   '                                  MIT Licensed\r\n',
+                   '\r\n',
+                   '\r\n',
+                   '\r\n',
+                   '\r\n',
+                   '\r\n',
+                   '\r\n',
+                   '\r\n',
+                   '\r\n',
+                   'Hello, what is your name? '].join();
+    
+    this.db(data.db == null ? null : data.db);
+    this.port(data.port = null ? 9000 : data.port);
     this.areas(data.areas == null ? [] : data.areas);
     this.rooms(data.rooms == null ? [] : data.rooms);
     this.objects(data.objects == null ? [] : data.objects);
     this.users(data.users == null ? [] : data.users);
+    this.commands(data.commands = null ? [] : data.commands);
+    this.welcome(data.welcome = null ? welcome : data.welcome);
   }
 
+  /**
+   * Start server and periodic world update.
+   */
+  listen() {
+    /** Create input processor */
+    const input = new input.InputProcessor({
+      world: this
+    });
+
+    /** Create server -- net.createServer constructor parameter is new connection handler */
+    this._server = net.createServer((socket) => {
+      console.log('New socket from ' + socket.address().address + '.');
+
+      /** Create a new user */
+      var user = new muddy.User({
+        socket: socket
+      });
+
+      /** Assign socket a random ID */
+      socket.id = crypto.randomBytes(32).toString('hex');
+
+      /** Add user to active users list */
+      world.addUser(user);
+
+      /** Log user disconnects */
+      socket.on('end', () => {
+        let user = world.findUserBySocket(socket);
+
+        if ( user ) {
+          console.log('User ' + user.name() + ' disconnected.');
+          user.socket(null);
+          user.state(user.STATE_DISCONNECTED);
+        } else {
+          console.log('Socket disconnected.');
+        }
+      });
+
+      /** Data received from user */
+      socket.on('data', (buffer) => {    
+        /** Pass input to the input processor */
+        input.process(socket, buffer);
+      });
+
+      /** Display welcome message */
+      socket.write(this.welcome());
+    });
+
+    /** Re-throw errors for now */
+    server.on('error', (error) => {
+      throw error;
+    });
+
+    /** Time to get started */
+    server.listen(this.port(), () => {
+      console.log('Muddy is up and running on port 9000!');
+    });
+  }
+  
+  /** 
+   * Database MySQL object getter/setter.
+   * @param (optional) db Desired MySQL database object
+   * @return The input processor for set call chaining
+   */
+  db(db = null) {
+    /** Getter */
+    if ( db == null )
+      return this._db;
+
+    /** Setter */
+    this._db = db;
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
+  /** 
+   * Server port getter/setter.
+   * @param (optional) rooms Desired server port
+   * @return The world for set call chaining
+   */
+  port(port = null) {
+    /** Getter */
+    if ( port == null )
+      return this._port;
+
+    /** Setter */
+    this._port = port;
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
+  /** 
+   * Welcome message getter/setter.
+   * @param (optional) welcome Desired welcome message
+   * @return The world for set call chaining
+   */
+  welcome(welcome = null) {
+    /** Getter */
+    if ( welcome == null )
+      return this._welcome;
+
+    /** Setter */
+    this._welcome = welcome;
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
   /** 
    * Areas getter/setter.
    * @param (optional) areas Desired areas
@@ -156,10 +286,27 @@ class World {
     return this;
   }
   
+  /** 
+   * Commands getter/setter.
+   * @param (optional) users Desired commands
+   * @return The world for set call chaining
+   */
+  commands(commands = null) {
+    /** Getter */
+    if ( commands == null )
+      return this._commands;
+
+    /** Setter */
+    this._commands = commands;
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
   /**
    * Add user.
    * @param user Desired user to add
-   * @return Added user
+   * @return The world for set call chaining
    */
   addUser(user) {
     /** Push user onto list */
@@ -189,6 +336,19 @@ class World {
     return this.users().find((user) => {
       return user.name() == name;
     });
+  }
+  
+  /**
+   * Add command.
+   * @param user Desired command to add
+   * @return The world for set call chaining
+   */
+  addCommand(command) {
+    /** Push user onto list */
+    this.commands().push(command);
+    
+    /** Allow for set call chaining */
+    return this;
   }
   
   /**
