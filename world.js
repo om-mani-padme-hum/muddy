@@ -1,5 +1,8 @@
+/** External modules */
+const net = require('net');
+
+/** Muddy modules */
 const input = require('./input');
-const net = require('./net');
 const users = require('./users');
 
 /**
