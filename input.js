@@ -154,7 +154,7 @@ class InputProcessor {
 
     /** Stop hiding text */
     user.send(this.world().VT100_CLEAR);
-
+    
     /** Validate password */
     if ( password == user.password() ) {
       /** Password matches, display message of the day */

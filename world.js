@@ -132,7 +132,10 @@ class World {
         socket: socket
       });
 
-      /** Assign socket a random ID because apparently sockets aren't unique enough for comparison */
+      /** 
+       * Assign socket a random ID because apparently sockets aren't unique enough for comparison.
+       * @todo Find another way
+       */
       socket.id = crypto.randomBytes(32).toString('hex');
 
       /** Add user to active users list */
