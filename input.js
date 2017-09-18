@@ -293,7 +293,7 @@ class InputProcessor {
     if ( this.world().findCommandByName(matches[1]) )
       this.world().findCommandByName(matches[1]).execute(user, matches[2]);
     else
-      user.send('That action does not exist in this universe.\r\n');
+      user.send('That action does not exist in this world.\r\n');
     
     /** Send prompt */
     this.prompt(user);

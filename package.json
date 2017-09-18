@@ -12,7 +12,7 @@
     "url": "git+https://github.com/om-mani-padme-hum/muddy.git"
   },
   "keywords": [
-    "MUD",
+    "mud",
     "multi-user",
     "dungeon",
     "game"
@@ -23,9 +23,6 @@
     "url": "https://github.com/om-mani-padme-hum/muddy/issues"
   },
   "homepage": "https://github.com/om-mani-padme-hum/muddy#readme",
-  "dependencies": {
-    "mysql": "^2.14.1"
-  },
   "devDependencies": {
     "jshint": "^2.9.5"
   },
