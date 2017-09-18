@@ -1,6 +1,8 @@
 # My debug example file
 example.js
 
+# My line counter
+line_count.sh
 # Logs
 logs
 *.log
