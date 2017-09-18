@@ -13,3 +13,7 @@ A Node.js Multi-User Dungeon (MUD) Framework
 * Implement periodic world updates
 * Implement mobile scripting
 * Implement user defined races, classes, skillsets, spells, etc.
+
+## Example Use
+
+* See https://github.com/om-mani-padme-hum/muddy_examples
