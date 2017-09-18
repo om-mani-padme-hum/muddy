@@ -6,18 +6,14 @@
 class User {
   /**
    * Instantiate a new user.
+   * @param world The world object
    * @param data (optional) Configuration object
    */
-  constructor(data = {}) {
-    /** Define user state flags */
-    this.STATE_NAME = 0;
-    this.STATE_OLD_PASSWORD = 1;
-    this.STATE_NEW_PASSWORD = 2;
-    this.STATE_CONFIRM_PASSWORD = 3;
-    this.STATE_MOTD = 4;
-    this.STATE_CONNECTED = 5;
-    this.STATE_DISCONNECTED = 6;
+  constructor(world, data = {}) {
+    /** Store the world object */
+    this.world(world);
     
+    /** Initialize any optional configuration parameters */
     this.init(data);
   }
 
@@ -28,7 +24,8 @@ class User {
   init(data = {}) {
     /** In-game properties */
     this.socket(data.socket == null ? null : data.socket);
-    this.state(data.state == null ? this.STATE_NAME : data.state);
+    this.state(data.state == null ? this.world().STATE_NAME : data.state);
+    this.room(data.room == null ? this.world().findRoomByID(1) : data.room);
 
     /** Stored properties */
     this.id(data.id == null ? -1 : data.id);
@@ -47,6 +44,23 @@ class User {
       if ( typeof this[key] == 'function' )
         this[key](data[key]);
     });
+  }
+  
+  /** 
+   * World getter/setter.
+   * @param (optional) world Desired world
+   * @return The user for set call chaining
+   */
+  world(world = null) {
+    /** Getter */
+    if ( world == null )
+      return this._world;
+
+    /** Setter */
+    this._world = world;
+
+    /** Allow for set call chaining */
+    return this;
   }
   
   /** 
@@ -78,6 +92,26 @@ class User {
 
     /** Setter */
     this._state = parseInt(state);
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
+  /** 
+   * Room getter/setter.
+   * @param (optional) room Desired room
+   * @return The user for set call chaining
+   */
+  room(room = null) {
+    /** Getter */
+    if ( room == null )
+      return this._room;
+
+    /** Setter */
+    if ( typeof room == 'number' )
+      return this.world().findRoomByID(room);
+    else
+      this._room = room;
 
     /** Allow for set call chaining */
     return this;

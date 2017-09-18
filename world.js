@@ -7,6 +7,10 @@ const crypto = require('crypto');
 /** Muddy modules */
 const input = require('./input');
 const users = require('./users');
+const areas = require('./areas');
+const rooms = require('./rooms');
+const objects = require('./objects');
+const mobiles = require('./mobiles');
 
 /**
  * Data model and helper class for a Muddy world.
@@ -17,6 +21,15 @@ class World {
    * @param data (optional) Configuration object
    */
   constructor(data = {}) {
+    /** Define user state flags */
+    this.STATE_NAME = 0;
+    this.STATE_OLD_PASSWORD = 1;
+    this.STATE_NEW_PASSWORD = 2;
+    this.STATE_CONFIRM_PASSWORD = 3;
+    this.STATE_MOTD = 4;
+    this.STATE_CONNECTED = 5;
+    this.STATE_DISCONNECTED = 6;
+    
     /** Define VT100 terminal modifiers */
     this.VT100_CLEAR = '\x1b[0m';
     this.VT100_HIDE_TEXT = '\x1b[8m';
@@ -82,20 +95,34 @@ class World {
                         'Press ENTER to continue...'].join('');
 
     let defaultLoadAreas = () => {
-      this.addArea({
+      this.addArea(new areas.Area({
         id: 1,
         name: 'Stuck in the mud',
         flags: 0,
-        rooms: {
-          id: 1,
-          name: 'Stuck in the mud',
-          description: [`There seems to be lots to explore 'out there', but you can't do much of\r\n`,
-                        `anything as you're stuck in the mud.  Might want to pray the immortals\r\n`,
-                        `help you find a way out and back into a worthy world.\r\n`].join(''),
-          flags: 0
-        }
-      });
+        rooms: [
+          new rooms.Room({
+            id: 1,
+            name: 'Stuck in the mud',
+            description: [`There seems to be lots to explore 'out there', but you can't do much of\r\n`,
+                          `anything as you're stuck in the mud.  Might want to pray the immortals\r\n`,
+                          `help you find a way out and back into a worthy world.\r\n`].join(''),
+            flags: 0
+          })
+        ]
+      }));
     };
+    
+    let defaultLoadUserByName = (name, next) => { 
+      next(new users.User(this));
+    };
+    
+    let defaultCommands = [{
+      name: 'look',
+      execute: (user, buffer) => {
+        user.send(user.room().name());
+        user.send(user.room().description());
+      }
+    }];
     
     /** Objects and values */
     this.port(data.port = null ? defaultPort : data.port);
@@ -108,9 +135,9 @@ class World {
     this.motd(data.motd == null ? defaultMotd : data.motd);
     
     /** Handlers */
-    this.loadUserByName(data.loadUserByName == null ? (name, next) => { next(new users.User()); } : data.loadUserByName);
+    this.loadUserByName(data.loadUserByName == null ? defaultLoadUserByName : data.loadUserByName);
     this.saveUser(data.saveUser == null ? (user) => {} : data.saveUser);
-    this.loadAreas(data.loadAreas == null ? (next) => { next(); } : data.loadAreas);
+    this.loadAreas(data.loadAreas == null ? defaultLoadAreas : data.loadAreas);
     this.saveArea(data.saveArea == null ? (area) => {} : data.saveArea);    
   }
 
@@ -119,16 +146,17 @@ class World {
    */
   listen() {
     /** Create input processor */
-    let inputProcessor = new input.InputProcessor({
-      world: this
-    });
+    let inputProcessor = new input.InputProcessor(this);
 
+    /** Load areas, note loadAreas() returns a function, thus the ()() */
+    this.loadAreas()();
+    
     /** Create server -- net.createServer constructor parameter is new connection handler */
     let server = net.createServer((socket) => {
       console.log(`New socket from ${socket.address().address}.`);
 
       /** Create a new user */
-      var user = new users.User({
+      var user = new users.User(this, {
         socket: socket
       });
 
@@ -250,9 +278,17 @@ class World {
    * @return Added area
    */
   addArea(area) {
+    /** Log it */
+    console.log(`Loading area ${area.name()}...`);
+    
     /** Push area onto list */
     this.areas().push(area);
     
+    /** Push area rooms onto list */
+    area.rooms().forEach((room) => {
+      this.addRoom(room);
+    });
+                         
     /** Allow for set call chaining */
     return this;
   }
@@ -267,6 +303,9 @@ class World {
     if ( rooms == null )
       return this._rooms;
 
+    if ( typeof rooms == 'number' )
+      return this.findRoomByID(rooms);
+    
     /** Setter */
     this._rooms = rooms;
 
@@ -280,11 +319,25 @@ class World {
    * @return Added room
    */
   addRoom(room) {
+    /** Log it */
+    console.log(`Loading room ${room.name()}...`);
+    
     /** Push user onto list */
     this.rooms().push(room);
     
     /** Allow for set call chaining */
     return this;
+  }
+  
+  /**
+   * Find room by ID.
+   * @param Desired room's id
+   * @return Desired room
+   */
+  findRoomByID(id) {
+    return this.rooms().find((room) => {
+      return room.id() == id;
+    });
   }
   
   /** 
@@ -310,6 +363,9 @@ class World {
    * @return Added object
    */
   addObject(object) {
+    /** Log it */
+    console.log(`Loading object ${object.name}...`);
+    
     /** Push object onto list */
     this.objects().push(object);
     
@@ -356,7 +412,10 @@ class World {
    * @param user Desired command to add
    * @return The world for set call chaining
    */
-  addCommand(command) {    
+  addCommand(command) {
+    /** Log it */
+    console.log(`Loading command ${command.name}...`);
+    
     /** Push command onto list */
     this.commands().push(command);
     
@@ -371,7 +430,7 @@ class World {
    */
   findCommandByName(name) {
     return this.commands().find((command) => {
-      return command.name() == name;
+      return command.name == name;
     });
   }
   

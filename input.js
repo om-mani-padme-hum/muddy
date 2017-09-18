@@ -8,18 +8,10 @@ const crypto = require('crypto');
 class InputProcessor {  
   /** 
    * Input processor constructor.
-   * @param data (optional) Configuration object
+   * @param world The world object
    */
-  constructor(data = {}) {
-    this.init(data);
-  }
-  
-  /**
-   * Initialize the object to provided data or defaults.
-   * @param data (optional) Configuration object
-   */
-  init(data = {}) {
-    this.world(data.world == null ? null : data.world);
+  constructor(world) {
+    this.world(world);
   }
   
   /** 
@@ -62,22 +54,22 @@ class InputProcessor {
     */
     
     /** Process data based on user state */
-    if ( user.state() == user.STATE_NAME )
+    if ( user.state() == this.world().STATE_NAME )
       /** User is at the name state, first input of the game */
       this.processStateName(socket, buffer, user);
-    else if ( user.state() == user.STATE_OLD_PASSWORD )
+    else if ( user.state() == this.world().STATE_OLD_PASSWORD )
       /** User submitted name and was found to be previously saved, require old password */
       this.processStateOldPassword(socket, buffer, user);
-    else if ( user.state() == user.STATE_NEW_PASSWORD )
+    else if ( user.state() == this.world().STATE_NEW_PASSWORD )
       /** User submitted name and is new, ask for a new password */
       this.processStateNewPassword(socket, buffer, user);
-    else if ( user.state() == user.STATE_CONFIRM_PASSWORD )
+    else if ( user.state() == this.world().STATE_CONFIRM_PASSWORD )
       /** User is new and provided a password, confirm it to be sure they typed it right */
       this.processStateConfirmPassword(socket, buffer, user);
-    else if ( user.state() == user.STATE_MOTD ) 
+    else if ( user.state() == this.world().STATE_MOTD ) 
       /** User has successfully logged in and is seeing MOTD, pause until they hit enter */
       this.processStateMOTD(socket, buffer, user);
-    else if ( user.state() == user.STATE_CONNECTED )
+    else if ( user.state() == this.world().STATE_CONNECTED )
       /** User is connected and in world */
       this.processStateConnected(socket, buffer, user);
   }
@@ -100,23 +92,29 @@ class InputProcessor {
       user.send('Your name must be between 3 and 14 characters long.\r\n');
       user.send('Please enter a new name: ');
     } else { 
-      /** Use the load user by name handler to look up the user */
-      this.world().loadUserByName()(name, (userData) => {
-        if ( userData ) {     
+      /** 
+       * Use the load user by name handler to look up the user.
+       * Note loadUserByName() returns a function, thus the ()(name, (newUser) => {})
+       */
+      this.world().loadUserByName()(name, (newUser) => {
+        if ( newUser ) {     
           /** Existing user */
           user.send('Please enter your password: ');
 
           /** Capture the true socket so we don't overwrite it */
           let holdSocket = user.socket();
-          
+  
           /** Load the user */
-          user.load(userData);
-
+          this.world().removeUser(user);
+          this.world().addUser(newUser);
+          
+          user = newUser;
+                    
           /** Replace it after user load, so we can ditch userData */
           user.socket(holdSocket);
           
           /** Move on to ask for existing password */
-          user.state(user.STATE_OLD_PASSWORD);
+          user.state(this.world().STATE_OLD_PASSWORD);
         } else {
           /** New user */
           user.name(name);
@@ -125,7 +123,7 @@ class InputProcessor {
           user.send('Please choose a password: ');
 
           /** Move on to ask for them to pick a password */
-          user.state(user.STATE_NEW_PASSWORD);
+          user.state(this.world().STATE_NEW_PASSWORD);
         }
 
         /** Hide text for password */
@@ -155,13 +153,17 @@ class InputProcessor {
     /** Stop hiding text */
     user.send(this.world().VT100_CLEAR);
     
+    /** Debug authentication
+    console.log(`password: ${password}  user.password(): ${user.password()}`);
+    */
+    
     /** Validate password */
     if ( password == user.password() ) {
       /** Password matches, display message of the day */
       user.send(this.world().motd());
       
       /** Move on and pause until they're done reading the message of the day */
-      user.state(user.STATE_MOTD);
+      user.state(this.world().STATE_MOTD);
       
       console.log(`User ${user.name()} connected.`);
     } else {
@@ -218,7 +220,7 @@ class InputProcessor {
       user.send(this.world().VT100_HIDE_TEXT);
       
       /** Move on and confirm the password */
-      user.state(user.STATE_CONFIRM_PASSWORD);
+      user.state(this.world().STATE_CONFIRM_PASSWORD);
     }
   }
   
@@ -248,7 +250,7 @@ class InputProcessor {
       user.send(this.world().motd());
     
       /** Move on and pause until they're done reading the message of the day */
-      user.state(user.STATE_MOTD);
+      user.state(this.world().STATE_MOTD);
 
       console.log(`User ${user.name()} connected.`);
     } else {
@@ -265,8 +267,11 @@ class InputProcessor {
    * @param user User object
    */
   processStateMOTD(socket, buffer, user) {
+    /** Send prompt */
+    this.prompt(user);
+    
     /** Move on and put user in game */
-    user.state(user.STATE_CONNECTED);
+    user.state(this.world().STATE_CONNECTED);
   }
   
   /**
@@ -277,7 +282,29 @@ class InputProcessor {
    */
   processStateConnected(socket, buffer, user) {
     /** @todo Process user commands */
-    user.send('You are connected!\r\n');
+    let matches = buffer.toString().trim().match(/^([^\s]*)\s*(.*)/);
+    
+    if ( matches[1] == '' ) {
+      /** Just send prompt */
+      this.prompt(user);
+      return;
+    }
+    
+    if ( this.world().findCommandByName(matches[1]) )
+      this.world().findCommandByName(matches[1]).execute(user, matches[2]);
+    else
+      user.send('That action does not exist in this universe.\r\n');
+    
+    /** Send prompt */
+    this.prompt(user);
+  }
+  
+  /**
+   * Send a prompt to the user.
+   * @param user User to send prompt to
+   */
+  prompt(user) {
+    user.send('\r\n0xp <100h 100m> ');
   }
 }
 
