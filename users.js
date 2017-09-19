@@ -208,8 +208,10 @@ class User {
    * @return Socket existed true/false
    */
   send(buffer = '\r\n') {
-    if ( this.socket() ) {
+    try { 
       this.socket().write(buffer);
+      return true;
+    } catch ( err ) {
       return true;
     }
     

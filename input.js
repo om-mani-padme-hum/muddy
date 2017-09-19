@@ -267,6 +267,9 @@ class InputProcessor {
    * @param user User object
    */
   processStateMOTD(socket, buffer, user) {
+    /** Send look command */
+    this.world().findCommandByName('look').execute(user, '');
+    
     /** Send prompt */
     this.prompt(user);
     

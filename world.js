@@ -92,7 +92,8 @@ class World {
                         '  * World\r\n',
                         '\r\n',
                         '--------------------------------------------------------------------------------\r\n',
-                        'Press ENTER to continue...'].join('');
+                        'Press ENTER to continue...\r\n',
+                        '--------------------------------------------------------------------------------\r\n'].join('');
 
     let defaultLoadAreas = () => {
       this.addArea(new areas.Area({
@@ -105,7 +106,7 @@ class World {
             name: 'Stuck in the mud',
             description: [`There seems to be lots to explore 'out there', but you can't do much of\r\n`,
                           `anything as you're stuck in the mud.  Might want to pray the immortals\r\n`,
-                          `help you find a way out and back into a worthy world.\r\n`].join(''),
+                          `help you find a way out and back into a worthy world.`].join(''),
             flags: 0
           })
         ]
@@ -116,11 +117,22 @@ class World {
       next(new users.User(this));
     };
     
-    let defaultCommands = [{
+    let defaultCommands = [
+    {
       name: 'look',
       execute: (user, buffer) => {
-        user.send(user.room().name());
-        user.send(user.room().description());
+        user.send(`${user.room().name()}\r\n`);
+        user.send(`${user.room().description()}\r\n`);
+      }
+    },
+    {
+      name: 'quit',
+      execute: (user, buffer) => {
+        console.log(`User ${user.name()} has quit.`);
+        
+        this.removeUser(user);
+
+        user.socket().end('Goodbye!\r\n');
       }
     }];
     
@@ -130,7 +142,7 @@ class World {
     this.rooms(data.rooms == null ? [] : data.rooms);
     this.objects(data.objects == null ? [] : data.objects);
     this.users(data.users == null ? [] : data.users);
-    this.commands(data.commands == null ? [] : data.commands);
+    this.commands(data.commands == null ? defaultCommands : data.commands);
     this.welcome(data.welcome == null ? defaultWelcome : data.welcome);
     this.motd(data.motd == null ? defaultMotd : data.motd);
     
@@ -430,7 +442,7 @@ class World {
    */
   findCommandByName(name) {
     return this.commands().find((command) => {
-      return command.name == name;
+      return command.name.match(`^${name}`);
     });
   }
   

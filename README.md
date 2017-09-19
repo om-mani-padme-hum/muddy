@@ -2,12 +2,13 @@
 A Node.js Multi-User Dungeon (MUD) Framework
 
 ## Current Status:
-* Operational through login, including prompt.  Only command is north and it'll crash if the exit exists.
+* Operational through login, including prompt.  Commands look, north, and quit implemented.
 
 ## Project Todo List:
 
-* Finish loading of areas, rooms, objects, mobiles, including example using MySQL source
-* Implement all commands for basic movement and world interaction
+* Create exits class with direction property
+* Finish loading of areas, rooms, objects, mobiles, including examples using file and MySQL sources
+* Implement remaining basic commands for movement and world interaction
 * Add output processor to interpret VT100 colors and styles
 * Implement socials
 * Implement fight engine with support for user defined fight modifiers
@@ -15,6 +16,6 @@ A Node.js Multi-User Dungeon (MUD) Framework
 * Implement mobile scripting
 * Implement user defined races, classes, skills, spells, etc.
 
-## Example Use
+## Example Use:
 
 * See https://github.com/om-mani-padme-hum/muddy_examples
