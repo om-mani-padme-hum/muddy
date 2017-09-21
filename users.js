@@ -50,8 +50,8 @@ class User {
           this[key](data[key]);
         }
       }
-    })
-  };
+    });
+  }
   
   /** 
    * World getter/setter.
