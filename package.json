@@ -1,6 +1,6 @@
 {
   "name": "muddy",
-  "version": "0.1.1-alpha",
+  "version": "0.1.2-alpha",
   "description": "A Node.js Multi-User Dungeon (MUD) Framework",
   "main": "muddy.js",
   "scripts": {
@@ -12,6 +12,7 @@
     "url": "git+https://github.com/om-mani-padme-hum/muddy.git"
   },
   "keywords": [
+    "muddy",
     "mud",
     "multi-user",
     "dungeon",

@@ -2,11 +2,10 @@
 A Node.js Multi-User Dungeon (MUD) Framework
 
 ## Current Status:
-* Operational through login, including prompt.  Commands look, north, and quit implemented.
+* Operational through login, including prompt.  Two connected rooms exist, north and south implemented.
 
 ## Project Todo List:
 
-* Create exits class with direction property
 * Finish loading of areas, rooms, objects, mobiles, including examples using file and MySQL sources
 * Implement remaining basic commands for movement and world interaction
 * Add output processor to interpret VT100 colors and styles
