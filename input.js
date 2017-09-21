@@ -163,7 +163,7 @@ class InputProcessor {
     if ( password == user.password() ) {
       /** Password matches, display message of the day */
       user.send(this.world().motd());
-      
+          
       /** Move on and pause until they're done reading the message of the day */
       user.state(this.world().STATE_MOTD);
       
@@ -251,6 +251,12 @@ class InputProcessor {
       /** Password matches, proceed to the message of the day */
       user.send(this.world().motd());
     
+      const room = this.world().rooms().find((room) => { 
+        return room.id() == this.world().start(); 
+      });
+    
+      user.room(room);
+      
       /** Move on and pause until they're done reading the message of the day */
       user.state(this.world().STATE_MOTD);
 
@@ -259,6 +265,7 @@ class InputProcessor {
       /** Password does not match, let's try this again */
       user.send('Passwords do not match, please try again!\r\n');
       user.send('Please choose a password: ');
+      user.state(this.world().STATE_NEW_PASSWORD);
     }
   }
   
@@ -269,12 +276,6 @@ class InputProcessor {
    * @param user User object
    */
   processStateMOTD(socket, buffer, user) {
-    const room = this.world().rooms().find((room) => { 
-      return room.id() == 1; 
-    });
-    
-    user.room(room);
-    
     /** Send look command */
     const command = this.world().commands().find((command) => {
       return command.name() == 'look';

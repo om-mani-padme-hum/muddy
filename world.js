@@ -63,9 +63,10 @@ class World {
    * @todo Remove users and objects from this class and put them under areas
    */
   init(data = {}) {
-    /** Set up some Muddy defaults */
+    /** Set the default Muddy pot */
     let defaultPort = 9000;
     
+    /** Set the default welcome message */
     let defaultWelcome = ['\r\n',
                            '\r\n',
                            '\r\n',
@@ -91,6 +92,7 @@ class World {
                            '\r\n',
                            'Hello, what is your name? '].join('');
     
+    /** Set the default message of the day */
     let defaultMotd = ['--------------------------------------------------------------------------------\r\n',
                         'Message of the day:\r\n',
                         '\r\n',
@@ -103,6 +105,7 @@ class World {
                         'Press ENTER to continue...\r\n',
                         '--------------------------------------------------------------------------------\r\n'].join('');
 
+    /** Set the default loadAreas() handler with two explicitly defined rooms in one area */
     let defaultLoadAreas = () => {
       this.addArea(new areas.Area({
         id: 1,
@@ -141,10 +144,12 @@ class World {
       }));
     };
     
+    /** Set the default loadUserByName() handler which just loads an empty user and is expected to be replaced */
     let defaultLoadUserByName = (name, next) => { 
       next(new users.User(this));
     };
     
+    /** Set the default commands, which are generally expected to be retained */
     let defaultCommands = [
       new commands.Command({
         name: 'look',
@@ -174,6 +179,7 @@ class World {
     this.commands(data.commands == null ? defaultCommands : data.commands);
     this.welcome(data.welcome == null ? defaultWelcome : data.welcome);
     this.motd(data.motd == null ? defaultMotd : data.motd);
+    this.start(data.start = null ? 1 : data.start);
     
     /** Handlers */
     this.loadUserByName(data.loadUserByName == null ? defaultLoadUserByName : data.loadUserByName);
@@ -431,6 +437,23 @@ class World {
     
     /** Setter */
     this._commands = commands;
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
+  /** 
+   * Start room ID getter/setter.
+   * @param (optional) users Desired start room ID
+   * @return The world for set call chaining
+   */
+  start(start = null) {
+    /** Getter */
+    if ( start == null )
+      return this._start;
+    
+    /** Setter */
+    this._start = start;
 
     /** Allow for set call chaining */
     return this;

@@ -2,7 +2,13 @@
 A Node.js Multi-User Dungeon (MUD) Framework
 
 ## Current Status:
-* Operational through login, including prompt.  Two connected rooms exist, north and south implemented.
+* Operational through login, including prompt.  Two connected rooms exist
+
+### Current Commands:
+* look
+* north
+* quit
+* south
 
 ## Project Todo List:
 

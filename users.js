@@ -29,7 +29,7 @@ class User {
 
     /** Stored properties */
     this.id(data.id == null ? -1 : data.id);
-    this.name(data.name == null ? "" : data.name);
+    this.name(data.name == null ? "Nobody" : data.name);
     this.password(data.password == null ? "" : data.password);
     this.salt(data.salt == null ? "" : data.salt);
     this.level(data.level == null ? 1 : data.level);
@@ -41,10 +41,17 @@ class User {
    */
   load(data = {}) {    
     Object.keys(data).forEach((key) => {
-      if ( typeof this[key] == 'function' )
-        this[key](data[key]);
-    });
-  }
+      if ( typeof this[key] == 'function' ) {
+        if ( key == 'room' && typeof data[key] == 'number' ) {
+          this.room(this.world().rooms().find((room) => {
+            return room.id() == data[key];
+          }));
+        } else {
+          this[key](data[key]);
+        }
+      }
+    })
+  };
   
   /** 
    * World getter/setter.
