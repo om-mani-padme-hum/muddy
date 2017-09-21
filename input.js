@@ -38,7 +38,9 @@ class InputProcessor {
    */
   process(socket, buffer) {
     /** Grab the user from the world */
-    let user = this.world().findUserBySocket(socket);
+    let user = this.world().users().find((user) => {
+      return user.socket() == socket;
+    });
     
     /** Just in case this happens, let's know about it */
     if ( user == null ) {
@@ -267,8 +269,18 @@ class InputProcessor {
    * @param user User object
    */
   processStateMOTD(socket, buffer, user) {
+    const room = this.world().rooms().find((room) => { 
+      return room.id() == 1; 
+    });
+    
+    user.room(room);
+    
     /** Send look command */
-    this.world().findCommandByName('look').execute(user, '');
+    const command = this.world().commands().find((command) => {
+      return command.name() == 'look';
+    });
+    
+    command.execute(user, '');
     
     /** Send prompt */
     this.prompt(user);
@@ -293,8 +305,12 @@ class InputProcessor {
       return;
     }
     
-    if ( this.world().findCommandByName(matches[1]) )
-      this.world().findCommandByName(matches[1]).execute(user, matches[2]);
+    const command = this.world().commands().find((command) => {
+      return command.name().match(`^${matches[1]}`);
+    });
+    
+    if ( command )
+      command.execute(user, matches[2]);
     else
       user.send('That action does not exist in this world.\r\n');
     

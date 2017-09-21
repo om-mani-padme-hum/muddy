@@ -25,7 +25,7 @@ class User {
     /** In-game properties */
     this.socket(data.socket == null ? null : data.socket);
     this.state(data.state == null ? this.world().STATE_NAME : data.state);
-    this.room(data.room == null ? this.world().findRoomByID(1) : data.room);
+    this.room(data.room == null ? null : data.room);
 
     /** Stored properties */
     this.id(data.id == null ? -1 : data.id);
@@ -108,10 +108,7 @@ class User {
       return this._room;
 
     /** Setter */
-    if ( typeof room == 'number' )
-      return this.world().findRoomByID(room);
-    else
-      this._room = room;
+    this._room = room;
 
     /** Allow for set call chaining */
     return this;

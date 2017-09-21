@@ -12,6 +12,7 @@ const rooms = require('./rooms');
 const objects = require('./objects');
 const mobiles = require('./mobiles');
 const exits = require('./exits');
+const commands = require('./commands');
 
 /**
  * Data model and helper class for a Muddy world.
@@ -145,23 +146,23 @@ class World {
     };
     
     let defaultCommands = [
-      {
+      new commands.Command({
         name: 'look',
-        execute: (user, buffer) => {
+        command: (user, buffer) => {
           user.send(`${user.room().name()}\r\n`);
           user.send(`${user.room().description()}\r\n`);
         }
-      },
-      {
+      }),
+      new commands.Command({
         name: 'quit',
-        execute: (user, buffer) => {
+        command: (user, buffer) => {
           console.log(`User ${user.name()} has quit.`);
 
           this.removeUser(user);
 
           user.socket().end('Goodbye!\r\n');
         }
-      }
+      })
     ];
     
     /** Objects and values */
@@ -211,7 +212,9 @@ class World {
 
       /** Log user disconnects */
       socket.on('end', () => {
-        let user = this.findUserBySocket(socket);
+        let user = this.users().find((user) => {
+          return user.socket() == socket;
+        });
 
         if ( user ) {
           console.log(`User ${user.name()} disconnected.`);
@@ -342,9 +345,6 @@ class World {
     /** Getter */
     if ( rooms == null )
       return this._rooms;
-
-    if ( typeof rooms == 'number' )
-      return this.findRoomByID(rooms);
     
     /** Setter */
     this._rooms = rooms;
@@ -367,17 +367,6 @@ class World {
     
     /** Allow for set call chaining */
     return this;
-  }
-  
-  /**
-   * Find room by ID.
-   * @param Desired room's id
-   * @return Desired room
-   */
-  findRoomByID(id) {
-    return this.rooms().find((room) => {
-      return room.id() == id;
-    });
   }
   
   /** 
@@ -454,24 +443,13 @@ class World {
    */
   addCommand(command) {
     /** Log it */
-    console.log(`Loading command ${command.name}...`);
+    console.log(`Loading command ${command.name()}...`);
     
     /** Push command onto list */
     this.commands().push(command);
     
     /** Allow for set call chaining */
     return this;
-  }
-  
-  /**
-   * Find command by name.
-   * @param Desired command's name
-   * @return Desired command
-   */
-  findCommandByName(name) {
-    return this.commands().find((command) => {
-      return command.name.match(`^${name}`);
-    });
   }
   
   /**
@@ -494,28 +472,6 @@ class World {
     
     /** Allow for set call chaining */
     return this;
-  }
-  
-  /**
-   * Find user by socket.
-   * @param Desired user's socket
-   * @return Desired user
-   */
-  findUserBySocket(socket) {
-    return this.users().find((user) => {
-      return user.socket().id == socket.id;
-    });
-  }
-  
-  /**
-   * Find user by name.
-   * @param Desired user's name
-   * @return Desired user
-   */
-  findUserByName(name) {
-    return this.users().find((user) => {
-      return user.name() == name;
-    });
   }
   
   /**
