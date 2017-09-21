@@ -15,7 +15,7 @@ class Mobile extends users.User {
   }
 
   /**
-   * Initialize the object to provided data or defaults.
+   * Initialize the mobile to provided data or defaults.
    * @param data (optional) Configuration object
    */
   init(data = {}) {

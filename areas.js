@@ -13,7 +13,7 @@ class Area {
   }
 
   /**
-   * Initialize the object to provided data or defaults.
+   * Initialize the area to provided data or defaults.
    * @param data (optional) Configuration object
    */
   init(data = {}) {

@@ -18,7 +18,7 @@ class User {
   }
 
   /**
-   * Initialize the object to provided data or defaults.
+   * Initialize the user to provided data or defaults.
    * @param data (optional) Configuration object
    */
   init(data = {}) {

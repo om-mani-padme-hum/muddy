@@ -11,6 +11,7 @@ const areas = require('./areas');
 const rooms = require('./rooms');
 const objects = require('./objects');
 const mobiles = require('./mobiles');
+const exits = require('./exits');
 
 /**
  * Data model and helper class for a Muddy world.
@@ -34,23 +35,29 @@ class World {
     this.VT100_CLEAR = '\x1b[0m';
     this.VT100_HIDE_TEXT = '\x1b[8m';
     
+    /** Define object flags */
+    this.OBJECT_WEARABLE = 1;
+    this.OBJECT_WIELDABLE_1H = 2;
+    this.OBJECT_WIELDABLE_2H = 3;
+    this.OBJECT_CONTAINER = 4;
+    
     /** Define direction flags */
-    this.DIR_NORTH = 0;                    /**< n */
-    this.DIR_NORTHEAST = 1;                /**< ne */
-    this.DIR_EAST = 2;                     /**< e */
-    this.DIR_SOUTHEAST = 3;                /**< se */
-    this.DIR_SOUTH = 4;                    /**< s */
-    this.DIR_SOUTHWEST = 5;                /**< sw */
-    this.DIR_WEST = 6;                     /**< w */
-    this.DIR_NORTHWEST = 7;                /**< nw */
-    this.DIR_UP = 8;                       /**< u */
-    this.DIR_DOWN = 9;                     /**< d */
+    this.DIR_NORTH = 1;                    /**< n */
+    this.DIR_NORTHEAST = 2;                /**< ne */
+    this.DIR_EAST = 3;                     /**< e */
+    this.DIR_SOUTHEAST = 4;                /**< se */
+    this.DIR_SOUTH = 5;                    /**< s */
+    this.DIR_SOUTHWEST = 6;                /**< sw */
+    this.DIR_WEST = 7;                     /**< w */
+    this.DIR_NORTHWEST = 8;                /**< nw */
+    this.DIR_UP = 9;                       /**< u */
+    this.DIR_DOWN = 10;                    /**< d */
     
     this.init(data);
   }
 
   /**
-   * Initialize the object to provided data or defaults.
+   * Initialize the world to provided data or defaults.
    * @param data (optional) Configuration object
    * @todo Remove users and objects from this class and put them under areas
    */
@@ -107,7 +114,27 @@ class World {
             description: [`There seems to be lots to explore 'out there', but you can't do much of\r\n`,
                           `anything as you're stuck in the mud.  Might want to pray the immortals\r\n`,
                           `help you find a way out and back into a worthy world.`].join(''),
-            flags: 0
+            flags: 0,
+            exits: [
+              new exits.Exit({
+                dir: this.DIR_NORTH,
+                to: 2
+              }) 
+            ]
+          }),
+          new rooms.Room({
+            id: 2,
+            name: 'Stuck in the mud',
+            description: [`There seems to be lots to explore 'out there', but you can't do much of\r\n`,
+                          `anything as you're stuck in the mud.  Might want to pray the immortals\r\n`,
+                          `help you find a way out and back into a worthy world.`].join(''),
+            flags: 0,
+            exits: [
+              new exits.Exit({
+                dir: this.DIR_SOUTH,
+                to: 1
+              })
+            ]
           })
         ]
       }));
@@ -118,23 +145,24 @@ class World {
     };
     
     let defaultCommands = [
-    {
-      name: 'look',
-      execute: (user, buffer) => {
-        user.send(`${user.room().name()}\r\n`);
-        user.send(`${user.room().description()}\r\n`);
-      }
-    },
-    {
-      name: 'quit',
-      execute: (user, buffer) => {
-        console.log(`User ${user.name()} has quit.`);
-        
-        this.removeUser(user);
+      {
+        name: 'look',
+        execute: (user, buffer) => {
+          user.send(`${user.room().name()}\r\n`);
+          user.send(`${user.room().description()}\r\n`);
+        }
+      },
+      {
+        name: 'quit',
+        execute: (user, buffer) => {
+          console.log(`User ${user.name()} has quit.`);
 
-        user.socket().end('Goodbye!\r\n');
+          this.removeUser(user);
+
+          user.socket().end('Goodbye!\r\n');
+        }
       }
-    }];
+    ];
     
     /** Objects and values */
     this.port(data.port = null ? defaultPort : data.port);

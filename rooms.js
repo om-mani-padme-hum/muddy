@@ -17,7 +17,7 @@ class Room {
   }
 
   /**
-   * Initialize the object to provided data or defaults.
+   * Initialize the room to provided data or defaults.
    * @param data (optional) Configuration object
    */
   init(data = {}) {
@@ -179,6 +179,28 @@ class Room {
 
     /** Allow for set call chaining */
     return this;
+  }
+  
+/**
+   * Add exit.
+   * @param exit Desired exit to add
+   * @return The world for set call chaining
+   */
+  addExit(exit) {
+    /** Push exit onto list */
+    this.exits().push(exit);
+    
+    /** Allow for set call chaining */
+    return this;
+  }
+
+  /**
+   * Remove exit.
+   * @param Desired exit to remove
+   */
+  removeExit(exit) {
+    /** Splice exit from list */
+    this.exits().splice(this.exits().indexOf(exit));
   }
 }
 

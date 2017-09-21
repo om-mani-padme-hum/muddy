@@ -9,12 +9,6 @@ class Object {
    * @param data (optional) Configuration object
    */
   constructor(data = {}) {
-    /** Define object flags */
-    this.OBJECT_WEARABLE = 1;
-    this.OBJECT_WIELDABLE_1H = 2;
-    this.OBJECT_WIELDABLE_2H = 3;
-    this.OBJECT_CONTAINER = 4;
-
     this.init(data);
   }
 
