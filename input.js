@@ -38,7 +38,7 @@ class InputProcessor {
    */
   process(socket, buffer) {
     /** Grab the user from the world */
-    let user = this.world().users().find((user) => {
+    const user = this.world().users().find((user) => {
       return user.socket() == socket;
     });
     
@@ -83,7 +83,7 @@ class InputProcessor {
    * @param user User object
    */
   processStateName(socket, buffer, user) {
-    let name = buffer.toString().trim();
+    const name = buffer.toString().trim();
 
     if ( !name.match(/[a-zA-Z]{1}[a-z0-9]+/i) ) {
       /** Invalid characters in name */
@@ -104,7 +104,7 @@ class InputProcessor {
           user.send('Please enter your password: ');
 
           /** Capture the true socket so we don't overwrite it */
-          let holdSocket = user.socket();
+          const holdSocket = user.socket();
   
           /** Load the user */
           this.world().removeUser(user);
@@ -141,16 +141,16 @@ class InputProcessor {
    * @param user User object
    */
   processStateOldPassword(socket, buffer, user) {
-    var password = buffer.toString().trim();
+    const unencrypted = buffer.toString().trim();
 
     /** Set up the crypto */
-    let hash = crypto.createHmac('sha512', user.salt());
+    const hash = crypto.createHmac('sha512', user.salt());
 
     /** Provide it the unencrypted password */
-    hash.update(password);
+    hash.update(unencrypted);
 
     /** Get the encrypted password back */
-    password = hash.digest('hex');
+    const password = hash.digest('hex');
 
     /** Stop hiding text */
     user.send(this.world().VT100_CLEAR);
@@ -186,7 +186,7 @@ class InputProcessor {
    * @param user User object
    */
   processStateNewPassword(socket, buffer, user) {
-    let unencrypted = buffer.toString().trim();
+    const unencrypted = buffer.toString().trim();
 
     /** Stop hiding text */
     user.send(this.world().VT100_CLEAR);
@@ -201,16 +201,16 @@ class InputProcessor {
       user.send('Please enter a new password: ');
     } else {
       /** Generate a random salt */
-      let salt = crypto.randomBytes(8).toString('hex');
+      const salt = crypto.randomBytes(8).toString('hex');
 
       /** Set up the crypto */
-      let hash = crypto.createHmac('sha512', salt);
+      const hash = crypto.createHmac('sha512', salt);
 
       /** Provide it the unencrypted password */
       hash.update(unencrypted);
 
       /** Get the encrypted password back */
-      let password = hash.digest('hex');
+      const password = hash.digest('hex');
 
       /** Store the encrypted password and salt */
       user.password(password);
@@ -233,16 +233,16 @@ class InputProcessor {
    * @param user User object
    */
   processStateConfirmPassword(socket, buffer, user) {
-    let unencrypted = buffer.toString().trim();
+    const unencrypted = buffer.toString().trim();
 
     /** Set up the crypto */
-    let hash = crypto.createHmac('sha512', user.salt());
+    const hash = crypto.createHmac('sha512', user.salt());
 
     /** Provide it the unencrypted password */
     hash.update(unencrypted);
 
     /** Get the encrypted password back */
-    let password = hash.digest('hex');
+    const password = hash.digest('hex');
 
     /** Stop hiding text */
     user.send(this.world().VT100_CLEAR);
@@ -298,7 +298,7 @@ class InputProcessor {
    */
   processStateConnected(socket, buffer, user) {
     /** @todo Process user commands */
-    let matches = buffer.toString().trim().match(/^([^\s]*)\s*(.*)/);
+    const matches = buffer.toString().trim().match(/^([^\s]*)\s*(.*)/);
     
     if ( matches[1] == '' ) {
       /** Just send prompt */

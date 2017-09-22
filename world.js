@@ -64,10 +64,10 @@ class World {
    */
   init(data = {}) {
     /** Set the default Muddy pot */
-    let defaultPort = 9000;
+    const defaultPort = 9000;
     
     /** Set the default welcome message */
-    let defaultWelcome = ['\r\n',
+    const defaultWelcome = ['\r\n',
                            '\r\n',
                            '\r\n',
                            '                              W E L C O M E    T O\r\n',
@@ -93,7 +93,7 @@ class World {
                            'Hello, what is your name? '].join('');
     
     /** Set the default message of the day */
-    let defaultMotd = ['--------------------------------------------------------------------------------\r\n',
+    const defaultMotd = ['--------------------------------------------------------------------------------\r\n',
                         'Message of the day:\r\n',
                         '\r\n',
                         'New features:\r\n',
@@ -106,7 +106,7 @@ class World {
                         '--------------------------------------------------------------------------------\r\n'].join('');
 
     /** Set the default loadAreas() handler with two explicitly defined rooms in one area */
-    let defaultLoadAreas = () => {
+    const defaultLoadAreas = () => {
       this.addArea(new areas.Area({
         id: 1,
         name: 'Stuck in the mud',
@@ -145,12 +145,12 @@ class World {
     };
     
     /** Set the default loadUserByName() handler which just loads an empty user and is expected to be replaced */
-    let defaultLoadUserByName = (name, next) => { 
+    const defaultLoadUserByName = (name, next) => { 
       next(new users.User(this));
     };
     
     /** Set the default commands, which are generally expected to be retained */
-    let defaultCommands = [
+    const defaultCommands = [
       new commands.Command({
         name: 'look',
         command: (user, buffer) => {
@@ -193,17 +193,17 @@ class World {
    */
   listen() {
     /** Create input processor */
-    let inputProcessor = new input.InputProcessor(this);
+    const inputProcessor = new input.InputProcessor(this);
 
     /** Load areas, note loadAreas() returns a function, thus the ()() */
     this.loadAreas()();
     
     /** Create server -- net.createServer constructor parameter is new connection handler */
-    let server = net.createServer((socket) => {
+    const server = net.createServer((socket) => {
       console.log(`New socket from ${socket.address().address}.`);
 
       /** Create a new user */
-      var user = new users.User(this, {
+      const user = new users.User(this, {
         socket: socket
       });
 
@@ -218,7 +218,7 @@ class World {
 
       /** Log user disconnects */
       socket.on('end', () => {
-        let user = this.users().find((user) => {
+        const user = this.users().find((user) => {
           return user.socket() == socket;
         });
 
