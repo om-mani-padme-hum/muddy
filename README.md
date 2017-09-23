@@ -2,24 +2,34 @@
 A Node.js Multi-User Dungeon (MUD) Framework
 
 ## Current Status:
-Operational through login, including prompt.  Two connected rooms exist
+Operational in limited form.  Three default rooms exist.  One item and one mobile exist in memory but not in world.  Login supported for both existing and new users, both can save.  Basic movement and the ability to look at rooms exist.
 
 #### Current Commands:
+* down
+* east
 * look
 * north
+* norhteast (ne)
+* northwest (nw)
 * quit
+* save
 * south
+* southeast (se)
+* southwest (sw)
+* up
+* west
 
 ## Project Todo List:
 
-* Finish loading of areas, rooms, objects, mobiles, including examples using file and MySQL sources
-* Implement remaining basic commands for movement and world interaction
+* Finish loading and saving of areas, rooms, objects, mobiles with MySQL source
+* Implement placement of objects and mobiles in rooms, allow people to look at them
 * Add output processor to interpret VT100 colors and styles
 * Implement socials
+* Impelement the ability to get and drop objects, containers, wearables, wieldables
 * Implement fight engine with support for user defined fight modifiers
 * Implement periodic world updates
 * Implement mobile scripting
-* Implement user defined races, classes, skills, spells, etc.
+* Implement user defined races, lineages, skills, spells, etc.
 
 ## Example Use:
 

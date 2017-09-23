@@ -30,10 +30,13 @@ class Exit {
    * Batch load properties, e.g. from database.
    * @param data (optional) Configuration object
    */
-  load(data = {}) {    
+  load(data = {}) {
+    /** Loop through the data keys */
     Object.keys(data).forEach((key) => {
-      if ( typeof this[key] == 'function' )
+      if ( typeof this[key] == 'function' ) {
+        /** There exists a class method matching that key, store the value */
         this[key](data[key]);
+      }
     });
   }
   

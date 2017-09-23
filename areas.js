@@ -19,7 +19,9 @@ class Area {
   init(data = {}) {
     /** In-game properties */
     this.rooms(data.rooms == null ? [] : data.rooms);
-  
+    this.objects(data.objects == null ? [] : data.objects);
+    this.mobiles(data.mobiles == null ? [] : data.mobiles);
+
     /** Stored properties */
     this.id(data.id == null ? -1 : data.id);
     this.name(data.name == null ? "" : data.name);
@@ -32,9 +34,12 @@ class Area {
    * @param data (optional) Configuration object
    */
   load(data = {}) {    
+    /** Loop through the data keys */
     Object.keys(data).forEach((key) => {
-      if ( typeof this[key] == 'function' )
+      if ( typeof this[key] == 'function' ) {
+        /** There exists a class method matching that key, store the value */
         this[key](data[key]);
+      }
     });
   }
   
@@ -50,6 +55,40 @@ class Area {
 
     /** Setter */
     this._rooms = rooms;
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
+  /** 
+   * Objects getter/setter.
+   * @param (optional) objects Desired objects
+   * @return The area for set call chaining
+   */
+  objects(objects = null) {
+    /** Getter */
+    if ( objects == null )
+      return this._objects;
+
+    /** Setter */
+    this._objects = objects;
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
+  /** 
+   * Mobiles getter/setter.
+   * @param (optional) users Desired mobiles
+   * @return The area for set call chaining
+   */
+  mobiles(mobiles = null) {
+    /** Getter */
+    if ( mobiles == null )
+      return this._mobiles;
+
+    /** Setter */
+    this._mobiles = mobiles;
 
     /** Allow for set call chaining */
     return this;

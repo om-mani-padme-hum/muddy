@@ -27,17 +27,19 @@ class Object {
     this.name(data.name == null ? "" : data.name);
     this.description(data.description == null ? "" : data.description);
     this.flags(data.flags == null ? [] : data.flags);
-    this.exits(data.exits == null ? [] : data.exits);
   }
   
   /**
    * Batch load properties, e.g. from database.
    * @param data (optional) Configuration object
    */
-  load(data = {}) {    
+  load(data = {}) {
+    /** Loop through the data keys */
     Object.keys(data).forEach((key) => {
-      if ( typeof this[key] == 'function' )
+      if ( typeof this[key] == 'function' ) {
+        /** There exists a class method matching that key, store the value */
         this[key](data[key]);
+      }
     });
   }
   

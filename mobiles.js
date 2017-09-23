@@ -11,6 +11,8 @@ class Mobile extends users.User {
    * @param data (optional) Configuration object
    */
   constructor(data = {}) {
+    super();
+    
     this.init(data);
   }
 
@@ -19,160 +21,60 @@ class Mobile extends users.User {
    * @param data (optional) Configuration object
    */
   init(data = {}) {
-    /** In-game properties */
-    this.socket(data.socket == null ? null : data.socket);
-    this.state(data.state == null ? this.STATE_NAME : data.state);
-
     /** Stored properties */
     this.id(data.id == null ? -1 : data.id);
     this.name(data.name == null ? "" : data.name);
-    this.password(data.password == null ? "" : data.password);
-    this.salt(data.salt == null ? "" : data.salt);
+    this.description(data.description == null ? "" : data.description);
     this.level(data.level == null ? 1 : data.level);
+    this.flags(data.flags == null ? [] : data.flags);
   }
   
   /**
    * Batch load properties, e.g. from database.
    * @param data (optional) Configuration object
    */
-  load(data = {}) {    
+  load(data = {}) {
+    /** Loop through the data keys */
     Object.keys(data).forEach((key) => {
-      if ( typeof this[key] == 'function' )
+      if ( typeof this[key] == 'function' ) {
+        /** There exists a class method matching that key, store the value */
         this[key](data[key]);
+      }
     });
   }
   
   /** 
-   * Socket getter/setter.
-   * @param (optional) socket Desired socket
-   * @return The user for set call chaining
+   * Description getter/setter.
+   * @param (optional) description Desired description
+   * @return The mobile for set call chaining
    */
-  socket(socket = null) {
+  description(description = null) {
     /** Getter */
-    if ( socket == null )
-      return this._socket;
+    if ( description == null )
+      return this._description;
 
     /** Setter */
-    this._socket = socket;
+    this._description = description.toString();
 
     /** Allow for set call chaining */
     return this;
   }
   
   /** 
-   * State getter/setter.
-   * @param (optional) state Desired state
-   * @return The user for set call chaining
+   * Flags getter/setter.
+   * @param (optional) flags Desired flags
+   * @return The mobile for set call chaining
    */
-  state(state = null) {
+  flags(flags = null) {
     /** Getter */
-    if ( state == null )
-      return this._state;
+    if ( flags == null )
+      return this._flags;
 
     /** Setter */
-    this._state = parseInt(state);
+    this._flags = flags;
 
     /** Allow for set call chaining */
     return this;
-  }
-  
-  /** 
-   * ID getter/setter.
-   * @param (optional) name Desired ID
-   * @return The user for set call chaining
-   */
-  id(id = null) {
-    /** Getter */
-    if ( id == null )
-      return this._id;
-
-    /** Setter */
-    this._id = parseInt(id);
-
-    /** Allow for set call chaining */
-    return this;
-  }
-  
-  /** 
-   * Name getter/setter.
-   * @param (optional) name Desired name
-   * @return The user for set call chaining
-   */
-  name(name = null) {
-    /** Getter */
-    if ( name == null )
-      return this._name;
-
-    /** Setter */
-    this._name = name.toString();
-
-    /** Allow for set call chaining */
-    return this;
-  }
-  
-  /** 
-   * Password getter/setter.
-   * @param (optional) password Desired password
-   * @return The user for set call chaining
-   */
-  password(password = null) {
-    /** Getter */
-    if ( password == null )
-      return this._password;
-
-    /** Setter */
-    this._password = password.toString();
-
-    /** Allow for set call chaining */
-    return this;
-  }
-  
-  /** 
-   * Salt getter/setter.
-   * @param (optional) salt Desired salt
-   * @return The user for set call chaining
-   */
-  salt(salt = null) {
-    /** Getter */
-    if ( salt == null )
-      return this._salt;
-
-    /** Setter */
-    this._salt = salt.toString();
-
-    /** Allow for set call chaining */
-    return this;
-  }
-  
-  /** 
-   * Level getter/setter.
-   * @param (optional) level Desired level
-   * @return The user for set call chaining
-   */
-  level(level = null) {
-    /** Getter */
-    if ( level == null )
-      return this._level;
-
-    /** Setter */
-    this._level = parseInt(level);
-
-    /** Allow for set call chaining */
-    return this;
-  }
-  
-  /**
-   * Write to user's socket (assuming it exists).
-   * @param buffer Desired output
-   * @return Socket existed true/false
-   */
-  send(buffer = '\r\n') {
-    if ( this.socket() ) {
-      this.socket().write(buffer);
-      return true;
-    }
-    
-    return false;
   }
 }
 

@@ -20,16 +20,20 @@ class Command {
     /** In-game properties */
     this.name(data.name == null ? '' : data.name);
     this.command(data.command == null ? null : data.command);
+    this.priority(data.priority == null ? false : data.priority);
   }
   
   /**
    * Batch load properties, e.g. from database.
    * @param data (optional) Configuration object
    */
-  load(data = {}) {    
+  load(data = {}) {
+    /** Loop through the data keys */
     Object.keys(data).forEach((key) => {
-      if ( typeof this[key] == 'function' )
+      if ( typeof this[key] == 'function' ) {
+        /** There exists a class method matching that key, store the value */
         this[key](data[key]);
+      }
     });
   }
   
@@ -62,6 +66,23 @@ class Command {
 
     /** Setter */
     this._command = command;
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
+  /** 
+   * Priority getter/setter.
+   * @param (optional) to Desired priority
+   * @return The command for set call chaining
+   */
+  priority(priority = null) {
+    /** Getter */
+    if ( priority == null )
+      return this._priority;
+
+    /** Setter */
+    this._priority = priority;
 
     /** Allow for set call chaining */
     return this;

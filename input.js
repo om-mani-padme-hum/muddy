@@ -49,11 +49,6 @@ class InputProcessor {
       console.log(socket);
       return;
     }
-  
-    /** Debug stuff 
-    console.log(`Input received from ${user.name()} with user state ${user.state()}.`);
-    console.log(buffer.toString());
-    */
     
     /** Process data based on user state */
     if ( user.state() == this.world().STATE_NAME )
@@ -107,8 +102,8 @@ class InputProcessor {
           const holdSocket = user.socket();
   
           /** Load the user */
-          this.world().removeUser(user);
-          this.world().addUser(newUser);
+          this.world().users().splice(user);
+          this.world().users().push(newUser);
           
           user = newUser;
                     
@@ -154,10 +149,6 @@ class InputProcessor {
 
     /** Stop hiding text */
     user.send(this.world().VT100_CLEAR);
-    
-    /** Debug authentication
-    console.log(`password: ${password}  user.password(): ${user.password()}`);
-    */
     
     /** Validate password */
     if ( password == user.password() ) {
@@ -251,10 +242,12 @@ class InputProcessor {
       /** Password matches, proceed to the message of the day */
       user.send(this.world().motd());
     
+      /** Find the start room */
       const room = this.world().rooms().find((room) => { 
         return room.id() == this.world().start(); 
       });
-    
+          
+      /** Move the user to the start room */
       user.room(room);
       
       /** Move on and pause until they're done reading the message of the day */
@@ -276,11 +269,12 @@ class InputProcessor {
    * @param user User object
    */
   processStateMOTD(socket, buffer, user) {
-    /** Send look command */
+    /** Find the look command */
     const command = this.world().commands().find((command) => {
       return command.name() == 'look';
     });
     
+    /** Execute it for this user */
     command.execute(user, '');
     
     /** Send prompt */
@@ -306,10 +300,12 @@ class InputProcessor {
       return;
     }
     
+    /** Find the first matching command, if one exists */
     const command = this.world().commands().find((command) => {
       return command.name().match(`^${matches[1]}`);
     });
     
+    /** If it exists, execute it for this user, otherwise send error */
     if ( command )
       command.execute(user, matches[2]);
     else

@@ -39,9 +39,12 @@ class Room {
    * @param data (optional) Configuration object
    */
   load(data = {}) {    
+    /** Loop through the data keys */
     Object.keys(data).forEach((key) => {
-      if ( typeof this[key] == 'function' )
+      if ( typeof this[key] == 'function' ) {
+        /** There exists a class method matching that key, store the value */
         this[key](data[key]);
+      }
     });
   }
   
@@ -179,28 +182,6 @@ class Room {
 
     /** Allow for set call chaining */
     return this;
-  }
-  
-/**
-   * Add exit.
-   * @param exit Desired exit to add
-   * @return The world for set call chaining
-   */
-  addExit(exit) {
-    /** Push exit onto list */
-    this.exits().push(exit);
-    
-    /** Allow for set call chaining */
-    return this;
-  }
-
-  /**
-   * Remove exit.
-   * @param Desired exit to remove
-   */
-  removeExit(exit) {
-    /** Splice exit from list */
-    this.exits().splice(this.exits().indexOf(exit));
   }
 }
 

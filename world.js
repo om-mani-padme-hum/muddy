@@ -107,7 +107,7 @@ class World {
 
     /** Set the default loadAreas() handler with two explicitly defined rooms in one area */
     const defaultLoadAreas = () => {
-      this.addArea(new areas.Area({
+      this.areas().push(new areas.Area({
         id: 1,
         name: 'Stuck in the mud',
         flags: 0,
@@ -118,12 +118,15 @@ class World {
             description: [`There seems to be lots to explore 'out there', but you can't do much of\r\n`,
                           `anything as you're stuck in the mud.  Might want to pray the immortals\r\n`,
                           `help you find a way out and back into a worthy world.`].join(''),
-            flags: 0,
             exits: [
               new exits.Exit({
                 dir: this.DIR_NORTH,
                 to: 2
-              }) 
+              }),
+              new exits.Exit({
+                dir: this.DIR_DOWN,
+                to: 3
+              })
             ]
           }),
           new rooms.Room({
@@ -132,13 +135,37 @@ class World {
             description: [`There seems to be lots to explore 'out there', but you can't do much of\r\n`,
                           `anything as you're stuck in the mud.  Might want to pray the immortals\r\n`,
                           `help you find a way out and back into a worthy world.`].join(''),
-            flags: 0,
             exits: [
               new exits.Exit({
                 dir: this.DIR_SOUTH,
                 to: 1
               })
             ]
+          }),
+          new rooms.Room({
+            id: 3,
+            name: 'Drowning in the mud',
+            description: [`There's, gurgle.., not much of interest, gurgle.., down here.`],
+            exits: [
+              new exits.Exit({
+                dir: this.DIR_UP,
+                to: 1
+              })
+            ]
+          })
+        ],
+        objects: [
+          new objects.Object({
+            id: 1,
+            name: 'a muddy stick',
+            description: `It's a stick covered in mud.`,
+          })
+        ],
+        mobiles: [
+          new mobiles.Mobile({
+            id: 1,
+            name: 'a mud monster',
+            description: `Well, it's mud, and it's alive, what would you call it?`,
           })
         ]
       }));
@@ -149,25 +176,147 @@ class World {
       next(new users.User(this));
     };
     
+    /** Create template for all direction commands */
+    const dirCommand = (dir) => {
+      return new commands.Command({
+        name: dir,
+        command: (user, buffer) => {
+          /** Look for an exit in that direction */
+          const exit = user.room().exits().find((exit) => {
+            if ( dir == 'north' )
+              return exit.dir() == this.DIR_NORTH;
+            else if ( dir == 'northeast' || dir == 'ne' )
+              return exit.dir() == this.DIR_NORTHEAST;
+            else if ( dir == 'east' )
+              return exit.dir() == this.DIR_EAST;
+            else if ( dir == 'southeast' || dir == 'se' )
+              return exit.dir() == this.DIR_SOUTHEAST;
+            else if ( dir == 'south' )
+              return exit.dir() == this.DIR_SOUTH;
+            else if ( dir == 'southwest' || dir == 'sw' )
+              return exit.dir() == this.DIR_SOUTHWEST;
+            else if ( dir == 'west' )
+              return exit.dir() == this.DIR_WEST;
+            else if ( dir == 'northwest' || dir == 'nw' )
+              return exit.dir() == this.DIR_NORTHWEST;
+            else if ( dir == 'up' )
+              return exit.dir() == this.DIR_UP;
+            else if ( dir == 'down' )
+              return exit.dir() == this.DIR_DOWN;
+            else
+              throw "dirCommand(): Invalid direction.";
+          });
+
+          if ( exit ) {
+            /** If it exists, get the room it goes to */
+            const room = this.rooms().find((room) => {
+              return exit.to() == room.id();
+            });
+
+            if ( room ) {
+              /** If room exists, move user to room and look */
+              user.room(room);
+
+              /** Find the look command */
+              const look = this.commands().find((command) => {
+                return command.name() == 'look';
+              });
+
+              /** Execute it for this user */
+              look.execute(user, '');
+            } else {
+              /** If room doesn't exist, notify imps and send user an error message */
+              console.log(`Bad exit: direction ${dir} from room ${user.room().id()}.`);
+
+              user.send('Some kind of force is blocking your way.\r\n');
+            }
+          } else {
+            /** If it doesn't exist, send error message */
+            user.send('You cannot go that way.\r\n');
+          }
+        },
+        priority: dir == 'ne' || dir == 'se' || dir == 'sw' || dir == 'nw' ? false : true
+      });
+    };
+
     /** Set the default commands, which are generally expected to be retained */
     const defaultCommands = [
       new commands.Command({
         name: 'look',
         command: (user, buffer) => {
           user.send(`${user.room().name()}\r\n`);
+          user.send('[Exits: ');
+          
+          let count = 0;
+          
+          user.room().exits().forEach((exit) => {
+            if ( count > 0 )
+              user.send(' ');
+            
+            if ( exit.dir() == this.DIR_NORTH )
+              user.send('north');
+            else if ( exit.dir() == this.DIR_NORTHEAST )
+              user.send('ne');
+            else if ( exit.dir() == this.DIR_EAST )
+              user.send('east');
+            else if ( exit.dir() == this.DIR_SOUTHEAST )
+              user.send('se');
+            else if ( exit.dir() == this.DIR_SOUTH )
+              user.send('south');
+            else if ( exit.dir() == this.DIR_SOUTHWEST )
+              user.send('sw');
+            else if ( exit.dir() == this.DIR_WEST )
+              user.send('west');
+            else if ( exit.dir() == this.DIR_NORTHWEST )
+              user.send('nw');
+            else if ( exit.dir() == this.DIR_UP )
+              user.send('up');
+            else if ( exit.dir() == this.DIR_DOWN )
+              user.send('down');
+            
+            count++;
+          });
+          
+          if ( count == 0 )
+            user.send('None');
+          
+          user.send(']\r\n');
           user.send(`${user.room().description()}\r\n`);
-        }
+        },
+        priority: true
       }),
       new commands.Command({
         name: 'quit',
         command: (user, buffer) => {
           console.log(`User ${user.name()} has quit.`);
 
-          this.removeUser(user);
+          this.users().splice(user);
 
           user.socket().end('Goodbye!\r\n');
         }
-      })
+      }),
+      new commands.Command({
+        name: 'save',
+        command: (user, buffer) => {
+          this.saveUser()(user);
+          
+          user.send('Saved.\r\n');
+        }
+      }),
+      dirCommand('north'),
+      dirCommand('northeast'),
+      dirCommand('ne'),
+      dirCommand('east'),
+      dirCommand('southeast'),
+      dirCommand('se'),
+      dirCommand('south'),
+      dirCommand('southwest'),
+      dirCommand('sw'),
+      dirCommand('west'),
+      dirCommand('northwest'),
+      dirCommand('nw'),
+      dirCommand('up'),
+      dirCommand('down')
     ];
     
     /** Objects and values */
@@ -175,11 +324,12 @@ class World {
     this.areas(data.areas == null ? [] : data.areas);
     this.rooms(data.rooms == null ? [] : data.rooms);
     this.objects(data.objects == null ? [] : data.objects);
+    this.mobiles(data.mobiles == null ? [] : data.mobiles);
     this.users(data.users == null ? [] : data.users);
     this.commands(data.commands == null ? defaultCommands : data.commands);
     this.welcome(data.welcome == null ? defaultWelcome : data.welcome);
     this.motd(data.motd == null ? defaultMotd : data.motd);
-    this.start(data.start = null ? 1 : data.start);
+    this.start(data.start == null ? 1 : data.start);
     
     /** Handlers */
     this.loadUserByName(data.loadUserByName == null ? defaultLoadUserByName : data.loadUserByName);
@@ -198,6 +348,65 @@ class World {
     /** Load areas, note loadAreas() returns a function, thus the ()() */
     this.loadAreas()();
     
+    /** Sort commands alphabetically */
+    this.commands().sort((cmd1, cmd2) => {
+      const name1 = cmd1.name().toUpperCase();
+      const name2 = cmd2.name().toUpperCase();
+      
+      /** If command 2 has priority and command 1 doesn't, prioritize command 2 */
+      if ( cmd2.priority() && !cmd1.priority() )
+        return 1;
+      
+      /** If command 1 has priority and command 2 doesn't, prioritize command 1 */
+      if ( cmd1.priority() && !cmd2.priority() )
+        return -1;
+      
+      /** If command 1's name comes earlier in the alphabet than command 2's name, prioritize command 1 */
+      if ( name1 < name2 )
+        return -1;
+      
+      /** If command 2's name comes earlier in the alphabet than command 1's name, prioritize command 2 */
+      if ( name1 > name2 )
+        return 1;
+      
+      /** If they are the same priority, move on */
+      return 0;
+    });
+    
+    /** Log loaded commands */
+    this.commands().forEach((command) => {
+      console.log(`Loaded command ${command.name()}...`);
+    });
+    
+    /** Log loaded areas */
+    this.areas().forEach((area) => {
+      console.log(`Loaded area ${area.name()}...`);
+      
+      /** Log loaded rooms */
+      area.rooms().forEach((room) => {
+        /** Add to the world */
+        this.rooms().push(room);
+        
+        console.log(`Loaded room ${room.name()}...`);
+      });
+      
+      /** Log loaded objects */
+      area.objects().forEach((object) => {
+        /** Add to the world */
+        this.objects().push(object);
+        
+        console.log(`Loaded object ${object.name()}...`);
+      });
+      
+      /** Log loaded mobiles */
+      area.mobiles().forEach((mobile) => {
+        /** Add to the world */
+        this.mobiles().push(mobile);
+        
+        console.log(`Loaded mobile ${mobile.name()}...`);
+      });
+    });
+      
     /** Create server -- net.createServer constructor parameter is new connection handler */
     const server = net.createServer((socket) => {
       console.log(`New socket from ${socket.address().address}.`);
@@ -214,20 +423,24 @@ class World {
       socket.id = crypto.randomBytes(32).toString('hex');
 
       /** Add user to active users list */
-      this.addUser(user);
+      this.users().push(user);
 
       /** Log user disconnects */
       socket.on('end', () => {
+        /** Look up the socket's user, if one exists */
         const user = this.users().find((user) => {
           return user.socket() == socket;
         });
 
         if ( user ) {
+          /** User exists, disconnect them */
           console.log(`User ${user.name()} disconnected.`);
           
+          /** Zero the user's socket and update their state to disconnected, but leave them in game */
           user.socket(null);
           user.state(user.STATE_DISCONNECTED);
         } else {
+          /** User doesn't exist, just log disconnected socket */
           console.log('Socket disconnected.');
         }
       });
@@ -264,7 +477,7 @@ class World {
       return this._port;
 
     /** Setter */
-    this._port = port;
+    this._port = parseInt(port);
 
     /** Allow for set call chaining */
     return this;
@@ -281,7 +494,7 @@ class World {
       return this._welcome;
 
     /** Setter */
-    this._welcome = welcome;
+    this._welcome = welcome.toString();
 
     /** Allow for set call chaining */
     return this;
@@ -298,7 +511,7 @@ class World {
       return this._motd;
 
     /** Setter */
-    this._motd = motd;
+    this._motd = motd.toString();
 
     /** Allow for set call chaining */
     return this;
@@ -321,27 +534,6 @@ class World {
     return this;
   }
   
-  /**
-   * Add area.
-   * @param area Desired area to add
-   * @return Added area
-   */
-  addArea(area) {
-    /** Log it */
-    console.log(`Loading area ${area.name()}...`);
-    
-    /** Push area onto list */
-    this.areas().push(area);
-    
-    /** Push area rooms onto list */
-    area.rooms().forEach((room) => {
-      this.addRoom(room);
-    });
-                         
-    /** Allow for set call chaining */
-    return this;
-  }
-  
   /** 
    * Rooms getter/setter.
    * @param (optional) rooms Desired rooms
@@ -355,22 +547,6 @@ class World {
     /** Setter */
     this._rooms = rooms;
 
-    /** Allow for set call chaining */
-    return this;
-  }
-  
-  /**
-   * Add room.
-   * @param room Desired room to add
-   * @return Added room
-   */
-  addRoom(room) {
-    /** Log it */
-    console.log(`Loading room ${room.name()}...`);
-    
-    /** Push user onto list */
-    this.rooms().push(room);
-    
     /** Allow for set call chaining */
     return this;
   }
@@ -392,18 +568,19 @@ class World {
     return this;
   }
   
-  /**
-   * Add object.
-   * @param object Desired object to add
-   * @return Added object
+  /** 
+   * Mobiles getter/setter.
+   * @param (optional) mobiles Desired mobiles
+   * @return The world for set call chaining
    */
-  addObject(object) {
-    /** Log it */
-    console.log(`Loading object ${object.name}...`);
-    
-    /** Push object onto list */
-    this.objects().push(object);
-    
+  mobiles(mobiles = null) {
+    /** Getter */
+    if ( mobiles == null )
+      return this._mobiles;
+
+    /** Setter */
+    this._mobiles = mobiles;
+
     /** Allow for set call chaining */
     return this;
   }
@@ -453,57 +630,10 @@ class World {
       return this._start;
     
     /** Setter */
-    this._start = start;
+    this._start = parseInt(start);
 
     /** Allow for set call chaining */
     return this;
-  }
-  
-  /**
-   * Add command.
-   * @param user Desired command to add
-   * @return The world for set call chaining
-   */
-  addCommand(command) {
-    /** Log it */
-    console.log(`Loading command ${command.name()}...`);
-    
-    /** Push command onto list */
-    this.commands().push(command);
-    
-    /** Allow for set call chaining */
-    return this;
-  }
-  
-  /**
-   * Remove command.
-   * @param Desired command to remove
-   */
-  removeCommand(command) {
-    /** Splice user from list */
-    this.commands().splice(this.commands().indexOf(command));
-  }
-  
-  /**
-   * Add user.
-   * @param user Desired user to add
-   * @return The world for set call chaining
-   */
-  addUser(user) {
-    /** Push user onto list */
-    this.users().push(user);
-    
-    /** Allow for set call chaining */
-    return this;
-  }
-  
-  /**
-   * Remove user.
-   * @param Desired user to remove
-   */
-  removeUser(user) {
-    /** Splice user from list */
-    this.users().splice(this.users().indexOf(user));
   }
   
   /** 
