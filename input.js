@@ -37,10 +37,8 @@ class InputProcessor {
    * @param buffer Input buffer
    */
   process(socket, buffer) {
-    /** Grab the user from the world */
-    const user = this.world().users().find((user) => {
-      return user.socket() == socket;
-    });
+    /** Grab the user by socket, if one exists */
+    const user = this.world().users(socket);
     
     /** Just in case this happens, let's know about it */
     if ( user == null ) {
@@ -242,10 +240,8 @@ class InputProcessor {
       /** Password matches, proceed to the message of the day */
       user.send(this.world().motd());
     
-      /** Find the start room */
-      const room = this.world().rooms().find((room) => { 
-        return room.id() == this.world().start(); 
-      });
+      /** Get the start room */
+      const room = this.world().rooms(this.world().start());
           
       /** Move the user to the start room */
       user.room(room);

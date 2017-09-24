@@ -174,9 +174,71 @@ class Room {
    */
   exits(exits = null) {
     /** Getter */
+    
+    /** If parameter is null, return array */
     if ( exits == null )
       return this._exits;
 
+    /** If parameter is string, return exit by direction */
+    if ( typeof exits == 'string' ) {
+      let dir = -1;
+      
+      /** Convert direction string to constant */
+      if ( dir == 'north' )
+        dir = this.DIR_NORTH;
+      else if ( dir == 'northeast' || dir == 'ne' )
+        dir = this.DIR_NORTHEAST;
+      else if ( dir == 'east' )
+        dir = this.DIR_EAST;
+      else if ( dir == 'southeast' || dir == 'se' )
+        dir = this.DIR_SOUTHEAST;
+      else if ( dir == 'south' )
+        dir = this.DIR_SOUTH;
+      else if ( dir == 'southwest' || dir == 'sw' )
+        dir = this.DIR_SOUTHWEST;
+      else if ( dir == 'west' )
+        dir = this.DIR_WEST;
+      else if ( dir == 'northwest' || dir == 'nw' )
+        dir = this.DIR_NORTHWEST;
+      else if ( dir == 'up' )
+        dir = this.DIR_UP;
+      else if ( dir == 'down' )
+        dir = this.DIR_DOWN;
+      else
+        throw "Room.exits(): Invalid direction name.";
+      
+      /** Find and return exit, if it exists */
+      return this._exits.find((exit) => {
+        return exit.dir() == dir;
+      });
+    }
+    
+    /** If parameter is a number, return exit name by direction constant */
+    if ( typeof exits == 'number' ) {
+      if ( exits == this.DIR_NORTH )
+        return 'north';
+      else if ( exits == this.DIR_NORTHEAST )
+        return 'ne';
+      else if ( exits == this.DIR_EAST )
+        return 'east';
+      else if ( exits == this.DIR_SOUTHEAST )
+        return 'se';
+      else if ( exits == this.DIR_SOUTH )
+        return 'south';
+      else if ( exits == this.DIR_SOUTHWEST )
+        return 'sw';
+      else if ( exits == this.DIR_WEST )
+        return 'west';
+      else if ( exits == this.DIR_NORTHWEST )
+        return 'nw';
+      else if ( exits == this.DIR_UP )
+        return 'up';
+      else if ( exits == this.DIR_DOWN )
+        return 'down';
+      else
+        throw "Room.exits(): Invalid direction constant.";
+    }
+    
     /** Setter */
     this._exits = exits;
 

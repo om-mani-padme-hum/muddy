@@ -97,9 +97,10 @@ class World {
                         'Message of the day:\r\n',
                         '\r\n',
                         'New features:\r\n',
-                        '  * Users\r\n',
-                        '  * Logins\r\n',
-                        '  * World\r\n',
+                        '  * Three default rooms to test movement\r\n',
+                        '  * All directions implemented\r\n',
+                        '  * Ability to look at rooms and see exits\r\n',
+                        '  * Saving of users, new and existing\r\n',
                         '\r\n',
                         '--------------------------------------------------------------------------------\r\n',
                         'Press ENTER to continue...\r\n',
@@ -107,68 +108,73 @@ class World {
 
     /** Set the default loadAreas() handler with two explicitly defined rooms in one area */
     const defaultLoadAreas = () => {
-      this.areas().push(new areas.Area({
-        id: 1,
-        name: 'Stuck in the mud',
-        flags: 0,
-        rooms: [
-          new rooms.Room({
-            id: 1,
-            name: 'Stuck in the mud',
-            description: [`There seems to be lots to explore 'out there', but you can't do much of\r\n`,
-                          `anything as you're stuck in the mud.  Might want to pray the immortals\r\n`,
-                          `help you find a way out and back into a worthy world.`].join(''),
-            exits: [
-              new exits.Exit({
-                dir: this.DIR_NORTH,
-                to: 2
-              }),
-              new exits.Exit({
-                dir: this.DIR_DOWN,
-                to: 3
-              })
-            ]
-          }),
-          new rooms.Room({
-            id: 2,
-            name: 'Stuck in the mud',
-            description: [`There seems to be lots to explore 'out there', but you can't do much of\r\n`,
-                          `anything as you're stuck in the mud.  Might want to pray the immortals\r\n`,
-                          `help you find a way out and back into a worthy world.`].join(''),
-            exits: [
-              new exits.Exit({
-                dir: this.DIR_SOUTH,
-                to: 1
-              })
-            ]
-          }),
-          new rooms.Room({
-            id: 3,
-            name: 'Drowning in the mud',
-            description: [`There's, gurgle.., not much of interest, gurgle.., down here.`],
-            exits: [
-              new exits.Exit({
-                dir: this.DIR_UP,
-                to: 1
-              })
-            ]
-          })
-        ],
-        objects: [
-          new objects.Object({
-            id: 1,
-            name: 'a muddy stick',
-            description: `It's a stick covered in mud.`,
-          })
-        ],
-        mobiles: [
-          new mobiles.Mobile({
-            id: 1,
-            name: 'a mud monster',
-            description: `Well, it's mud, and it's alive, what would you call it?`,
-          })
-        ]
-      }));
+      const areas = [
+        new areas.Area({
+          id: 1,
+          name: 'Stuck in the mud',
+          flags: 0,
+          rooms: [
+            new rooms.Room({
+              id: 1,
+              name: 'Stuck in the mud',
+              description: [`There seems to be lots to explore 'out there', but you can't do much of\r\n`,
+                            `anything as you're stuck in the mud.  Might want to pray the immortals\r\n`,
+                            `help you find a way out and back into a worthy world.`].join(''),
+              exits: [
+                new exits.Exit({
+                  dir: this.DIR_NORTH,
+                  to: 2
+                }),
+                new exits.Exit({
+                  dir: this.DIR_DOWN,
+                  to: 3
+                })
+              ]
+            }),
+            new rooms.Room({
+              id: 2,
+              name: 'Stuck in the mud',
+              description: [`There seems to be lots to explore 'out there', but you can't do much of\r\n`,
+                            `anything as you're stuck in the mud.  Might want to pray the immortals\r\n`,
+                            `help you find a way out and back into a worthy world.`].join(''),
+              exits: [
+                new exits.Exit({
+                  dir: this.DIR_SOUTH,
+                  to: 1
+                })
+              ]
+            }),
+            new rooms.Room({
+              id: 3,
+              name: 'Drowning in the mud',
+              description: [`There's *gurgle*, not much of interest *gurgle*, down here!`],
+              exits: [
+                new exits.Exit({
+                  dir: this.DIR_UP,
+                  to: 1
+                })
+              ]
+            })
+          ],
+          objects: [
+            new objects.Object({
+              id: 1,
+              name: 'a muddy stick',
+              description: `It's a stick covered in mud.`,
+              flags: [2]
+            })
+          ],
+          mobiles: [
+            new mobiles.Mobile({
+              id: 1,
+              name: 'a mud monster',
+              description: `Well, it looks like mud, but it's alive, what would you call it?`
+            })
+          ]
+        })
+      ];
+      
+      this.areas(areas);
     };
     
     /** Set the default loadUserByName() handler which just loads an empty user and is expected to be replaced */
@@ -182,48 +188,18 @@ class World {
         name: dir,
         command: (user, buffer) => {
           /** Look for an exit in that direction */
-          const exit = user.room().exits().find((exit) => {
-            if ( dir == 'north' )
-              return exit.dir() == this.DIR_NORTH;
-            else if ( dir == 'northeast' || dir == 'ne' )
-              return exit.dir() == this.DIR_NORTHEAST;
-            else if ( dir == 'east' )
-              return exit.dir() == this.DIR_EAST;
-            else if ( dir == 'southeast' || dir == 'se' )
-              return exit.dir() == this.DIR_SOUTHEAST;
-            else if ( dir == 'south' )
-              return exit.dir() == this.DIR_SOUTH;
-            else if ( dir == 'southwest' || dir == 'sw' )
-              return exit.dir() == this.DIR_SOUTHWEST;
-            else if ( dir == 'west' )
-              return exit.dir() == this.DIR_WEST;
-            else if ( dir == 'northwest' || dir == 'nw' )
-              return exit.dir() == this.DIR_NORTHWEST;
-            else if ( dir == 'up' )
-              return exit.dir() == this.DIR_UP;
-            else if ( dir == 'down' )
-              return exit.dir() == this.DIR_DOWN;
-            else
-              throw "dirCommand(): Invalid direction.";
-          });
+          const exit = user.room().exits(dir);
 
           if ( exit ) {
             /** If it exists, get the room it goes to */
-            const room = this.rooms().find((room) => {
-              return exit.to() == room.id();
-            });
+            const room = this.rooms(exit.to());
 
             if ( room ) {
               /** If room exists, move user to room and look */
               user.room(room);
 
-              /** Find the look command */
-              const look = this.commands().find((command) => {
-                return command.name() == 'look';
-              });
-
-              /** Execute it for this user */
-              look.execute(user, '');
+              /** Find the look command and execute it for this user */
+              this.commands('look').execute(user, '');
             } else {
               /** If room doesn't exist, notify imps and send user an error message */
               console.log(`Bad exit: direction ${dir} from room ${user.room().id()}.`);
@@ -235,7 +211,7 @@ class World {
             user.send('You cannot go that way.\r\n');
           }
         },
-        priority: dir == 'ne' || dir == 'se' || dir == 'sw' || dir == 'nw' ? false : true
+        priority: dir == 'north' || dir == 'south' ? true : false
       });
     };
 
@@ -244,43 +220,33 @@ class World {
       new commands.Command({
         name: 'look',
         command: (user, buffer) => {
+          /** Send room name */
           user.send(`${user.room().name()}\r\n`);
-          user.send('[Exits: ');
           
+          /** Send exits */
+          user.send('[Exits:');
+          
+          /** Count the exits to see if there are any */
           let count = 0;
           
+          /** Loop through exits in user's room */
           user.room().exits().forEach((exit) => {
-            if ( count > 0 )
-              user.send(' ');
+            /** Separate exit names with spaces */
+            user.send(' ');
             
-            if ( exit.dir() == this.DIR_NORTH )
-              user.send('north');
-            else if ( exit.dir() == this.DIR_NORTHEAST )
-              user.send('ne');
-            else if ( exit.dir() == this.DIR_EAST )
-              user.send('east');
-            else if ( exit.dir() == this.DIR_SOUTHEAST )
-              user.send('se');
-            else if ( exit.dir() == this.DIR_SOUTH )
-              user.send('south');
-            else if ( exit.dir() == this.DIR_SOUTHWEST )
-              user.send('sw');
-            else if ( exit.dir() == this.DIR_WEST )
-              user.send('west');
-            else if ( exit.dir() == this.DIR_NORTHWEST )
-              user.send('nw');
-            else if ( exit.dir() == this.DIR_UP )
-              user.send('up');
-            else if ( exit.dir() == this.DIR_DOWN )
-              user.send('down');
+            /** Send exit name based on direction */
+            user.send(user.room().exits(exit.dir()));
             
             count++;
           });
           
+          /** No exits, output none */
           if ( count == 0 )
-            user.send('None');
+            user.send(' None');
           
           user.send(']\r\n');
+          
+          /** Send room description */
           user.send(`${user.room().description()}\r\n`);
         },
         priority: true
@@ -335,7 +301,7 @@ class World {
     this.loadUserByName(data.loadUserByName == null ? defaultLoadUserByName : data.loadUserByName);
     this.saveUser(data.saveUser == null ? (user) => {} : data.saveUser);
     this.loadAreas(data.loadAreas == null ? defaultLoadAreas : data.loadAreas);
-    this.saveArea(data.saveArea == null ? (area) => {} : data.saveArea);    
+    this.saveArea(data.saveArea == null ? (area) => {} : data.saveArea);
   }
 
   /**
@@ -428,9 +394,7 @@ class World {
       /** Log user disconnects */
       socket.on('end', () => {
         /** Look up the socket's user, if one exists */
-        const user = this.users().find((user) => {
-          return user.socket() == socket;
-        });
+        const user = this.users(socket);
 
         if ( user ) {
           /** User exists, disconnect them */
@@ -524,9 +488,18 @@ class World {
    */
   areas(areas = null) {
     /** Getter */
+    
+    /** If parameter is null, return array */
     if ( areas == null )
       return this._areas;
 
+    /** If parameter is number, return area by ID */
+    if ( typeof areas == 'number' ) {
+      return this._areas.find((area) => {
+        return area.id() == areas;
+      });
+    }
+    
     /** Setter */
     this._areas = areas;
 
@@ -541,8 +514,17 @@ class World {
    */
   rooms(rooms = null) {
     /** Getter */
+    
+    /** If parameter is null, return array */
     if ( rooms == null )
       return this._rooms;
+    
+    /** If parameter is number, return room by ID */
+    if ( typeof rooms == 'number' ) {
+      return this._rooms.find((room) => {
+        return room.id() == rooms;
+      });
+    }
     
     /** Setter */
     this._rooms = rooms;
@@ -558,8 +540,17 @@ class World {
    */
   objects(objects = null) {
     /** Getter */
+    
+    /** If parameter is null, return array */
     if ( objects == null )
       return this._objects;
+    
+    /** If parameter is number, return object by ID */
+    if ( typeof objects == 'number' ) {
+      return this._objects.find((object) => {
+        return object.id() == objects;
+      });
+    }
 
     /** Setter */
     this._objects = objects;
@@ -575,8 +566,17 @@ class World {
    */
   mobiles(mobiles = null) {
     /** Getter */
+    
+    /** If parameter is null, return array */
     if ( mobiles == null )
       return this._mobiles;
+    
+    /** If parameter is number, return mobile by ID */
+    if ( typeof mobiles == 'number' ) {
+      return this._mobiles.find((mobile) => {
+        return mobile.id() == mobiles;
+      });
+    }
 
     /** Setter */
     this._mobiles = mobiles;
@@ -592,9 +592,32 @@ class World {
    */
   users(users = null) {
     /** Getter */
+    
+    /** If parameter is null, return array */
     if ( users == null )
       return this._users;
+    
+    /** If parameter is number, return user by ID */
+    if ( typeof users == 'number' ) {
+      return this._users.find((user) => {
+        return user.id() == users;
+      });
+    }
+    
+    /** If parameter is string, return user by name */
+    if ( typeof users == 'string' ) {
+      return this._users.find((user) => {
+        return user.name().toLowerCase() == users.toLowerCase();
+      });
+    }
 
+    /** If parameter is instace of net.Socket, return user by socket */
+    if ( users instanceof net.Socket ) {
+      return this._users.find((user) => {
+        return user.socket() == users;
+      });
+    }
+    
     /** Setter */
     this._users = users;
 
@@ -609,8 +632,17 @@ class World {
    */
   commands(commands = null) {
     /** Getter */
+    
+    /** If parameter is null, return array */
     if ( commands == null )
       return this._commands;
+    
+    /** If parameter is string, return command by name */
+    if ( typeof commands == 'string' ) {
+      return this._commands.find((command) => {
+        return command.name().toLowerCase() == commands.toLowerCase();
+      });
+    }
     
     /** Setter */
     this._commands = commands;
