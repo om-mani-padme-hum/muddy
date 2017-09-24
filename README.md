@@ -9,7 +9,7 @@ Operational in limited form.  Three default rooms exist.  One item and one mobil
 * east
 * look
 * north
-* norhteast (ne)
+* northeast (ne)
 * northwest (nw)
 * quit
 * save
