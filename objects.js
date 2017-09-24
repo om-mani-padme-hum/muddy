@@ -76,7 +76,19 @@ class Object {
       return this._room;
 
     /** Setter */
-    this._room = room;
+    
+    /** Remove user from room, if one exists */
+    if ( this._room )
+      this._room.objects().splice(this._room.objects().indexOf(this), 1);
+    
+    /** Move user to room */
+    if ( typeof room == 'number' )
+      this._room = this.world(room);
+    else if ( room instanceof room.Room )
+      this._room = room;
+    
+    /** Add user to room */
+    room.objects().push(this);
 
     /** Allow for set call chaining */
     return this;

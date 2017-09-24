@@ -1,19 +1,15 @@
 'use strict';
 
-const users = require('./users');
-
 /**
  * Data model and helper class for users.
  */
-class Mobile extends users.User {
+class Mobile {
   /**
    * Instantiate a new user.
    * @param world The world object
    * @param data (optional) Configuration object
    */
-  constructor(world, data = {}) {
-    super();
-    
+  constructor(world, data = {}) {    
     /** Store the world object */
     this.world(world);
     
@@ -30,8 +26,13 @@ class Mobile extends users.User {
     this.id(data.id == null ? -1 : data.id);
     this.name(data.name == null ? "" : data.name);
     this.description(data.description == null ? "" : data.description);
-    this.level(data.level == null ? 1 : data.level);
     this.flags(data.flags == null ? [] : data.flags);
+    this.level(data.level == null ? 1 : data.level);
+    this.race(data.race == null ? 1 : data.race);
+    this.lineage(data.lineage == null ? 1 : data.lineage);
+    this.hp(data.hp == null ? 1 : data.hp);
+    this.mana(data.mana == null ? 1 : data.mana);
+    this.rage(data.rage == null ? 1 : data.rage);
   }
   
   /**
@@ -66,6 +67,69 @@ class Mobile extends users.User {
   }
   
   /** 
+   * Room getter/setter.
+   * @param (optional) room Desired room
+   * @return The mobile for set call chaining
+   */
+  room(room = null) {
+    /** Getter */
+    if ( room == null )
+      return this._room;
+
+    /** Setter */
+    
+    /** Remove mobile from room, if one exists */
+    if ( this._room )
+      this._room.mobiles().splice(this._room.mobiles().indexOf(this), 1);
+    
+    /** Move mobile to room */
+    if ( typeof room == 'number' )
+      this._room = this.world(room);
+    else if ( room instanceof rooms.Room )
+      this._room = room;
+    
+    /** Add mobile to room */
+    room.mobiles().push(this);
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
+  /** 
+   * ID getter/setter.
+   * @param (optional) name Desired ID
+   * @return The mobile for set call chaining
+   */
+  id(id = null) {
+    /** Getter */
+    if ( id == null )
+      return this._id;
+
+    /** Setter */
+    this._id = parseInt(id);
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
+  /** 
+   * Name getter/setter.
+   * @param (optional) name Desired name
+   * @return The mobile for set call chaining
+   */
+  name(name = null) {
+    /** Getter */
+    if ( name == null )
+      return this._name;
+
+    /** Setter */
+    this._name = name.toString();
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
+  /** 
    * Description getter/setter.
    * @param (optional) description Desired description
    * @return The mobile for set call chaining
@@ -94,6 +158,108 @@ class Mobile extends users.User {
 
     /** Setter */
     this._flags = flags;
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
+  /** 
+   * Level getter/setter.
+   * @param (optional) level Desired level
+   * @return The mobile for set call chaining
+   */
+  level(level = null) {
+    /** Getter */
+    if ( level == null )
+      return this._level;
+
+    /** Setter */
+    this._level = parseInt(level);
+
+    /** Allow for set call chaining */
+    return this;
+  }
+
+  /** 
+   * Race getter/setter.
+   * @param (optional) race Desired race
+   * @return The mobile for set call chaining
+   */
+  race(race = null) {
+    /** Getter */
+    if ( race == null )
+      return this._race;
+
+    /** Setter */
+    this._race = parseInt(race);
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
+  /** 
+   * Lineage getter/setter.
+   * @param (optional) lineage Desired lineage
+   * @return The mobile for set call chaining
+   */
+  lineage(lineage = null) {
+    /** Getter */
+    if ( lineage == null )
+      return this._lineage;
+
+    /** Setter */
+    this._lineage = parseInt(lineage);
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
+  /** 
+   * Hit points getter/setter.
+   * @param (optional) hp Desired hit points
+   * @return The mobile for set call chaining
+   */
+  hp(hp = null) {
+    /** Getter */
+    if ( hp == null )
+      return this._hp;
+
+    /** Setter */
+    this._hp = parseInt(hp);
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
+  /** 
+   * Mana getter/setter.
+   * @param (optional) mana Desired mana
+   * @return The mobile for set call chaining
+   */
+  mana(mana = null) {
+    /** Getter */
+    if ( mana == null )
+      return this._mana;
+
+    /** Setter */
+    this._mana = parseInt(mana);
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
+  /** 
+   * Rage getter/setter.
+   * @param (optional) rage Desired rage
+   * @return The mobile for set call chaining
+   */
+  rage(rage = null) {
+    /** Getter */
+    if ( rage == null )
+      return this._rage;
+
+    /** Setter */
+    this._rage = parseInt(rage);
 
     /** Allow for set call chaining */
     return this;

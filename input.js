@@ -101,7 +101,7 @@ class InputProcessor {
           const holdSocket = user.socket();
   
           /** Load the user */
-          this.world().users().splice(user);
+          this.world().users().splice(this.world().users().indexOf(user), 1);
           this.world().users().push(newUser);
           
           user = newUser;
@@ -160,7 +160,7 @@ class InputProcessor {
       console.log(`User ${user.name()} connected.`);
     } else {
       /** Password incorrect, remove user from world and terminate socket */
-      this.world().removeUser(user);
+      this.world().users().splice(this.world().users().indexOf(user), 1);
       
       /** Terminate socket */
       socket.end("Incorrect password, goodbye!\r\n");
@@ -266,13 +266,8 @@ class InputProcessor {
    * @param user User object
    */
   processStateMOTD(socket, buffer, user) {
-    /** Find the look command */
-    const command = this.world().commands().find((command) => {
-      return command.name() == 'look';
-    });
-    
-    /** Execute it for this user */
-    command.execute(user, '');
+    /** Find and execute the look command for this user */
+    this.world().commands('look').execute(user, '');
     
     /** Send prompt */
     this.prompt(user);

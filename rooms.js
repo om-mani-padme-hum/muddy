@@ -29,6 +29,7 @@ class Room {
     /** In-game properties */
     this.area(data.area == null ? null : data.area);
     this.users(data.users == null ? [] : data.users);
+    this.mobiles(data.mobiles == null ? [] : data.mobiles);
     this.objects(data.objects == null ? [] : data.objects);
   
     /** Stored properties */
@@ -99,6 +100,23 @@ class Room {
 
     /** Setter */
     this._users = users;
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
+  /** 
+   * Mobiles getter/setter.
+   * @param (optional) mobiles Desired mobiles
+   * @return The room for set call chaining
+   */
+  mobiles(mobiles = null) {
+    /** Getter */
+    if ( mobiles == null )
+      return this._mobiles;
+
+    /** Setter */
+    this._mobiles = mobiles;
 
     /** Allow for set call chaining */
     return this;

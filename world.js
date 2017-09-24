@@ -108,73 +108,86 @@ class World {
 
     /** Set the default loadAreas() handler with two explicitly defined rooms in one area */
     const defaultLoadAreas = () => {
-      const muddyAreas = [
-        new areas.Area(this, {
-          id: 1,
-          name: 'Stuck in the mud',
-          flags: 0,
-          rooms: [
-            new rooms.Room(this, {
-              id: 1,
-              name: 'Stuck in the mud',
-              description: [`There seems to be lots to explore 'out there', but you can't do much of\r\n`,
-                            `anything as you're stuck in the mud.  Might want to pray the immortals\r\n`,
-                            `help you find a way out and back into a worthy world.`].join(''),
-              exits: [
-                new exits.Exit(this, {
-                  dir: this.DIR_NORTH,
-                  to: 2
-                }),
-                new exits.Exit(this, {
-                  dir: this.DIR_DOWN,
-                  to: 3
-                })
-              ]
-            }),
-            new rooms.Room(this, {
-              id: 2,
-              name: 'Stuck in the mud',
-              description: [`There seems to be lots to explore 'out there', but you can't do much of\r\n`,
-                            `anything as you're stuck in the mud.  Might want to pray the immortals\r\n`,
-                            `help you find a way out and back into a worthy world.`].join(''),
-              exits: [
-                new exits.Exit(this, {
-                  dir: this.DIR_SOUTH,
-                  to: 1
-                })
-              ]
-            }),
-            new rooms.Room(this, {
-              id: 3,
-              name: 'Drowning in the mud',
-              description: [`There's *gurgle*, not much of interest *gurgle*, down here!`],
-              exits: [
-                new exits.Exit(this, {
-                  dir: this.DIR_UP,
-                  to: 1
-                })
-              ]
-            })
-          ],
-          objects: [
-            new objects.Object(this, {
-              id: 1,
-              name: 'a muddy stick',
-              description: `It's a stick covered in mud.`,
-              flags: [2]
-            })
-          ],
-          mobiles: [
-            new mobiles.Mobile(this, {
-              id: 1,
-              name: 'a mud monster',
-              description: `Well, it looks like mud, but it's alive, what would you call it?`
-            })
-          ]
-        })
-      ];
+      /** Create new area */
+      const area = new areas.Area(this, {
+        id: 1,
+        name: 'Stuck in the mud',
+        flags: 0,
+      });
       
-      this.areas(muddyAreas);
+      const object = new objects.Object(this, {
+        id: 1,
+        name: 'a muddy stick',
+        description: `It's a stick covered in mud.`,
+        flags: [2]
+      });
+      
+      area.objects().push(object);
+      
+      const mobile = new mobiles.Mobile(this, {
+        id: 1,
+        name: 'a mud monster',
+        description: `Well, it looks like mud, but it's alive, what would you call it?`
+      });
+      
+      area.mobiles().push(mobile);
+      
+      let room = new rooms.Room(this, {
+        id: 1,
+        area: area,
+        name: 'Stuck in the mud',
+        description: [`There seems to be lots to explore 'out there', but you can't do much of\r\n`,
+                      `anything as you're stuck in the mud.  Might want to pray the immortals\r\n`,
+                      `help you find a way out and back into a worthy world.`].join(''),
+        exits: [
+          new exits.Exit(this, {
+            dir: this.DIR_NORTH,
+            to: 2
+          }),
+          new exits.Exit(this, {
+            dir: this.DIR_DOWN,
+            to: 3
+          })
+        ],
+        objects: [object]
+      });
+      
+      area.rooms().push(room);
+      
+      room = new rooms.Room(this, {
+        id: 2,
+        area: area,
+        name: 'Stuck in the mud',
+        description: [`There seems to be lots to explore 'out there', but you can't do much of\r\n`,
+                      `anything as you're stuck in the mud.  Might want to pray the immortals\r\n`,
+                      `help you find a way out and back into a worthy world.`].join(''),
+        exits: [
+          new exits.Exit(this, {
+            dir: this.DIR_SOUTH,
+            to: 1
+          })
+        ],
+        mobiles: [mobile]
+      });
+      
+      area.rooms().push(room);
+      
+      room = new rooms.Room(this, {
+        id: 3,
+        area: area,
+        name: 'Drowning in the mud',
+        description: [`There's *gurgle*, not much of interest *gurgle*, down here!`],
+        exits: [
+          new exits.Exit(this, {
+            dir: this.DIR_UP,
+            to: 1
+          })
+        ]
+      });
+      
+      area.rooms().push(room);
+      
+      this.areas().push(area);
     };
     
     /** Set the default loadUserByName() handler which just loads an empty user and is expected to be replaced */
@@ -248,6 +261,22 @@ class World {
           
           /** Send room description */
           user.send(`${user.room().description()}\r\n`);
+          
+          /** Send other users in the room */
+          user.room().users().forEach((other) => {
+            if ( user != other )
+              user.send(`${other.name()} is standing here.\r\n`);
+          });
+          
+          /** Send any mobiles in the room */
+          user.room().mobiles().forEach((mobile) => {
+            user.send(`  ${mobile.name()} is standing here.\r\n`);
+          });
+          
+          /** Send any objets in the room */
+          user.room().objects().forEach((object) => {
+            user.send(`    ${object.name()} sits here.\r\n`);
+          });
         },
         priority: true
       }),
@@ -256,7 +285,7 @@ class World {
         command: (user, buffer) => {
           console.log(`User ${user.name()} has quit.`);
 
-          this.users().splice(user);
+          this.users().splice(this.users().indexOf(user), 1);
 
           user.socket().end('Goodbye!\r\n');
         }
@@ -286,7 +315,7 @@ class World {
     ];
     
     /** Objects and values */
-    this.port(data.port = null ? defaultPort : data.port);
+    this.port(data.port == null ? defaultPort : data.port);
     this.areas(data.areas == null ? [] : data.areas);
     this.rooms(data.rooms == null ? [] : data.rooms);
     this.objects(data.objects == null ? [] : data.objects);
@@ -354,6 +383,11 @@ class World {
         this.rooms().push(room);
         
         console.log(`Loaded room ${room.name()}...`);
+        
+        /** Set exit 'from' rooms */
+        room.exits().forEach((exit) => {
+          exit.from(room);
+        });
       });
       
       /** Log loaded objects */
@@ -614,7 +648,7 @@ class World {
     /** If parameter is instace of net.Socket, return user by socket */
     if ( users instanceof net.Socket ) {
       return this._users.find((user) => {
-        return user.socket() == users;
+        return user.socket().id == users.id;
       });
     }
     
