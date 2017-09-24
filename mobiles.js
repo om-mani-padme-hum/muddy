@@ -8,11 +8,16 @@ const users = require('./users');
 class Mobile extends users.User {
   /**
    * Instantiate a new user.
+   * @param world The world object
    * @param data (optional) Configuration object
    */
-  constructor(data = {}) {
+  constructor(world, data = {}) {
     super();
     
+    /** Store the world object */
+    this.world(world);
+    
+    /** Initialize any optional configuration parameters */
     this.init(data);
   }
 
@@ -41,6 +46,23 @@ class Mobile extends users.User {
         this[key](data[key]);
       }
     });
+  }
+  
+  /** 
+   * World getter/setter.
+   * @param (optional) world Desired world
+   * @return The mobile for set call chaining
+   */
+  world(world = null) {
+    /** Getter */
+    if ( world == null )
+      return this._world;
+
+    /** Setter */
+    this._world = world;
+
+    /** Allow for set call chaining */
+    return this;
   }
   
   /** 

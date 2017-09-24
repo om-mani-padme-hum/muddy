@@ -6,13 +6,18 @@
 class Room {
   /**
    * Instantiate a new room.
+   * @param world The world object
    * @param data (optional) Configuration object
    */
-  constructor(data = {}) {
+  constructor(world, data = {}) {
     /** Define room flags */
     this.ROOM_INSIDE = 1;
     this.ROOM_SAFE = 2;
     
+    /** Store the world object */
+    this.world(world);
+    
+    /** Initialize any optional configuration parameters */
     this.init(data);
   }
 
@@ -46,6 +51,23 @@ class Room {
         this[key](data[key]);
       }
     });
+  }
+  
+  /** 
+   * World getter/setter.
+   * @param (optional) world Desired world
+   * @return The room for set call chaining
+   */
+  world(world = null) {
+    /** Getter */
+    if ( world == null )
+      return this._world;
+
+    /** Setter */
+    this._world = world;
+
+    /** Allow for set call chaining */
+    return this;
   }
   
   /** 
@@ -184,26 +206,26 @@ class Room {
       let dir = -1;
       
       /** Convert direction string to constant */
-      if ( dir == 'north' )
-        dir = this.DIR_NORTH;
-      else if ( dir == 'northeast' || dir == 'ne' )
-        dir = this.DIR_NORTHEAST;
-      else if ( dir == 'east' )
-        dir = this.DIR_EAST;
-      else if ( dir == 'southeast' || dir == 'se' )
-        dir = this.DIR_SOUTHEAST;
-      else if ( dir == 'south' )
-        dir = this.DIR_SOUTH;
-      else if ( dir == 'southwest' || dir == 'sw' )
-        dir = this.DIR_SOUTHWEST;
-      else if ( dir == 'west' )
-        dir = this.DIR_WEST;
-      else if ( dir == 'northwest' || dir == 'nw' )
-        dir = this.DIR_NORTHWEST;
-      else if ( dir == 'up' )
-        dir = this.DIR_UP;
-      else if ( dir == 'down' )
-        dir = this.DIR_DOWN;
+      if ( exits == 'north' )
+        dir = this.world().DIR_NORTH;
+      else if ( exits == 'northeast' || exits == 'ne' )
+        dir = this.world().DIR_NORTHEAST;
+      else if ( exits == 'east' )
+        dir = this.world().DIR_EAST;
+      else if ( exits == 'southeast' || exits == 'se' )
+        dir = this.world().DIR_SOUTHEAST;
+      else if ( exits == 'south' )
+        dir = this.world().DIR_SOUTH;
+      else if ( exits == 'southwest' || exits == 'sw' )
+        dir = this.world().DIR_SOUTHWEST;
+      else if ( exits == 'west' )
+        dir = this.world().DIR_WEST;
+      else if ( exits == 'northwest' || exits == 'nw' )
+        dir = this.world().DIR_NORTHWEST;
+      else if ( exits == 'up' )
+        dir = this.world().DIR_UP;
+      else if ( exits == 'down' )
+        dir = this.world().DIR_DOWN;
       else
         throw "Room.exits(): Invalid direction name.";
       
@@ -215,25 +237,25 @@ class Room {
     
     /** If parameter is a number, return exit name by direction constant */
     if ( typeof exits == 'number' ) {
-      if ( exits == this.DIR_NORTH )
+      if ( exits == this.world().DIR_NORTH )
         return 'north';
-      else if ( exits == this.DIR_NORTHEAST )
+      else if ( exits == this.world().DIR_NORTHEAST )
         return 'ne';
-      else if ( exits == this.DIR_EAST )
+      else if ( exits == this.world().DIR_EAST )
         return 'east';
-      else if ( exits == this.DIR_SOUTHEAST )
+      else if ( exits == this.world().DIR_SOUTHEAST )
         return 'se';
-      else if ( exits == this.DIR_SOUTH )
+      else if ( exits == this.world().DIR_SOUTH )
         return 'south';
-      else if ( exits == this.DIR_SOUTHWEST )
+      else if ( exits == this.world().DIR_SOUTHWEST )
         return 'sw';
-      else if ( exits == this.DIR_WEST )
+      else if ( exits == this.world().DIR_WEST )
         return 'west';
-      else if ( exits == this.DIR_NORTHWEST )
+      else if ( exits == this.world().DIR_NORTHWEST )
         return 'nw';
-      else if ( exits == this.DIR_UP )
+      else if ( exits == this.world().DIR_UP )
         return 'up';
-      else if ( exits == this.DIR_DOWN )
+      else if ( exits == this.world().DIR_DOWN )
         return 'down';
       else
         throw "Room.exits(): Invalid direction constant.";

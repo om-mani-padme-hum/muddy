@@ -11,6 +11,7 @@ class InputProcessor {
    * @param world The world object
    */
   constructor(world) {
+    /** Store the world object */
     this.world(world);
   }
   

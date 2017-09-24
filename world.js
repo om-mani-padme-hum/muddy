@@ -108,48 +108,48 @@ class World {
 
     /** Set the default loadAreas() handler with two explicitly defined rooms in one area */
     const defaultLoadAreas = () => {
-      const areas = [
-        new areas.Area({
+      const muddyAreas = [
+        new areas.Area(this, {
           id: 1,
           name: 'Stuck in the mud',
           flags: 0,
           rooms: [
-            new rooms.Room({
+            new rooms.Room(this, {
               id: 1,
               name: 'Stuck in the mud',
               description: [`There seems to be lots to explore 'out there', but you can't do much of\r\n`,
                             `anything as you're stuck in the mud.  Might want to pray the immortals\r\n`,
                             `help you find a way out and back into a worthy world.`].join(''),
               exits: [
-                new exits.Exit({
+                new exits.Exit(this, {
                   dir: this.DIR_NORTH,
                   to: 2
                 }),
-                new exits.Exit({
+                new exits.Exit(this, {
                   dir: this.DIR_DOWN,
                   to: 3
                 })
               ]
             }),
-            new rooms.Room({
+            new rooms.Room(this, {
               id: 2,
               name: 'Stuck in the mud',
               description: [`There seems to be lots to explore 'out there', but you can't do much of\r\n`,
                             `anything as you're stuck in the mud.  Might want to pray the immortals\r\n`,
                             `help you find a way out and back into a worthy world.`].join(''),
               exits: [
-                new exits.Exit({
+                new exits.Exit(this, {
                   dir: this.DIR_SOUTH,
                   to: 1
                 })
               ]
             }),
-            new rooms.Room({
+            new rooms.Room(this, {
               id: 3,
               name: 'Drowning in the mud',
               description: [`There's *gurgle*, not much of interest *gurgle*, down here!`],
               exits: [
-                new exits.Exit({
+                new exits.Exit(this, {
                   dir: this.DIR_UP,
                   to: 1
                 })
@@ -157,7 +157,7 @@ class World {
             })
           ],
           objects: [
-            new objects.Object({
+            new objects.Object(this, {
               id: 1,
               name: 'a muddy stick',
               description: `It's a stick covered in mud.`,
@@ -165,7 +165,7 @@ class World {
             })
           ],
           mobiles: [
-            new mobiles.Mobile({
+            new mobiles.Mobile(this, {
               id: 1,
               name: 'a mud monster',
               description: `Well, it looks like mud, but it's alive, what would you call it?`
@@ -174,7 +174,7 @@ class World {
         })
       ];
       
-      this.areas(areas);
+      this.areas(muddyAreas);
     };
     
     /** Set the default loadUserByName() handler which just loads an empty user and is expected to be replaced */
@@ -184,7 +184,7 @@ class World {
     
     /** Create template for all direction commands */
     const dirCommand = (dir) => {
-      return new commands.Command({
+      return new commands.Command(this, {
         name: dir,
         command: (user, buffer) => {
           /** Look for an exit in that direction */
@@ -217,7 +217,7 @@ class World {
 
     /** Set the default commands, which are generally expected to be retained */
     const defaultCommands = [
-      new commands.Command({
+      new commands.Command(this, {
         name: 'look',
         command: (user, buffer) => {
           /** Send room name */
@@ -251,7 +251,7 @@ class World {
         },
         priority: true
       }),
-      new commands.Command({
+      new commands.Command(this, {
         name: 'quit',
         command: (user, buffer) => {
           console.log(`User ${user.name()} has quit.`);
@@ -261,7 +261,7 @@ class World {
           user.socket().end('Goodbye!\r\n');
         }
       }),
-      new commands.Command({
+      new commands.Command(this, {
         name: 'save',
         command: (user, buffer) => {
           this.saveUser()(user);
