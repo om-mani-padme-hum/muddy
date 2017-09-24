@@ -25,7 +25,7 @@ Operational in limited form.  Three default rooms exist.  One item and one mobil
 * Implement placement of objects and mobiles in rooms, allow people to look at them
 * Add output processor to interpret VT100 colors and styles
 * Implement socials
-* Impelement the ability to get and drop objects, containers, wearables, wieldables
+* Implement the ability to get and drop objects, containers, wearables, wieldables
 * Implement fight engine with support for user defined fight modifiers
 * Implement periodic world updates
 * Implement mobile scripting
