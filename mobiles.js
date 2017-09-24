@@ -1,5 +1,7 @@
 'use strict';
 
+const rooms = require('./rooms');
+
 /**
  * Data model and helper class for users.
  */
