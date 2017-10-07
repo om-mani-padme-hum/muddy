@@ -8,16 +8,16 @@ const crypto = require('crypto');
 class InputProcessor {  
   /** 
    * Input processor constructor.
-   * @param world The world object
+   * @param world The world item
    */
   constructor(world) {
-    /** Store the world object */
+    /** Store the world item */
     this.world(world);
   }
   
   /** 
-   * World object getter/setter.
-   * @param (optional) world Desired world object
+   * World item getter/setter.
+   * @param (optional) world Desired world item
    * @return The input processor for set call chaining
    */
   world(world = null) {
@@ -72,9 +72,9 @@ class InputProcessor {
   
   /**
    * Process input from a user at the name state.
-   * @param socket User's socket object
+   * @param socket User's socket item
    * @param buffer User's input buffer
-   * @param user User object
+   * @param user User item
    */
   processStateName(socket, buffer, user) {
     const name = buffer.toString().trim();
@@ -130,9 +130,9 @@ class InputProcessor {
   
   /**
    * Process input from a user at the old password state.
-   * @param socket User's socket object
+   * @param socket User's socket item
    * @param buffer User's input buffer
-   * @param user User object
+   * @param user User item
    */
   processStateOldPassword(socket, buffer, user) {
     const unencrypted = buffer.toString().trim();
@@ -171,9 +171,9 @@ class InputProcessor {
   
   /**
    * Process input from a user at the new password state.
-   * @param socket User's socket object
+   * @param socket User's socket item
    * @param buffer User's input buffer
-   * @param user User object
+   * @param user User item
    */
   processStateNewPassword(socket, buffer, user) {
     const unencrypted = buffer.toString().trim();
@@ -218,9 +218,9 @@ class InputProcessor {
   
   /**
    * Process input from a user at the confirm password state.
-   * @param socket User's socket object
+   * @param socket User's socket item
    * @param buffer User's input buffer
-   * @param user User object
+   * @param user User item
    */
   processStateConfirmPassword(socket, buffer, user) {
     const unencrypted = buffer.toString().trim();
@@ -261,16 +261,46 @@ class InputProcessor {
   
   /**
    * Process input from a user at the MOTD state.
-   * @param socket User's socket object
+   * @param socket User's socket item
    * @param buffer User's input buffer
-   * @param user User object
+   * @param user User item
    */
   processStateMOTD(socket, buffer, user) {
+    /** Replace user if he already exists */
+    const old_user = this.world().users().find((world_user) => {
+      return user.name() == world_user.name() && user !== world_user;
+    });
+    
+    if ( old_user ) {
+      old_user.room().users().forEach((room_user) => {
+        if ( room_user !== old_user && room_user !== user )
+          room_user.send(`${old_user.name()} suddenly gasps as if his spirit had just been taken over.\r\n`, false);
+      });
+            
+      /** Remove user from room */
+      if ( old_user.room() )
+        old_user.room().users().splice(old_user.room().users().indexOf(old_user), 1);
+
+      /** Remove user from world */
+      this.world().users().splice(this.world().users().indexOf(old_user), 1);
+      
+      console.log(`User ${old_user.name()} has been replaced with a new user and socket.`);
+
+      /** Close old socket and tell them they've been taken over */
+      old_user.socket().end('Your body has been taken over!\r\n');
+      
+      /** Tell user he's taken over */
+      user.send('You have reconnected to your old body.\r\n');
+    }
+    
+    /** Set periodic flush of output buffer */
+    setTimeout(user.flush.bind(user), 2000);
+
     /** Find and execute the look command for this user */
     this.world().commands('look').execute(user, '');
     
     /** Send prompt */
-    this.prompt(user);
+    user.prompt();
     
     /** Move on and put user in game */
     user.state(this.world().STATE_CONNECTED);
@@ -278,9 +308,9 @@ class InputProcessor {
   
   /**
    * Process input from a user at the connected state.
-   * @param socket User's socket object
+   * @param socket User's socket item
    * @param buffer User's input buffer
-   * @param user User object
+   * @param user User item
    */
   processStateConnected(socket, buffer, user) {
     /** @todo Process user commands */
@@ -288,13 +318,13 @@ class InputProcessor {
     
     if ( matches[1] == '' ) {
       /** Just send prompt */
-      this.prompt(user);
+      user.prompt();
       return;
     }
     
     /** Find the first matching command, if one exists */
     const command = this.world().commands().find((command) => {
-      return command.name().match(`^${matches[1]}`);
+      return command.name().match(new RegExp(`^${matches[1]}`, 'i'));
     });
     
     /** If it exists, execute it for this user, otherwise send error */
@@ -304,15 +334,7 @@ class InputProcessor {
       user.send('That action does not exist in this world.\r\n');
     
     /** Send prompt */
-    this.prompt(user);
-  }
-  
-  /**
-   * Send a prompt to the user.
-   * @param user User to send prompt to
-   */
-  prompt(user) {
-    user.send('\r\n0xp <100h 100m> ');
+    user.prompt();
   }
 }
 

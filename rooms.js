@@ -6,7 +6,7 @@
 class Room {
   /**
    * Instantiate a new room.
-   * @param world The world object
+   * @param world The world item
    * @param data (optional) Configuration object
    */
   constructor(world, data = {}) {
@@ -14,7 +14,7 @@ class Room {
     this.ROOM_INSIDE = 1;
     this.ROOM_SAFE = 2;
     
-    /** Store the world object */
+    /** Store the world item */
     this.world(world);
     
     /** Initialize any optional configuration parameters */
@@ -30,7 +30,7 @@ class Room {
     this.area(data.area == null ? null : data.area);
     this.users(data.users == null ? [] : data.users);
     this.mobiles(data.mobiles == null ? [] : data.mobiles);
-    this.objects(data.objects == null ? [] : data.objects);
+    this.items(data.items == null ? [] : data.items);
   
     /** Stored properties */
     this.id(data.id == null ? -1 : data.id);
@@ -124,16 +124,16 @@ class Room {
   
   /** 
    * Objects getter/setter.
-   * @param (optional) objects Desired objects
+   * @param (optional) items Desired items
    * @return The room for set call chaining
    */
-  objects(objects = null) {
+  items(items = null) {
     /** Getter */
-    if ( objects == null )
-      return this._objects;
+    if ( items == null )
+      return this._items;
 
     /** Setter */
-    this._objects = objects;
+    this._items = items;
 
     /** Allow for set call chaining */
     return this;

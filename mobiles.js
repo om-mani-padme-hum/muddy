@@ -8,11 +8,11 @@ const rooms = require('./rooms');
 class Mobile {
   /**
    * Instantiate a new user.
-   * @param world The world object
+   * @param world The world item
    * @param data (optional) Configuration object
    */
   constructor(world, data = {}) {    
-    /** Store the world object */
+    /** Store the world item */
     this.world(world);
     
     /** Initialize any optional configuration parameters */
@@ -24,6 +24,9 @@ class Mobile {
    * @param data (optional) Configuration object
    */
   init(data = {}) {
+    /** In-game properties */
+    this.room(data.room == null ? null : data.room);
+    
     /** Stored properties */
     this.id(data.id == null ? -1 : data.id);
     this.name(data.name == null ? "" : data.name);
@@ -43,7 +46,7 @@ class Mobile {
    */
   load(data = {}) {
     /** Loop through the data keys */
-    Object.keys(data).forEach((key) => {
+    Object.keys(data).forEach((key) => {            
       if ( typeof this[key] == 'function' ) {
         /** There exists a class method matching that key, store the value */
         this[key](data[key]);
@@ -86,12 +89,12 @@ class Mobile {
     
     /** Move mobile to room */
     if ( typeof room == 'number' )
-      this._room = this.world(room);
+      this._room = this.world.rooms(room);
     else if ( room instanceof rooms.Room )
       this._room = room;
     
     /** Add mobile to room */
-    room.mobiles().push(this);
+    this._room.mobiles().push(this);
 
     /** Allow for set call chaining */
     return this;
@@ -265,6 +268,25 @@ class Mobile {
 
     /** Allow for set call chaining */
     return this;
+  }
+  
+  /**
+   * Produce a copy of this item.
+   * @return A newly cloned instance of this item
+   */
+  copy() {
+    return new Mobile(this.world(), {
+      id: this.id(),
+      name: this.name(),
+      description: this.description(),
+      flags: this.flags(),
+      level: this.level(),
+      race: this.race(),
+      lineage: this.lineage(),
+      hp: this.hp(),
+      mana: this.mana(),
+      rage: this.rage()
+    });
   }
 }
 

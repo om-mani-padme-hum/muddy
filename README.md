@@ -2,7 +2,7 @@
 A Node.js Multi-User Dungeon (MUD) Framework
 
 ## Current Status:
-Operational in limited form.  Three default rooms exist.  One item and one mobile exist in memory are one copy of each are in world.  Login supported for both existing and new users, both can save, multiple users can be on simultaneously and see each other.  Basic movement and the ability to look at rooms and see other users, mobiles, objects exist.
+Operational in limited form.  Three default rooms exist.  One item and one mobile exist in memory are one copy of each are in world.  Login supported for both existing and new users, both can save, multiple users can be on simultaneously and see each other.  Basic movement and the ability to look at rooms and see other users, mobiles, items exist.
 
 #### Current Commands:
 * down
@@ -21,10 +21,10 @@ Operational in limited form.  Three default rooms exist.  One item and one mobil
 
 ## Project Todo List:
 
-* Finish loading and saving of areas, rooms, objects, mobiles with MySQL source
+* Finish loading and saving of areas, rooms, items, mobiles with MySQL source
 * Add output processor to interpret VT100 colors and styles
 * Implement socials
-* Implement the ability to get and drop objects, containers, wearables, wieldables
+* Implement the ability to get and drop items, containers, wearables, wieldables
 * Implement fight engine with support for user defined fight modifiers
 * Implement periodic world updates
 * Implement mobile scripting

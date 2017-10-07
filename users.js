@@ -8,11 +8,11 @@ const rooms = require('./rooms');
 class User {
   /**
    * Instantiate a new user.
-   * @param world The world object
+   * @param world The world item
    * @param data (optional) Configuration object
    */
   constructor(world, data = {}) {
-    /** Store the world object */
+    /** Store the world item */
     this.world(world);
     
     /** Initialize any optional configuration parameters */
@@ -28,7 +28,8 @@ class User {
     this.socket(data.socket == null ? null : data.socket);
     this.state(data.state == null ? this.world().STATE_NAME : data.state);
     this.room(data.room == null ? null : data.room);
-
+    this.outbuffer('');
+    
     /** Stored properties */
     this.id(data.id == null ? -1 : data.id);
     this.name(data.name == null ? "Nobody" : data.name);
@@ -50,19 +51,8 @@ class User {
     /** Loop through the data keys */
     Object.keys(data).forEach((key) => {
       if ( typeof this[key] == 'function' ) {
-        /** There exists a class method matching that key */
-        if ( key == 'room' && typeof data[key] == 'number' ) {
-          /** Data key is room and value is a number instead of room object, find the room */
-          const room = this.world().rooms().find((room) => {
-            return room.id() == data[key];
-          });
-          
-          /** Store it */
-          this.room(room);
-        } else {
-          /** Data value is not a room or is not a number, store it using class method */
-          this[key](data[key]);
-        }
+        /** There exists a class method matching that key, store the value */
+        this[key](data[key]);
       }
     });
   }
@@ -136,12 +126,29 @@ class User {
     
     /** Move user to room */
     if ( typeof room == 'number' )
-      this._room = this.world(room);
+      this._room = this.world.rooms(room);
     else if ( room instanceof rooms.Room )
       this._room = room;
     
     /** Add user to room */
-    room.users().push(this);
+    this._room.users().push(this);
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
+  /** 
+   * Output buffer getter/setter.
+   * @param (optional) buffer Desired output buffer
+   * @return The user for set call chaining
+   */
+  outbuffer(outbuffer = null) {
+    /** Getter */
+    if ( outbuffer == null )
+      return this._outbuffer;
+
+    /** Setter */
+    this._outbuffer = outbuffer.toString();
 
     /** Allow for set call chaining */
     return this;
@@ -318,18 +325,50 @@ class User {
   }
   
   /**
+   * Send the user their prompt.
+   */
+  prompt() {
+    this.send('\r\n0xp <100h 100m> ');
+  }
+  
+  /**
    * Write to user's socket (assuming it exists).
    * @param buffer Desired output
+   * @param immediate Output immediately (true) or buffer (false)
    * @return Socket existed true/false
    */
-  send(buffer = '\r\n') {
+  send(buffer = '\r\n', immediate = true) {
     try { 
-      this.socket().write(buffer);
+      if ( immediate ) {
+        /** If output is immediate, write to socket */
+        this.socket().write(buffer);
+      } else {
+        /** If output is buffered, append to end of outbuffer */
+        this.outbuffer(this.outbuffer() + buffer);
+      }
     } catch ( err ) {
       return false;
     }
     
     return true;
+  }
+  
+  /**
+   * Flush the output buffer to user's socket (assuming it exists).
+   */
+  flush() {
+    try {       
+      if ( this.outbuffer().length > 0 ) {
+        console.log(`Sending output ${this.outbuffer()} to user ${this.name()}.`);
+        this.socket().write(`\r\n${this.outbuffer()}`);
+        this.prompt();
+        this.outbuffer("");
+      }
+      
+      setTimeout(this.flush.bind(this), 2000);
+    } catch ( err ) {
+      console.log('Failed to flush output buffer to socket, terminating output buffer loop.');
+    }
   }
 }
 

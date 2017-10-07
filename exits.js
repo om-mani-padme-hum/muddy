@@ -6,11 +6,11 @@
 class Exit {
   /**
    * Instantiate a new exit.
-   * @param world The world object
+   * @param world The world item
    * @param data (optional) Configuration object
    */
   constructor(world, data = {}) {
-    /** Store the world object */
+    /** Store the world item */
     this.world(world);
     
     /** Initialize any optional configuration parameters */

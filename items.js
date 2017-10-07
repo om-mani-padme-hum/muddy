@@ -1,16 +1,18 @@
 'use strict';
 
+const rooms = require('./rooms');
+
 /**
- * Data model and helper class for objects.
+ * Data model and helper class for items.
  */
-class Object {
+class Item {
   /**
-   * Instantiate a new object.
-   * @param world The world object
+   * Instantiate a new item.
+   * @param world The world item
    * @param data (optional) Configuration object
    */
   constructor(world, data = {}) {
-    /** Store the world object */
+    /** Store the world item */
     this.world(world);
     
     /** Initialize any optional configuration parameters */
@@ -18,13 +20,12 @@ class Object {
   }
 
   /**
-   * Initialize the object to provided data or defaults.
+   * Initialize the item to provided data or defaults.
    * @param data (optional) Configuration object
    */
   init(data = {}) {
     /** In-game properties */
     this.room(data.room == null ? null : data.room);
-    this.user(data.user == null ? null : data.user);
     this.contents(data.contents == null ? [] : data.contents);
   
     /** Stored properties */
@@ -38,7 +39,7 @@ class Object {
    * Batch load properties, e.g. from database.
    * @param data (optional) Configuration object
    */
-  load(data = {}) {
+  load(data = {}) {    
     /** Loop through the data keys */
     Object.keys(data).forEach((key) => {
       if ( typeof this[key] == 'function' ) {
@@ -51,7 +52,7 @@ class Object {
   /** 
    * World getter/setter.
    * @param (optional) world Desired world
-   * @return The object for set call chaining
+   * @return The item for set call chaining
    */
   world(world = null) {
     /** Getter */
@@ -68,44 +69,27 @@ class Object {
   /** 
    * Room getter/setter.
    * @param (optional) room Desired room
-   * @return The object for set call chaining
+   * @return The item for set call chaining
    */
-  room(room = null) {
+  room(room = null) {    
     /** Getter */
     if ( room == null )
       return this._room;
 
     /** Setter */
-    
-    /** Remove user from room, if one exists */
+        
+    /** Remove item from room, if one exists */
     if ( this._room )
-      this._room.objects().splice(this._room.objects().indexOf(this), 1);
-    
+      this._room.items().splice(this._room.items().indexOf(this), 1);
+        
     /** Move user to room */
     if ( typeof room == 'number' )
-      this._room = this.world(room);
-    else if ( room instanceof room.Room )
+      this._room = this.world().rooms(room);
+    else if ( room instanceof rooms.Room )
       this._room = room;
-    
+        
     /** Add user to room */
-    room.objects().push(this);
-
-    /** Allow for set call chaining */
-    return this;
-  }
-  
-  /** 
-   * User getter/setter.
-   * @param (optional) room Desired user
-   * @return The object for set call chaining
-   */
-  user(user = null) {
-    /** Getter */
-    if ( user == null )
-      return this._user;
-
-    /** Setter */
-    this._user = user;
+    this._room.items().push(this);
 
     /** Allow for set call chaining */
     return this;
@@ -114,7 +98,7 @@ class Object {
   /** 
    * Users getter/setter.
    * @param (optional) contents Desired contents
-   * @return The object for set call chaining
+   * @return The item for set call chaining
    */
   contents(contents = null) {
     /** Getter */
@@ -131,7 +115,7 @@ class Object {
   /** 
    * ID getter/setter.
    * @param (optional) name Desired ID
-   * @return The object for set call chaining
+   * @return The item for set call chaining
    */
   id(id = null) {
     /** Getter */
@@ -148,7 +132,7 @@ class Object {
   /** 
    * Name getter/setter.
    * @param (optional) name Desired name
-   * @return The object for set call chaining
+   * @return The item for set call chaining
    */
   name(name = null) {
     /** Getter */
@@ -165,7 +149,7 @@ class Object {
   /** 
    * Description getter/setter.
    * @param (optional) description Desired description
-   * @return The object for set call chaining
+   * @return The item for set call chaining
    */
   description(description = null) {
     /** Getter */
@@ -182,7 +166,7 @@ class Object {
   /** 
    * Flags getter/setter.
    * @param (optional) salt Desired flags
-   * @return The object for set call chaining
+   * @return The item for set call chaining
    */
   flags(flags = null) {
     /** Getter */
@@ -195,6 +179,19 @@ class Object {
     /** Allow for set call chaining */
     return this;
   }
+  
+  /**
+   * Produce a copy of this item.
+   * @return A newly cloned instance of this item
+   */
+  copy() {
+    return new Item(this.world(), {
+      id: this.id(),
+      name: this.name(),
+      description: this.description(),
+      flags: this.flags()
+    });
+  }
 }
 
-exports.Object = Object;
+exports.Item = Item;

@@ -9,7 +9,7 @@ const input = require('./input');
 const users = require('./users');
 const areas = require('./areas');
 const rooms = require('./rooms');
-const objects = require('./objects');
+const items = require('./items');
 const mobiles = require('./mobiles');
 const exits = require('./exits');
 const commands = require('./commands');
@@ -36,7 +36,7 @@ class World {
     this.VT100_CLEAR = '\x1b[0m';
     this.VT100_HIDE_TEXT = '\x1b[8m';
     
-    /** Define object flags */
+    /** Define item flags */
     this.OBJECT_WEARABLE = 1;
     this.OBJECT_WIELDABLE_1H = 2;
     this.OBJECT_WIELDABLE_2H = 3;
@@ -60,7 +60,7 @@ class World {
   /**
    * Initialize the world to provided data or defaults.
    * @param data (optional) Configuration object
-   * @todo Remove users and objects from this class and put them under areas
+   * @todo Remove users and items from this class and put them under areas
    */
   init(data = {}) {
     /** Set the default Muddy pot */
@@ -68,62 +68,62 @@ class World {
     
     /** Set the default welcome message */
     const defaultWelcome = ['\r\n',
-                           '\r\n',
-                           '\r\n',
-                           '                              W E L C O M E    T O\r\n',
-                           '\r\n',
-                           '\r\n',
-                           '                                          _     _\r\n',
-                           '                          /\\/\\  _   _  __| | __| |_   _\r\n',
-                           '                         /    \\| | | |/ _` |/ _` | | | |\r\n',
-                           '                        / /\\/\\ \\ |_| | (_| | (_| | |_| |\r\n',
-                           '                        \\/    \\/\\__,_|\\__,_|\\__,_|\\__, |\r\n',
-                           '                                                  |___/\r\n',
-                           '\r\n',
-                           '                              Created by Rich Lowe\r\n',
-                           '                                  MIT Licensed\r\n',
-                           '\r\n',
-                           '\r\n',
-                           '\r\n',
-                           '\r\n',
-                           '\r\n',
-                           '\r\n',
-                           '\r\n',
-                           '\r\n',
-                           'Hello, what is your name? '].join('');
+                            '\r\n',
+                            '\r\n',
+                            '                              W E L C O M E    T O\r\n',
+                            '\r\n',
+                            '\r\n',
+                            '                                          _     _\r\n',
+                            '                          /\\/\\  _   _  __| | __| |_   _\r\n',
+                            '                         /    \\| | | |/ _` |/ _` | | | |\r\n',
+                            '                        / /\\/\\ \\ |_| | (_| | (_| | |_| |\r\n',
+                            '                        \\/    \\/\\__,_|\\__,_|\\__,_|\\__, |\r\n',
+                            '                                                  |___/\r\n',
+                            '\r\n',
+                            '                              Created by Rich Lowe\r\n',
+                            '                                  MIT Licensed\r\n',
+                            '\r\n',
+                            '\r\n',
+                            '\r\n',
+                            '\r\n',
+                            '\r\n',
+                            '\r\n',
+                            '\r\n',
+                            '\r\n',
+                            'Hello, what is your name? '].join('');
     
     /** Set the default message of the day */
     const defaultMotd = ['--------------------------------------------------------------------------------\r\n',
-                        'Message of the day:\r\n',
-                        '\r\n',
-                        'New features:\r\n',
-                        '  * Three default rooms to test movement\r\n',
-                        '  * All directions implemented\r\n',
-                        '  * Ability to look at rooms and see exits\r\n',
-                        '  * Saving of users, new and existing\r\n',
-                        '\r\n',
-                        '--------------------------------------------------------------------------------\r\n',
-                        'Press ENTER to continue...\r\n',
-                        '--------------------------------------------------------------------------------\r\n'].join('');
+                         'Message of the day:\r\n',
+                         '\r\n',
+                         'New features:\r\n',
+                         '  * Three default rooms to test movement\r\n',
+                         '  * All directions implemented\r\n',
+                         '  * Ability to look at rooms and see exits\r\n',
+                         '  * Saving of users, new and existing\r\n',
+                         '\r\n',
+                         '--------------------------------------------------------------------------------\r\n',
+                         'Press ENTER to continue...\r\n',
+                         '--------------------------------------------------------------------------------\r\n'].join('');
 
     /** Set the default loadAreas() handler with two explicitly defined rooms in one area */
     const defaultLoadAreas = () => {
       /** Create new area */
       const area = new areas.Area(this, {
         id: 1,
-        name: 'Stuck in the mud',
-        flags: 0,
+        name: 'Stuck in the mud'
       });
       
-      const object = new objects.Object(this, {
+      /** Create an item */
+      const item = new items.Item(this, {
         id: 1,
         name: 'a muddy stick',
-        description: `It's a stick covered in mud.`,
-        flags: [2]
+        description: `It's a stick covered in mud.`
       });
       
-      area.objects().push(object);
+      area.items().push(item);
       
+      /** Create a mobile */
       const mobile = new mobiles.Mobile(this, {
         id: 1,
         name: 'a mud monster',
@@ -132,7 +132,11 @@ class World {
       
       area.mobiles().push(mobile);
       
-      let room = new rooms.Room(this, {
+      /** Create three rooms */
+      let room;
+      
+      /** First */
+      room = new rooms.Room(this, {
         id: 1,
         area: area,
         name: 'Stuck in the mud',
@@ -148,12 +152,12 @@ class World {
             dir: this.DIR_DOWN,
             to: 3
           })
-        ],
-        objects: [object]
+        ]
       });
       
       area.rooms().push(room);
       
+      /** Second */
       room = new rooms.Room(this, {
         id: 2,
         area: area,
@@ -166,17 +170,17 @@ class World {
             dir: this.DIR_SOUTH,
             to: 1
           })
-        ],
-        mobiles: [mobile]
+        ]
       });
       
       area.rooms().push(room);
       
+      /** Third */
       room = new rooms.Room(this, {
         id: 3,
         area: area,
         name: 'Drowning in the mud',
-        description: [`There's *gurgle*, not much of interest *gurgle*, down here!`],
+        description: `There's *gurgle*, not much of interest *gurgle*, down here!`,
         exits: [
           new exits.Exit(this, {
             dir: this.DIR_UP,
@@ -187,12 +191,24 @@ class World {
       
       area.rooms().push(room);
       
+      /** Add area to world */
       this.areas().push(area);
+    };
+    
+    /** Set the default stage setting handler which places an objet and a mobile */
+    const defaultSetStage = () => {      
+      const item = this.items(1).copy();
+      
+      item.room(this.rooms(1));
+      
+      const mobile = this.mobiles(1).copy();
+      
+      mobile.room(this.rooms(2));
     };
     
     /** Set the default loadUserByName() handler which just loads an empty user and is expected to be replaced */
     const defaultLoadUserByName = (name, next) => { 
-      next(new users.User(this));
+      next(null);
     };
     
     /** Create template for all direction commands */
@@ -274,8 +290,8 @@ class World {
           });
           
           /** Send any objets in the room */
-          user.room().objects().forEach((object) => {
-            user.send(`    ${object.name()} sits here.\r\n`);
+          user.room().items().forEach((item) => {
+            user.send(`    ${item.name()} sits here.\r\n`);
           });
         },
         priority: true
@@ -285,8 +301,14 @@ class World {
         command: (user, buffer) => {
           console.log(`User ${user.name()} has quit.`);
 
+          /** Remove user from room */
+          if ( user.room() )
+            user.room().users().splice(user.room().users().indexOf(user), 1);
+          
+          /** Remove user from world */
           this.users().splice(this.users().indexOf(user), 1);
 
+          /** Goodbye */
           user.socket().end('Goodbye!\r\n');
         }
       }),
@@ -314,11 +336,11 @@ class World {
       dirCommand('down')
     ];
     
-    /** Objects and values */
+    /** Items and values */
     this.port(data.port == null ? defaultPort : data.port);
     this.areas(data.areas == null ? [] : data.areas);
     this.rooms(data.rooms == null ? [] : data.rooms);
-    this.objects(data.objects == null ? [] : data.objects);
+    this.items(data.items == null ? [] : data.items);
     this.mobiles(data.mobiles == null ? [] : data.mobiles);
     this.users(data.users == null ? [] : data.users);
     this.commands(data.commands == null ? defaultCommands : data.commands);
@@ -331,6 +353,7 @@ class World {
     this.saveUser(data.saveUser == null ? (user) => {} : data.saveUser);
     this.loadAreas(data.loadAreas == null ? defaultLoadAreas : data.loadAreas);
     this.saveArea(data.saveArea == null ? (area) => {} : data.saveArea);
+    this.setStage(data.setStage == null ? defaultSetStage : data.setStage);
   }
 
   /**
@@ -390,12 +413,12 @@ class World {
         });
       });
       
-      /** Log loaded objects */
-      area.objects().forEach((object) => {
+      /** Log loaded items */
+      area.items().forEach((item) => {
         /** Add to the world */
-        this.objects().push(object);
+        this.items().push(item);
         
-        console.log(`Loaded object ${object.name()}...`);
+        console.log(`Loaded item ${item.name()}...`);
       });
       
       /** Log loaded mobiles */
@@ -407,6 +430,9 @@ class World {
       });
     });
       
+    /** Set the stage, note setStage() returns a function, thus the ()() */
+    this.setStage()();
+    
     /** Create server -- net.createServer constructor parameter is new connection handler */
     const server = net.createServer((socket) => {
       console.log(`New socket from ${socket.address().address}.`);
@@ -568,26 +594,26 @@ class World {
   }
   
   /** 
-   * Objects getter/setter.
-   * @param (optional) users Desired objects
+   * Items getter/setter.
+   * @param (optional) users Desired items
    * @return The world for set call chaining
    */
-  objects(objects = null) {
+  items(items = null) {
     /** Getter */
     
     /** If parameter is null, return array */
-    if ( objects == null )
-      return this._objects;
+    if ( items == null )
+      return this._items;
     
-    /** If parameter is number, return object by ID */
-    if ( typeof objects == 'number' ) {
-      return this._objects.find((object) => {
-        return object.id() == objects;
+    /** If parameter is number, return item by ID */
+    if ( typeof items == 'number' ) {
+      return this._items.find((item) => {
+        return item.id() == items;
       });
     }
 
     /** Setter */
-    this._objects = objects;
+    this._items = items;
 
     /** Allow for set call chaining */
     return this;
@@ -766,6 +792,23 @@ class World {
     /** Setter */
     this._saveArea = saveArea;
 
+    /** Allow for set call chaining */
+    return this;
+  }
+  
+  /**
+   * Stage setting handler getter/setter.
+   * @param (optional) setStage Desired stage setting handler
+   * @return The world for set call chaining
+   */
+  setStage(setStage = null) {
+    /** Getter */
+    if ( setStage == null )
+      return this._setStage;
+    
+    /** Setter */
+    this._setStage = setStage;
+    
     /** Allow for set call chaining */
     return this;
   }

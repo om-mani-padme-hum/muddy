@@ -5,7 +5,7 @@
   "main": "muddy.js",
   "scripts": {
     "start": "node example.js",
-    "test": "./node_modules/jshint/bin/jshint muddy.js world.js input.js users.js areas.js rooms.js objects.js mobiles.js"
+    "test": "./node_modules/jshint/bin/jshint muddy.js world.js input.js users.js areas.js rooms.js items.js mobiles.js"
   },
   "repository": {
     "type": "git",

@@ -6,11 +6,11 @@
 class Area {
   /**
    * Instantiate a new area.
-   * @param world The world object
+   * @param world The world item
    * @param data (optional) Configuration object
    */
   constructor(world, data = {}) {
-    /** Store the world object */
+    /** Store the world item */
     this.world(world);
     
     /** Initialize any optional configuration parameters */
@@ -24,7 +24,7 @@ class Area {
   init(data = {}) {
     /** In-game properties */
     this.rooms(data.rooms == null ? [] : data.rooms);
-    this.objects(data.objects == null ? [] : data.objects);
+    this.items(data.items == null ? [] : data.items);
     this.mobiles(data.mobiles == null ? [] : data.mobiles);
 
     /** Stored properties */
@@ -84,16 +84,16 @@ class Area {
   
   /** 
    * Objects getter/setter.
-   * @param (optional) objects Desired objects
+   * @param (optional) items Desired items
    * @return The area for set call chaining
    */
-  objects(objects = null) {
+  items(items = null) {
     /** Getter */
-    if ( objects == null )
-      return this._objects;
+    if ( items == null )
+      return this._items;
 
     /** Setter */
-    this._objects = objects;
+    this._items = items;
 
     /** Allow for set call chaining */
     return this;
