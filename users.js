@@ -45,6 +45,7 @@ class User {
     this.maxhp(data.maxhp == null ? 1 : data.maxhp);
     this.maxmana(data.maxmana == null ? 1 : data.maxmana);
     this.maxrage(data.maxrage == null ? 1 : data.maxrage);
+    this.experience(data.experience == null ? 0 : data.experience);
   }
   
   /**
@@ -130,7 +131,7 @@ class User {
     
     /** Move user to room */
     if ( typeof room == 'number' )
-      this._room = this.world.rooms(room);
+      this._room = this.world().rooms(room);
     else if ( room instanceof rooms.Room )
       this._room = room;
     
@@ -396,11 +397,28 @@ class User {
     return this;
   }
   
+  /** 
+   * Experience getter/setter.
+   * @param (optional) experience Desired experience
+   * @return The user for set call chaining
+   */
+  experience(experience = null) {
+    /** Getter */
+    if ( experience == null )
+      return this._experience;
+
+    /** Setter */
+    this._experience = parseInt(experience);
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
   /**
    * Send the user their prompt.
    */
   prompt() {
-    this.send('\r\n0xp <100h 100m> ');
+    this.send(`\r\n${this.experience()}xp <${this.hp()}h ${this.mana()}m ${this.rage()}r> `);
   }
   
   /**
