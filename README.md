@@ -31,7 +31,7 @@ Operational in limited form.  Three default rooms exist.  One item and one mobil
 * Finish loading and saving of areas, rooms, items, mobiles with MySQL source
 * Add output processor to interpret VT100 colors and styles
 * Implement socials
-* Implement the ability to get and drop items, containers, wearables, wieldables
+* Implement the ability to get and drop items, use containers, wear equipables
 * Implement fight engine with support for user defined fight modifiers
 * Implement periodic world updates
 * Implement mobile scripting
