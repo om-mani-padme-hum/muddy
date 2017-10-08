@@ -196,13 +196,17 @@ class World {
     };
     
     /** Set the default stage setting handler which places an objet and a mobile */
-    const defaultSetStage = () => {      
+    const defaultSetStage = () => {
+      /** Create item from id #1 */
       const item = this.items(1).copy();
       
+      /** Put it in room id #1 */
       item.room(this.rooms(1));
       
+      /** Create mobile from id #1 */
       const mobile = this.mobiles(1).copy();
       
+      /** Put it in room id #2 */
       mobile.room(this.rooms(2));
     };
     

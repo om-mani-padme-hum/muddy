@@ -32,15 +32,19 @@ class User {
     
     /** Stored properties */
     this.id(data.id == null ? -1 : data.id);
-    this.name(data.name == null ? "Nobody" : data.name);
-    this.password(data.password == null ? "" : data.password);
-    this.salt(data.salt == null ? "" : data.salt);
+    this.name(data.name == null ? 'Nobody' : data.name);
+    this.password(data.password == null ? '' : data.password);
+    this.salt(data.salt == null ? '' : data.salt);
     this.level(data.level == null ? 1 : data.level);
     this.race(data.race == null ? 1 : data.race);
-    this.lineage(data.lineage == null ? 1 : data.lineage);
+    this.calling(data.calling == null ? 1 : data.calling);
+    this.lineage(data.lineage == null ? '' : data.lineage);
     this.hp(data.hp == null ? 1 : data.hp);
     this.mana(data.mana == null ? 1 : data.mana);
     this.rage(data.rage == null ? 1 : data.rage);
+    this.maxhp(data.maxhp == null ? 1 : data.maxhp);
+    this.maxmana(data.maxmana == null ? 1 : data.maxmana);
+    this.maxrage(data.maxrage == null ? 1 : data.maxrage);
   }
   
   /**
@@ -257,6 +261,23 @@ class User {
   }
   
   /** 
+   * Calling getter/setter.
+   * @param (optional) calling Desired calling
+   * @return The user for set call chaining
+   */
+  calling(calling = null) {
+    /** Getter */
+    if ( calling == null )
+      return this._calling;
+
+    /** Setter */
+    this._calling = parseInt(calling);
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
+  /** 
    * Lineage getter/setter.
    * @param (optional) lineage Desired lineage
    * @return The user for set call chaining
@@ -267,7 +288,7 @@ class User {
       return this._lineage;
 
     /** Setter */
-    this._lineage = parseInt(lineage);
+    this._lineage = lineage.toString();
 
     /** Allow for set call chaining */
     return this;
@@ -324,6 +345,57 @@ class User {
     return this;
   }
   
+  /** 
+   * Max hit points getter/setter.
+   * @param (optional) hp Desired max hit points
+   * @return The user for set call chaining
+   */
+  maxhp(maxhp = null) {
+    /** Getter */
+    if ( maxhp == null )
+      return this._maxhp;
+
+    /** Setter */
+    this._maxhp = parseInt(maxhp);
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
+  /** 
+   * Max mana getter/setter.
+   * @param (optional) maxmana Desired max mana
+   * @return The user for set call chaining
+   */
+  maxmana(maxmana = null) {
+    /** Getter */
+    if ( maxmana == null )
+      return this._maxmana;
+
+    /** Setter */
+    this._maxmana = parseInt(maxmana);
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
+  /** 
+   * Max rage getter/setter.
+   * @param (optional) maxrage Desired max rage
+   * @return The user for set call chaining
+   */
+  maxrage(maxrage = null) {
+    /** Getter */
+    if ( maxrage == null )
+      return this._maxrage;
+
+    /** Setter */
+    this._maxrage = parseInt(maxrage);
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
   /**
    * Send the user their prompt.
    */
@@ -365,6 +437,7 @@ class User {
         this.outbuffer("");
       }
       
+      /** Call this function again in 1 second */
       setTimeout(this.flush.bind(this), 1000);
     } catch ( err ) {
       console.log('Failed to flush output buffer to socket, terminating output buffer loop.');

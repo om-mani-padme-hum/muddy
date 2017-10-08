@@ -29,18 +29,19 @@ class Mobile {
     
     /** Stored properties */
     this.id(data.id == null ? -1 : data.id);
-    this.name(data.name == null ? "" : data.name);
-    this.description(data.description == null ? "" : data.description);
+    this.name(data.name == null ? '' : data.name);
+    this.description(data.description == null ? '' : data.description);
     this.flags(data.flags == null ? [] : data.flags);
     this.level(data.level == null ? 1 : data.level);
-    this.race(data.race == null ? 1 : data.race);
-    this.lineage(data.lineage == null ? 1 : data.lineage);
-    this.hp(data.hp == null ? 1 : data.hp);
-    this.mana(data.mana == null ? 1 : data.mana);
-    this.rage(data.rage == null ? 1 : data.rage);
-    this.maxhp(data.maxhp == null ? 1 : data.maxhp);
-    this.maxmana(data.maxmana == null ? 1 : data.maxmana);
-    this.maxrage(data.maxrage == null ? 1 : data.maxrage);
+    this.race(data.race == null ? -1 : data.race);
+    this.calling(data.calling == null ? -1 : data.calling);
+    this.lineage(data.lineage == null ? '' : data.lineage);
+    this.hp(data.hp == null ? 100 : data.hp);
+    this.mana(data.mana == null ? 100 : data.mana);
+    this.rage(data.rage == null ? 100 : data.rage);
+    this.maxhp(data.maxhp == null ? 100 : data.maxhp);
+    this.maxmana(data.maxmana == null ? 100 : data.maxmana);
+    this.maxrage(data.maxrage == null ? 100 : data.maxrage);
   }
   
   /**
@@ -206,6 +207,23 @@ class Mobile {
   }
   
   /** 
+   * Calling getter/setter.
+   * @param (optional) calling Desired calling
+   * @return The mobile for set call chaining
+   */
+  calling(calling = null) {
+    /** Getter */
+    if ( calling == null )
+      return this._calling;
+
+    /** Setter */
+    this._calling = parseInt(calling);
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
+  /** 
    * Lineage getter/setter.
    * @param (optional) lineage Desired lineage
    * @return The mobile for set call chaining
@@ -216,7 +234,7 @@ class Mobile {
       return this._lineage;
 
     /** Setter */
-    this._lineage = parseInt(lineage);
+    this._lineage = lineage.toString();
 
     /** Allow for set call chaining */
     return this;
