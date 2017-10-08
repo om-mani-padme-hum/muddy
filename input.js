@@ -77,8 +77,9 @@ class InputProcessor {
    * @param user User item
    */
   processStateName(socket, buffer, user) {
-    const name = buffer.toString().trim();
-
+    /** Force name to start with uppercase letter */
+    let name = buffer.toString().trim().charAt(0).toUpperCase() + buffer.toString().trim().slice(1);
+    
     if ( !name.match(/[a-zA-Z]{1}[a-z0-9]+/i) ) {
       /** Invalid characters in name */
       user.send('Your name must start with a letter and contain only letters and numbers.\r\n');
@@ -294,7 +295,7 @@ class InputProcessor {
     }
     
     /** Set periodic flush of output buffer */
-    setTimeout(user.flush.bind(user), 2000);
+    setTimeout(user.flush.bind(user), 1000);
 
     /** Find and execute the look command for this user */
     this.world().commands('look').execute(user, '');

@@ -38,6 +38,9 @@ class Mobile {
     this.hp(data.hp == null ? 1 : data.hp);
     this.mana(data.mana == null ? 1 : data.mana);
     this.rage(data.rage == null ? 1 : data.rage);
+    this.maxhp(data.maxhp == null ? 1 : data.maxhp);
+    this.maxmana(data.maxmana == null ? 1 : data.maxmana);
+    this.maxrage(data.maxrage == null ? 1 : data.maxrage);
   }
   
   /**
@@ -270,6 +273,57 @@ class Mobile {
     return this;
   }
   
+  /** 
+   * Max hit points getter/setter.
+   * @param (optional) maxhp Desired max hit points
+   * @return The mobile for set call chaining
+   */
+  maxhp(maxhp = null) {
+    /** Getter */
+    if ( maxhp == null )
+      return this._maxhp;
+
+    /** Setter */
+    this._maxhp = parseInt(maxhp);
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
+  /** 
+   * Max mana getter/setter.
+   * @param (optional) maxmana Desired max mana
+   * @return The mobile for set call chaining
+   */
+  maxmana(maxmana = null) {
+    /** Getter */
+    if ( maxmana == null )
+      return this._maxmana;
+
+    /** Setter */
+    this._maxmana = parseInt(maxmana);
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
+  /** 
+   * Max rage getter/setter.
+   * @param (optional) maxrage Desired max rage
+   * @return The mobile for set call chaining
+   */
+  maxrage(maxrage = null) {
+    /** Getter */
+    if ( maxrage == null )
+      return this._maxrage;
+
+    /** Setter */
+    this._maxrage = parseInt(maxrage);
+
+    /** Allow for set call chaining */
+    return this;
+  }
+  
   /**
    * Produce a copy of this item.
    * @return A newly cloned instance of this item
@@ -285,7 +339,10 @@ class Mobile {
       lineage: this.lineage(),
       hp: this.hp(),
       mana: this.mana(),
-      rage: this.rage()
+      rage: this.rage(),
+      maxhp: this.maxhp(),
+      maxmana: this.maxmana(),
+      maxrage: this.maxrage()
     });
   }
 }

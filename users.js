@@ -365,7 +365,7 @@ class User {
         this.outbuffer("");
       }
       
-      setTimeout(this.flush.bind(this), 2000);
+      setTimeout(this.flush.bind(this), 1000);
     } catch ( err ) {
       console.log('Failed to flush output buffer to socket, terminating output buffer loop.');
     }
