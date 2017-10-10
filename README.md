@@ -11,7 +11,7 @@ Operational in limited form.  Three default rooms exist.  One item and one mobil
 * Advanced mobile scripting capabilities, along with dynamic weather and other periodic events, all customizable
 * Races and lineages, each with their unique benefits, deficiencies, and skillsets, again completely customizable
 
-#### Current Commands:
+## Current Commands:
 * down
 * east
 * look
