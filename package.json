@@ -2,10 +2,10 @@
   "name": "muddy",
   "version": "0.3.3",
   "description": "A Node.js Multi-User Dungeon (MUD) Framework",
-  "main": "muddy.js",
+  "main": "index.js",
   "scripts": {
     "start": "node example.js",
-    "test": "./node_modules/jshint/bin/jshint muddy.js world.js input.js users.js areas.js rooms.js items.js mobiles.js"
+    "test": "eslint characters.js commands.js constants.js example.js exits.js index.js items.js rooms.js world.js"
   },
   "repository": {
     "type": "git",
@@ -25,10 +25,14 @@
   },
   "homepage": "https://github.com/om-mani-padme-hum/muddy#readme",
   "devDependencies": {
-    "jshint": "^2.9.5"
+    "mysql": "^2.15.0"
   },
   "jshintConfig": {
     "esversion": 6,
     "node": true
+  },
+  "dependencies": {
+    "ezobjects": "^2.6.0",
+    "moment": "^2.22.2"
   }
 }
