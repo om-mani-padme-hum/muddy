@@ -10,8 +10,8 @@ module.exports = {
   STATE_DISCONNECTED: 6,
     
   /** Define VT100 terminal modifiers */
-  VT100_CLEAR: '\x1b[0m',
-  VT100_HIDE_TEXT: '\x1b[8m',
+  VT100_CLEAR: `\x1b[0m`,
+  VT100_HIDE_TEXT: `\x1b[8m`,
     
   /** Define item flags */
   OBJECT_WEARABLE: 1,
@@ -29,5 +29,5 @@ module.exports = {
   DIR_WEST: 7,                     /**< w */
   DIR_NORTHWEST: 8,                /**< nw */
   DIR_UP: 9,                       /**< u */
-  DIR_DOWN: 10,                    /**< d */
+  DIR_DOWN: 10                     /**< d */
 };

@@ -1,22 +1,22 @@
 /** Require external modules */
-const ezobjects = require('ezobjects');
+const ezobjects = require(`ezobjects`);
 
 /** Configure room object */
 const configRoom = {
-  tableName: 'rooms',
-  className: 'Room',
+  tableName: `rooms`,
+  className: `Room`,
   properties: [
-    { name: 'id', type: 'number', mysqlType: 'int', autoIncrement: true, primary: true, setTransform: x => parseInt(x) },
-    { name: 'name', type: 'string', mysqlType: 'varchar', length: 32 },
-    { name: 'description', type: 'string', mysqlType: 'text' },
-    { name: 'exits', type: 'Array', mysqlType: 'text', setTransform: x => x.map(x => parseInt(x)), saveTransform: x => x.join(','), loadTransform: x => x.split(',') },
-    { name: 'flags', type: 'Array', mysqlType: 'text', setTransform: x => x.map(x => parseInt(x)), saveTransform: x => x.join(','), loadTransform: x => x.split(',') },
-    { name: 'area', type: 'Area' },
-    { name: 'characters', type: 'Array', setTransform: x => x.map(x => ezobjects.instanceOf(x, 'Character') ? null : x) },
-    { name: 'items', type: 'Array', setTransform: x => x.map(x => ezobjects.instanceOf(x, 'Item') ? null : x) }
+    { name: `id`, type: `number`, mysqlType: `int`, autoIncrement: true, primary: true, setTransform: x => parseInt(x) },
+    { name: `name`, type: `string`, mysqlType: `varchar`, length: 32 },
+    { name: `description`, type: `string`, mysqlType: `text` },
+    { name: `exits`, type: `Array`, mysqlType: `text`, setTransform: x => x.map(x => parseInt(x)), saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`) },
+    { name: `flags`, type: `Array`, mysqlType: `text`, setTransform: x => x.map(x => parseInt(x)), saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`) },
+    { name: `area`, type: `Area` },
+    { name: `characters`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Character`) ? null : x) },
+    { name: `items`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Item`) ? null : x) }
   ],
   indexes: [
-    { name: 'name', type: 'BTREE', columns: [ 'name' ] }
+    { name: `name`, type: `BTREE`, columns: [ `name` ] }
   ]
 };
 

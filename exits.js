@@ -1,18 +1,18 @@
 /** Require external modules */
-const ezobjects = require('ezobjects');
+const ezobjects = require(`ezobjects`);
 
 /** Configure exit object */
 const configExit = {
-  tableName: 'exits',
-  className: 'Exit',
+  tableName: `exits`,
+  className: `Exit`,
   properties: [
-    { name: 'id', type: 'number', mysqlType: 'int', autoIncrement: true, primary: true, setTransform: x => parseInt(x) },
-    { name: 'dir', type: 'number', mysqlType: 'int' },
-    { name: 'to', instanceOf: 'Room' },
-    { name: 'flags', type: 'Array', mysqlType: 'text', setTransform: x => x.map(x => parseInt(x)), saveTransform: x => x.join(','), loadTransform: x => x.split(',') },
+    { name: `id`, type: `number`, mysqlType: `int`, autoIncrement: true, primary: true, setTransform: x => parseInt(x) },
+    { name: `dir`, type: `number`, mysqlType: `int` },
+    { name: `to`, instanceOf: `Room` },
+    { name: `flags`, type: `Array`, mysqlType: `text`, setTransform: x => x.map(x => parseInt(x)), saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`) },
   ],
   indexes: [
-    { name: 'name', type: 'BTREE', columns: [ 'name' ] }
+    { name: `name`, type: `BTREE`, columns: [ `name` ] }
   ]
 };
 

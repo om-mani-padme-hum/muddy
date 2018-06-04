@@ -1,13 +1,13 @@
 /** Require external modules */
-const ezobjects = require('ezobjects');
+const ezobjects = require(`ezobjects`);
 
 /** Configure command object */
 const configCommand = {
-  className: 'Command',
+  className: `Command`,
   properties: [
-    { name: 'name', type: 'string' },
-    { name: 'command', type: 'function' },
-    { name: 'priority', type: 'number', setTransform: x => parseInt(x) }
+    { name: `name`, type: `string` },
+    { name: `command`, type: `function` },
+    { name: `priority`, type: `number`, setTransform: x => parseInt(x) }
   ]
 };
 
