@@ -27,15 +27,13 @@
     "url": "https://github.com/om-mani-padme-hum/muddy/issues"
   },
   "homepage": "https://github.com/om-mani-padme-hum/muddy#readme",
-  "devDependencies": {
-    "mysql": "^2.15.0"
-  },
+  "devDependencies": {},
   "jshintConfig": {
     "esversion": 6,
     "node": true
   },
   "dependencies": {
-    "ezobjects": "^2.6.0",
+    "ezobjects": "^2.7.0",
     "moment": "^2.22.2",
     "winston": "^2.4.2"
   }

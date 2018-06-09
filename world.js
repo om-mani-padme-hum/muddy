@@ -1,18 +1,12 @@
 /** Load external modules */
 const crypto = require(`crypto`);
 const ezobjects = require(`ezobjects`);
-const mysql = require(`mysql`);
 const net = require(`net`);
 const winston = require(`winston`);
 
 /** Load local modules */
-const areas = require(`./areas`);
-const characters = require(`./characters`);
-const commands = require(`./commands`);
+const models = require(`./models`);
 const constants = require(`./constants`);
-const exits = require(`./exits`);
-const items = require(`./items`);
-const rooms = require(`./rooms`);
 
 /** Configure world object */
 const configWorld = {
@@ -39,15 +33,29 @@ ezobjects.createObject(configWorld);
  * @description Load all areas in the `area` directory.
  */
 World.prototype.loadAreas = function () {
+  const area = new areas.Area();
+  const user = new characters.User();
+  const mobile = new characters.Mobile();
+  const room = new rooms.Room();
+  const exit = new exits.Exit();
+  
 }
 
 /**
  * @signature world.listen()
  * @description Start the server listening on the configured port!
  */
-World.prototype.listen = function () {
+World.prototype.listen = async function () {
   /** Instantiate pooled MySQL DB connection */
-  const database  = mysql.createPool(this.mysqlConfig());
+  const database  = new ezobjects.MySQLConnection(this.mysqlConfig());
+  
+  /** Create database tables if they don't already exist */
+  await ezobjects.createTable(database, areas.configArea);
+  await ezobjects.createTable(database, exits.configExit);
+  await ezobjects.createTable(database, rooms.configRoom);
+  await ezobjects.createTable(database, items.configItem);
+  await ezobjects.createTable(database, characters.configMobile);
+  await ezobjects.createTable(database, characters.configUser);
   
   /** Load the areas from area files */
   this.loadAreas();
