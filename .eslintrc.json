@@ -19,7 +19,10 @@
     "no-console": "off",
     "no-undef": "off",
     "no-unused-vars": "off",
-    "quotes": "off",
+    "quotes": [
+      "error",
+      "backtick"
+    ],
     "semi": [
       "error",
       "always"

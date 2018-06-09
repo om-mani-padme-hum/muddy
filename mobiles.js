@@ -2,7 +2,7 @@
 const ezobjects = require(`ezobjects`);
 
 /** Require local modules */
-const characters = require('./characters');
+const characters = require(`./characters`);
 
 /** Configure Mobile object as extension of character */
 const configMobile = {

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node example.js",
-    "test": "eslint characters.js commands.js constants.js example.js exits.js index.js items.js rooms.js world.js"
+    "test": "node_modules/.bin/eslint areas.js characters.js commands.js constants.js example.js exits.js index.js items.js mobiles.js rooms.js users.js world.js"
   },
   "repository": {
     "type": "git",
@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/om-mani-padme-hum/muddy#readme",
   "devDependencies": {
-    "mysql": "^2.15.0"
+    "eslint": "^4.19.1"
   },
   "jshintConfig": {
     "esversion": 6,
