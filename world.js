@@ -93,7 +93,7 @@ World.prototype.listen = function () {
 
         /** Zero the user's socket and update their state to disconnected, but leave them in game */
         user.socket(null);
-        user.state(user.STATE_DISCONNECTED);
+        user.state(constants.STATE_DISCONNECTED);
       } else {
         /** User doesn`t exist, just log disconnected socket */
         console.log(`Socket ${user.socket().address().address} disconnected.`);
