@@ -12,7 +12,9 @@ const commands = require(`./commands`);
 const constants = require(`./constants`);
 const exits = require(`./exits`);
 const items = require(`./items`);
+const mobiles = require(`./mobiles`);
 const rooms = require(`./rooms`);
+const users = require(`./users`);
 
 /** Configure world object */
 const configWorld = {
@@ -23,11 +25,13 @@ const configWorld = {
     { name: `commands`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Command`) ? null : x) },
     { name: `constants`, type: `Object`, default: constants },
     { name: `items`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Item`) ? null : x) },
+    { name: `mobiles`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Mobile`) ? null : x) },
+    { name: `motd`, type: `string`, default: constants.DEFAULT_MOTD },
     { name: `mysqlConfig`, type: `Object` },
-    { name: `npcs`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Mobile`) ? null : x) },
     { name: `port`, type: `number`, default: 7000, setTransform: x => parseInt(x) },
     { name: `rooms`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Room`) ? null : x) },
-    { name: `users`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `User`) ? null : x) }
+    { name: `users`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `User`) ? null : x) },
+    { name: `welcome`, type: `string`, default: constants.DEFAULT_WELCOME }
   ]
 };
 
@@ -47,15 +51,15 @@ World.prototype.loadAreas = function () {
  */
 World.prototype.listen = function () {
   /** Instantiate pooled MySQL DB connection */
-  const database  = mysql.createPool(this.mysqlConfig());
+  const database  = new ezobjects.MySQLConnection(this.mysqlConfig());
   
   /** Create tables if they doesn't exist */
-  ezobjects.createTable(database, configArea);
-  ezobjects.createTable(database, configExit);
-  ezobjects.createTable(database, configItem);
-  ezobjects.createTable(database, configMobile);
-  ezobjects.createTable(database, configRoom);
-  ezobjects.createTable(database, configUser);
+  ezobjects.createTable(database, areas.configArea);
+  ezobjects.createTable(database, exits.configExit);
+  ezobjects.createTable(database, items.configItem);
+  ezobjects.createTable(database, mobiles.configMobile);
+  ezobjects.createTable(database, rooms.configRoom);
+  ezobjects.createTable(database, users.configUser);
 
   /** Load the areas from area files */
   this.loadAreas();
@@ -65,7 +69,7 @@ World.prototype.listen = function () {
     console.log(`New socket from ${socket.address().address}.`);
 
     /** Create a new user */
-    const user = new characters.User({
+    const user = new users.User({
       socket: socket
     });
 
@@ -104,7 +108,7 @@ World.prototype.listen = function () {
     });
 
     /** Display welcome message */
-    socket.write(`Welcome message\r\n`);
+    socket.write(this.welcome());
   });
 
   /** Re-throw errors for now */

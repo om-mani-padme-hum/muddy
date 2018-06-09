@@ -29,5 +29,48 @@ module.exports = {
   DIR_WEST: 7,                     /**< w */
   DIR_NORTHWEST: 8,                /**< nw */
   DIR_UP: 9,                       /**< u */
-  DIR_DOWN: 10                     /**< d */
+  DIR_DOWN: 10,                    /**< d */
+  
+  /** Define default port */
+  DEFAULT_PORT: 7000,
+  
+  /** Define default welcome */
+  DEFAULT_WELCOME: ['\r\n',
+                    '\r\n',
+                    '\r\n',
+                    '                              W E L C O M E    T O\r\n',
+                    '\r\n',
+                    '\r\n',
+                    '                                          _     _\r\n',
+                    '                          /\\/\\  _   _  __| | __| |_   _\r\n',
+                    '                         /    \\| | | |/ _` |/ _` | | | |\r\n',
+                    '                        / /\\/\\ \\ |_| | (_| | (_| | |_| |\r\n',
+                    '                        \\/    \\/\\__,_|\\__,_|\\__,_|\\__, |\r\n',
+                    '                                                  |___/\r\n',
+                    '\r\n',
+                    '                              Created by Rich Lowe\r\n',
+                    '                                  MIT Licensed\r\n',
+                    '\r\n',
+                    '\r\n',
+                    '\r\n',
+                    '\r\n',
+                    '\r\n',
+                    '\r\n',
+                    '\r\n',
+                    '\r\n',
+                    'Hello, what is your name? '].join(''),
+    
+  /** Define default message of the day */
+  DEFAULT_MOTD: ['--------------------------------------------------------------------------------\r\n',
+                 'Message of the day:\r\n',
+                 '\r\n',
+                 'New features:\r\n',
+                 '  * Three default rooms to test movement\r\n',
+                 '  * All directions implemented\r\n',
+                 '  * Ability to look at rooms and see exits\r\n',
+                 '  * Saving of users, new and existing\r\n',
+                 '\r\n',
+                 '--------------------------------------------------------------------------------\r\n',
+                 'Press ENTER to continue...\r\n',
+                 '--------------------------------------------------------------------------------\r\n'].join('')
 };

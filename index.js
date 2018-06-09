@@ -5,7 +5,9 @@ const commands = require(`./commands`);
 const constants = require(`./constants`);
 const exits = require(`./exits`);
 const items = require(`./items`);
+const mobiles = require(`./mobiles`);
 const rooms = require(`./rooms`);
+const users = require(`./users`);
 const world = require(`./world`);
 
 /** Export classes and flags for use as a single framework */
@@ -15,7 +17,7 @@ module.exports.Character = characters.Character;
 module.exports.Command = commands.Command;
 module.exports.Exit = exits.Exit;
 module.exports.Item = items.Item;
-module.exports.Mobile = characters.Mobile;
+module.exports.Mobile = mobiles.Mobile;
 module.exports.Room = rooms.Room;
-module.exports.User = characters.User;
+module.exports.User = users.User;
 module.exports.World = world.World;

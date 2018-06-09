@@ -2,14 +2,14 @@
 const ezobjects = require(`ezobjects`);
 
 /** Require local modules */
-const character = require('./character');
+const characters = require('./characters');
 
 /** Configure user object as extension of character */
 const configUser = {
   tableName: `users`,
   className: `User`,
-  extends: Character,
-  extendsConfig: configCharacter,
+  extends: characters.Character,
+  extendsConfig: characters.configCharacter,
   properties: [
     { name: `password`, type: `string`, mysqlType: `text` }
   ]

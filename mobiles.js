@@ -2,14 +2,14 @@
 const ezobjects = require(`ezobjects`);
 
 /** Require local modules */
-const character = require('./character');
+const characters = require('./characters');
 
 /** Configure Mobile object as extension of character */
 const configMobile = {
   tableName: `mobiles`,
   className: `Mobile`,
-  extends: Character,
-  extendsConfig: configCharacter,
+  extends: characters.Character,
+  extendsConfig: characters.configCharacter,
   properties: [
   ]
 };

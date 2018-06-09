@@ -10,9 +10,6 @@ const configExit = {
     { name: `dir`, type: `number`, mysqlType: `int` },
     { name: `to`, instanceOf: `Room` },
     { name: `flags`, type: `Array`, mysqlType: `text`, setTransform: x => x.map(x => parseInt(x)), saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`) },
-  ],
-  indexes: [
-    { name: `name`, type: `BTREE`, columns: [ `name` ] }
   ]
 };
 
