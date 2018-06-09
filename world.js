@@ -11,9 +11,12 @@ const characters = require(`./characters`);
 const commands = require(`./commands`);
 const constants = require(`./constants`);
 const exits = require(`./exits`);
+const interaction = require(`./interaction`);
 const items = require(`./items`);
 const mobiles = require(`./mobiles`);
+const movement = require(`./movement`);
 const rooms = require(`./rooms`);
+const system = require(`./system`);
 const users = require(`./users`);
 
 /** Configure world object */
@@ -24,7 +27,10 @@ const configWorld = {
     { name: `characters`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Character`) ? null : x) },
     { name: `commands`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Command`) ? null : x) },
     { name: `constants`, type: `Object`, default: constants },
+    { name: `database`, type: `MySQLConnection` },
+    { name: `itemPrototypes`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Item`) ? null : x) },
     { name: `items`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Item`) ? null : x) },
+    { name: `mobilePrototypes`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Mobile`) ? null : x) },
     { name: `mobiles`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Mobile`) ? null : x) },
     { name: `motd`, type: `string`, default: constants.DEFAULT_MOTD },
     { name: `mysqlConfig`, type: `Object` },
@@ -40,9 +46,50 @@ ezobjects.createObject(configWorld);
 
 /**
  * @signature world.loadAreas()
- * @description Load all areas in the `area` directory.
+ * @description Load all areas in the database.
  */
-World.prototype.loadAreas = function () {
+World.prototype.loadAreas = async function () {
+  /** Load areas */
+  const areaList = await this.database().query(`SELECT * FROM areas`);
+  
+  areaList.forEach((row) => {
+    this.areas().push(new areas.Area().load(row));
+  });
+  
+  /** Load exits */
+  const exitList = await this.database().query(`SELECT * FROM exits`);
+
+  exitList.forEach((row) => {
+    this.exits().push(new exits.Exit().load(row));
+  });
+  
+  /** Load items */
+  const itemList = await this.database().query(`SELECT * FROM items`);
+
+  itemList.forEach((row) => {
+    this.itemPrototypes().push(new items.Item().load(row));
+  });
+  
+  /** Load mobiles */
+  const mobileList = await this.database().query(`SELECT * FROM mobiles`);
+
+  mobileList.forEach((row) => {
+    this.mobilePrototypes().push(new mobiles.Mobile().load(row));
+  });
+  
+  /** Load rooms */
+  const roomList = await this.database().query(`SELECT * FROM rooms`);
+
+  roomList.forEach((row) => {
+    this.rooms().push(new rooms.Room().load(row));
+  });
+};
+
+/**
+ * @signature world.setStage()
+ * @description Deploy the initial items and mobiles into the world.
+ */
+World.prototype.setStage = function () {
 };
 
 /**
@@ -51,18 +98,21 @@ World.prototype.loadAreas = function () {
  */
 World.prototype.listen = function () {
   /** Instantiate pooled MySQL DB connection */
-  const database  = new ezobjects.MySQLConnection(this.mysqlConfig());
+  this.database(new ezobjects.MySQLConnection(this.mysqlConfig()));
   
   /** Create tables if they doesn't exist */
-  ezobjects.createTable(database, areas.configArea);
-  ezobjects.createTable(database, exits.configExit);
-  ezobjects.createTable(database, items.configItem);
-  ezobjects.createTable(database, mobiles.configMobile);
-  ezobjects.createTable(database, rooms.configRoom);
-  ezobjects.createTable(database, users.configUser);
+  ezobjects.createTable(this.database(), areas.configArea);
+  ezobjects.createTable(this.database(), exits.configExit);
+  ezobjects.createTable(this.database(), items.configItem);
+  ezobjects.createTable(this.database(), mobiles.configMobile);
+  ezobjects.createTable(this.database(), rooms.configRoom);
+  ezobjects.createTable(this.database(), users.configUser);
 
-  /** Load the areas from area files */
+  /** Load the areas from database */
   this.loadAreas();
+  
+  /** Set the stage */
+  this.setStage();
   
   /** Create server -- net.createServer constructor parameter is new connection handler */
   const server = net.createServer((socket) => {

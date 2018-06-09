@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node example.js",
-    "test": "node_modules/.bin/eslint areas.js characters.js commands.js constants.js example.js exits.js index.js items.js mobiles.js rooms.js users.js world.js"
+    "test": "node_modules/.bin/eslint areas.js characters.js commands.js constants.js deployments.js example.js exits.js index.js interaction.js items.js mobiles.js movement.js rooms.js system.js users.js world.js"
   },
   "repository": {
     "type": "git",
