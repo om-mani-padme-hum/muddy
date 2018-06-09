@@ -19,6 +19,9 @@ const configExit = {
 /** Create exit object */
 ezobjects.createObject(configExit);
 
+/** Create table if it doesn't exist */
+ezobjects.createTable(configExit);
+
 /** Export configs*/
 module.exports.configExit = configExit;
 

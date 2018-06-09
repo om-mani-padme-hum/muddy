@@ -29,6 +29,9 @@ const configItem = {
 /** Create item object */
 ezobjects.createObject(configItem);
 
+/** Create table if it doesn't exist */
+ezobjects.createTable(configItem);
+
 /** Export configs*/
 module.exports.configItem = configItem;
 

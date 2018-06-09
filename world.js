@@ -1,10 +1,11 @@
-/** External modules */
+/** Load external modules */
 const crypto = require(`crypto`);
 const ezobjects = require(`ezobjects`);
 const mysql = require(`mysql`);
 const net = require(`net`);
+const winston = require(`winston`);
 
-/** Muddy modules */
+/** Load local modules */
 const areas = require(`./areas`);
 const characters = require(`./characters`);
 const commands = require(`./commands`);
@@ -34,6 +35,13 @@ const configWorld = {
 ezobjects.createObject(configWorld);
 
 /**
+ * @signature world.loadAreas()
+ * @description Load all areas in the `area` directory.
+ */
+World.prototype.loadAreas = function () {
+}
+
+/**
  * @signature world.listen()
  * @description Start the server listening on the configured port!
  */
@@ -41,23 +49,64 @@ World.prototype.listen = function () {
   /** Instantiate pooled MySQL DB connection */
   const database  = mysql.createPool(this.mysqlConfig());
   
-  const server = net.createServer((c) => {
-    console.log(`Client connected`);
-    
-    c.on(`end`, () => {
-      console.log(`Client disconnected`);
+  /** Load the areas from area files */
+  this.loadAreas();
+  
+  /** Create server -- net.createServer constructor parameter is new connection handler */
+  const server = net.createServer((socket) => {
+    console.log(`New socket from ${socket.address().address}.`);
+
+    /** Create a new user */
+    const user = new characters.User({
+      socket: socket
     });
-    
-    c.write(`Welcome to Muddy!\r\n`);
-    c.pipe(c);
+
+    /** 
+     * Assign socket a random ID because apparently sockets aren't unique enough for comparison.
+     * @todo Find another way
+     */
+    socket.id = crypto.randomBytes(32).toString(`hex`);
+
+    /** Add user to active users list */
+    this.users().push(user);
+
+    /** Log user disconnects */
+    socket.on(`end`, () => {
+      /** Look up the socket`s user, if one exists */
+      const user = this.users().find(x => x.socket() == socket);
+
+      if ( user ) {
+        /** User exists, disconnect them */
+        console.log(`User ${user.name()} disconnected.`);
+
+        /** Zero the user's socket and update their state to disconnected, but leave them in game */
+        user.socket(null);
+        user.state(user.STATE_DISCONNECTED);
+      } else {
+        /** User doesn`t exist, just log disconnected socket */
+        console.log(`Socket ${user.socket().address().address} disconnected.`);
+      }
+    });
+
+    /** Data received from user */
+    socket.on(`data`, (buffer) => {    
+      /** Pass input to the input processor */
+      //inputProcessor.process(socket, buffer);
+      console.log(buffer);
+    });
+
+    /** Display welcome message */
+    socket.write(`Welcome message\r\n`);
   });
-  
-  server.on(`error`, (err) => {
-    throw err;
+
+  /** Re-throw errors for now */
+  server.on(`error`, (error) => {
+    throw error;
   });
-  
+
+  /** Time to get started */
   server.listen(this.port(), () => {
-    console.log(`Muddy up and running on port ${this.port()}!`);
+    console.log(`Muddy is up and running on port ${this.port()}!`);
   });
 };
 

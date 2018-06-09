@@ -24,6 +24,9 @@ const configArea = {
 /** Create area object */
 ezobjects.createObject(configArea);
 
+/** Create table if it doesn't exist */
+ezobjects.createTable(configArea);
+
 /** Export configs*/
 module.exports.configArea = configArea;
 

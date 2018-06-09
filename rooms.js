@@ -23,6 +23,9 @@ const configRoom = {
 /** Create room object */
 ezobjects.createObject(configRoom);
 
+/** Create table if it doesn't exist */
+ezobjects.createTable(configRoom);
+
 /** Export configs*/
 module.exports.configRoom = configRoom;
 

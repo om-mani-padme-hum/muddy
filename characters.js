@@ -12,6 +12,8 @@ const configCharacter = {
     { name: `lineage`, type: `number`, mysqlType: `int`, setTransform: x => parseInt(x) },
     { name: `path`, type: `number`, mysqlType: `int`, setTransform: x => parseInt(x) },
     { name: `affects`, type: `Array`, mysqlType: `text`, setTransform: x => x.map(x => parseInt(x)), saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`) },
+    { name: `socket`, type: `Socket` },
+    { name: `state`, type: `number`, setTransform: x => parseInt(x) },
     { name: `stats`, type: `object`, mysqlType: `text`, saveTransform: x => JSON.stringify(x), loadTransform: x => JSON.parse(x) },
     { name: `equipment`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Item`) ? null : x) },
     { name: `inventory`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Item`) ? null : x) }
@@ -38,6 +40,9 @@ const configUser = {
 /** Create user object */
 ezobjects.createObject(configUser);
 
+/** Create table if it doesn't exist */
+ezobjects.createTable(configUser);
+
 /** Configure Mobile object as extension of character */
 const configMobile = {
   tableName: `mobiles`,
@@ -50,6 +55,9 @@ const configMobile = {
 
 /** Create Mobile object */
 ezobjects.createObject(configMobile);
+
+/** Create table if it doesn't exist */
+ezobjects.createTable(configMobile);
 
 /** Export configs*/
 module.exports.configCharacter = configCharacter;
