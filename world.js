@@ -50,12 +50,12 @@ World.prototype.listen = function () {
   const database  = mysql.createPool(this.mysqlConfig());
   
   /** Create tables if they doesn't exist */
-  ezobjects.createTable(configArea);
-  ezobjects.createTable(configExit);
-  ezobjects.createTable(configItem);
-  ezobjects.createTable(configMobile);
-  ezobjects.createTable(configRoom);
-  ezobjects.createTable(configUser);
+  ezobjects.createTable(database, configArea);
+  ezobjects.createTable(database, configExit);
+  ezobjects.createTable(database, configItem);
+  ezobjects.createTable(database, configMobile);
+  ezobjects.createTable(database, configRoom);
+  ezobjects.createTable(database, configUser);
 
   /** Load the areas from area files */
   this.loadAreas();
