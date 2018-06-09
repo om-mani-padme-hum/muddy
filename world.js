@@ -10,7 +10,9 @@ const areas = require(`./areas`);
 const characters = require(`./characters`);
 const commands = require(`./commands`);
 const constants = require(`./constants`);
+const deployments = require(`./deployments`);
 const exits = require(`./exits`);
+const input = require('./input');
 const interaction = require(`./interaction`);
 const items = require(`./items`);
 const mobiles = require(`./mobiles`);
@@ -23,20 +25,20 @@ const users = require(`./users`);
 const configWorld = {
   className: `World`,
   properties: [
-    { name: `areas`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Area`) ? null : x) },
-    { name: `characters`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Character`) ? null : x) },
-    { name: `commands`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Command`) ? null : x) },
+    { name: `areas`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Area`) ? x : null) },
+    { name: `characters`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Character`) ? x : null) },
+    { name: `commands`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Command`) ? x : null) },
     { name: `constants`, type: `Object`, default: constants },
     { name: `database`, type: `MySQLConnection` },
-    { name: `itemPrototypes`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Item`) ? null : x) },
-    { name: `items`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Item`) ? null : x) },
-    { name: `mobilePrototypes`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Mobile`) ? null : x) },
-    { name: `mobiles`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Mobile`) ? null : x) },
+    { name: `itemPrototypes`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Item`) ? x : null) },
+    { name: `items`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Item`) ? x : null) },
+    { name: `mobilePrototypes`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Mobile`) ? x : null) },
+    { name: `mobiles`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Mobile`) ? x : null) },
     { name: `motd`, type: `string`, default: constants.DEFAULT_MOTD },
     { name: `mysqlConfig`, type: `Object` },
     { name: `port`, type: `number`, default: 7000, setTransform: x => parseInt(x) },
-    { name: `rooms`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Room`) ? null : x) },
-    { name: `users`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `User`) ? null : x) },
+    { name: `rooms`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Room`) ? x : null) },
+    { name: `users`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `User`) ? x : null) },
     { name: `welcome`, type: `string`, default: constants.DEFAULT_WELCOME }
   ]
 };
@@ -96,20 +98,26 @@ World.prototype.setStage = function () {
  * @signature world.listen()
  * @description Start the server listening on the configured port!
  */
-World.prototype.listen = function () {
+World.prototype.listen = async function () {
   /** Instantiate pooled MySQL DB connection */
   this.database(new ezobjects.MySQLConnection(this.mysqlConfig()));
   
   /** Create tables if they doesn't exist */
-  ezobjects.createTable(this.database(), areas.configArea);
-  ezobjects.createTable(this.database(), exits.configExit);
-  ezobjects.createTable(this.database(), items.configItem);
-  ezobjects.createTable(this.database(), mobiles.configMobile);
-  ezobjects.createTable(this.database(), rooms.configRoom);
-  ezobjects.createTable(this.database(), users.configUser);
+  await ezobjects.createTable(this.database(), areas.configArea);
+  await ezobjects.createTable(this.database(), exits.configExit);
+  await ezobjects.createTable(this.database(), items.configItem);
+  await ezobjects.createTable(this.database(), deployments.configDeployment);
+  await ezobjects.createTable(this.database(), mobiles.configMobile);
+  await ezobjects.createTable(this.database(), rooms.configRoom);
+  await ezobjects.createTable(this.database(), users.configUser);
 
+  /** Load commands */
+  this.commands(this.commands().concat(interaction));
+  this.commands(this.commands().concat(movement));
+  this.commands(this.commands().concat(system));
+    
   /** Load the areas from database */
-  this.loadAreas();
+  await this.loadAreas();
   
   /** Set the stage */
   this.setStage();
@@ -120,15 +128,12 @@ World.prototype.listen = function () {
 
     /** Create a new user */
     const user = new users.User({
+      lastAddress: socket.address().address,
       socket: socket
     });
-
-    /** 
-     * Assign socket a random ID because apparently sockets aren't unique enough for comparison.
-     * @todo Find another way
-     */
-    socket.id = crypto.randomBytes(32).toString(`hex`);
-
+    
+    socket.lastAddress = socket.address().address;
+    
     /** Add user to active users list */
     this.users().push(user);
 
@@ -146,19 +151,18 @@ World.prototype.listen = function () {
         user.state(constants.STATE_DISCONNECTED);
       } else {
         /** User doesn`t exist, just log disconnected socket */
-        console.log(`Socket ${user.socket().address().address} disconnected.`);
+        console.log(`Socket ${socket.lastAddress} disconnected.`);
       }
     });
 
     /** Data received from user */
     socket.on(`data`, (buffer) => {    
       /** Pass input to the input processor */
-      //inputProcessor.process(socket, buffer);
-      console.log(buffer);
+      input.process(this, user, buffer.toString().trim());
     });
 
     /** Display welcome message */
-    socket.write(this.welcome());
+    user.socket().write(this.welcome());
   });
 
   /** Re-throw errors for now */

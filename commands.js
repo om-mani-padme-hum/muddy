@@ -6,7 +6,7 @@ const configCommand = {
   className: `Command`,
   properties: [
     { name: `name`, type: `string` },
-    { name: `command`, type: `function` },
+    { name: `execute`, type: `function` },
     { name: `priority`, type: `number`, setTransform: x => parseInt(x) }
   ]
 };

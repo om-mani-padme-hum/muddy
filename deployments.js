@@ -9,7 +9,7 @@ const configDeployment = {
     { name: `id`, type: `number`, mysqlType: `int`, autoIncrement: true, primary: true, setTransform: x => parseInt(x) },
     { name: `type`, type: `number`, mysqlType: `int`, setTransform: x => parseInt(x) },
     { name: `objectId`, type: `number`, mysqlType: `int`, setTransform: x => parseInt(x) },
-    { name: `targetId`, type: `number`, mysqlType: `int`, setTransform: x => parseInt(x) },
+    { name: `targetId`, type: `number`, mysqlType: `int`, setTransform: x => parseInt(x) }
   ]
 };
 

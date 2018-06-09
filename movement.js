@@ -3,9 +3,9 @@ const commands = require(`./commands`);
 
 /** Create template for all direction commands */
 const dirCommand = (dir) => {
-  return new commands.Command(this, {
+  return new commands.Command({
     name: dir,
-    command: (world, user, buffer) => {
+    execute: (world, user, buffer) => {
       /** Look for an exit in that direction */
       const exit = user.room().exits(dir);
 
@@ -30,7 +30,7 @@ const dirCommand = (dir) => {
         user.send(`You cannot go that way.\r\n`);
       }
     },
-    priority: dir == `north` || dir == `south` ? true : false
+    priority: [`northeast`, `southeast`, `southwest`, `northwest`].includes(dir) ? 0 : 999
   });
 };
 

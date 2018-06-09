@@ -2,9 +2,9 @@
 const commands = require(`./commands`);
 
 module.exports = [
-  new commands.Command(this, {
+  new commands.Command({
     name: `quit`,
-    command: (world, user, buffer) => {
+    execute: (world, user, buffer) => {
       console.log(`User ${user.name()} has quit.`);
 
       /** Remove user from room */
@@ -18,9 +18,9 @@ module.exports = [
       user.socket().end(`Goodbye!\r\n`);
     }
   }),
-  new commands.Command(this, {
+  new commands.Command({
     name: `save`,
-    command: (world, user, buffer) => {
+    execute: (world, user, buffer) => {
       user.save(world.database());
 
       user.send(`Saved.\r\n`);

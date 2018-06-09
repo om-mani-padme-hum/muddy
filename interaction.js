@@ -2,9 +2,9 @@
 const commands = require(`./commands`);
 
 module.exports = [
-  new commands.Command(this, {
+  new commands.Command({
     name: `look`,
-    command: (world, user, buffer) => {
+    execute: (world, user, buffer) => {
       /** Send room name */
       user.send(`${user.room().name()}\r\n`);
 
@@ -50,6 +50,6 @@ module.exports = [
         user.send(`    ${item.name()} sits here.\r\n`);
       });
     },
-    priority: true
+    priority: 999
   })
 ];
