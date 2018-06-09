@@ -26,45 +26,8 @@ const configCharacter = {
 /** Create character object */
 ezobjects.createObject(configCharacter);
 
-/** Configure user object as extension of character */
-const configUser = {
-  tableName: `users`,
-  className: `User`,
-  extends: Character,
-  extendsConfig: configCharacter,
-  properties: [
-    { name: `password`, type: `string`, mysqlType: `text` }
-  ]
-};
-
-/** Create user object */
-ezobjects.createObject(configUser);
-
-/** Create table if it doesn't exist */
-ezobjects.createTable(configUser);
-
-/** Configure Mobile object as extension of character */
-const configMobile = {
-  tableName: `mobiles`,
-  className: `Mobile`,
-  extends: Character,
-  extendsConfig: configCharacter,
-  properties: [
-  ]
-};
-
-/** Create Mobile object */
-ezobjects.createObject(configMobile);
-
-/** Create table if it doesn't exist */
-ezobjects.createTable(configMobile);
-
-/** Export configs*/
+/** Export config */
 module.exports.configCharacter = configCharacter;
-module.exports.configMobile = configMobile;
-module.exports.configUser = configUser;
 
-/** Export objects */
+/** Export object */
 module.exports.Character = Character;
-module.exports.Mobile = Mobile;
-module.exports.User = User;

@@ -14,8 +14,8 @@ const configCommand = {
 /** Create command object */
 ezobjects.createObject(configCommand);
 
-/** Export configs*/
+/** Export config */
 module.exports.configCommand = configCommand;
 
-/** Export objects */
+/** Export object */
 module.exports.Command = Command;

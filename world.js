@@ -49,6 +49,14 @@ World.prototype.listen = function () {
   /** Instantiate pooled MySQL DB connection */
   const database  = mysql.createPool(this.mysqlConfig());
   
+  /** Create tables if they doesn't exist */
+  ezobjects.createTable(configArea);
+  ezobjects.createTable(configExit);
+  ezobjects.createTable(configItem);
+  ezobjects.createTable(configMobile);
+  ezobjects.createTable(configRoom);
+  ezobjects.createTable(configUser);
+
   /** Load the areas from area files */
   this.loadAreas();
   
