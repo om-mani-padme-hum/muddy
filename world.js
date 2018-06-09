@@ -43,7 +43,7 @@ ezobjects.createObject(configWorld);
  * @description Load all areas in the `area` directory.
  */
 World.prototype.loadAreas = function () {
-}
+};
 
 /**
  * @signature world.listen()

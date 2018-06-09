@@ -11,10 +11,7 @@
     "sourceType": "module"
   },
   "rules": {
-    "indent": [
-      "error",
-      2
-    ],
+    "indent": "off",
     "linebreak-style": [
       "error",
       "unix"
@@ -22,10 +19,7 @@
     "no-console": "off",
     "no-undef": "off",
     "no-unused-vars": "off",
-    "quotes": [
-      "error",
-      "backtick"
-    ],
+    "quotes": "off",
     "semi": [
       "error",
       "always"
