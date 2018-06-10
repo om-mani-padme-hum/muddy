@@ -1,6 +1,6 @@
 /** Require external modules */
 const ezobjects = require(`ezobjects`);
-const moment = require('moment');
+const moment = require(`moment`);
 
 /** Configure area object */
 const configArea = {
