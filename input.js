@@ -248,7 +248,7 @@ function processStateConnected(world, user, buffer) {
 
   /** If it exists, execute it for this user, otherwise send error */
   if ( command )
-    command.execute(world, user, matches[2]);
+    command.execute()(world, user, matches[2]);
   else
     user.send('That action does not exist in this world.\r\n');
 
