@@ -31,6 +31,22 @@ module.exports = {
   DIR_UP: 9,                       /**< u */
   DIR_DOWN: 10,                    /**< d */
   
+  dirNames: {
+    1: `north`,
+    2: `northeast`,
+    3: `east`,
+    4: `southeast`,
+    5: `south`,
+    6: `southwest`,
+    7: `west`,
+    8: `northwest`,
+    9: `up`,
+    10: `down`
+  },
+  
+  /** Define start room */
+  START_ROOM: 1,
+  
   /** Define default port */
   DEFAULT_PORT: 7000,
   
@@ -72,5 +88,5 @@ module.exports = {
                  `\r\n`,
                  `--------------------------------------------------------------------------------\r\n`,
                  `Press ENTER to continue...\r\n`,
-                 `--------------------------------------------------------------------------------\r\n`].join(``)
+                 `--------------------------------------------------------------------------------`].join(``)
 };

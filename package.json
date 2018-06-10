@@ -35,7 +35,7 @@
     "node": true
   },
   "dependencies": {
-    "ezobjects": "^2.8.5",
+    "ezobjects": "^2.8.7",
     "moment": "^2.22.2",
     "winston": "^2.4.2"
   }

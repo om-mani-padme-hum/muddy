@@ -11,6 +11,10 @@ const configMobile = {
   extends: characters.Character,
   extendsConfig: characters.configCharacter,
   properties: [
+    { name: `scripts`, type: `Array`, setTransform: x => x.map(x => typeof x == `function` ? x : function () {}) },
+    { name: `health`, type: `number`, default: 100, setTransform: x => parseInt(x) },
+    { name: `mana`, type: `number`, default: 100, setTransform: x => parseInt(x) },
+    { name: `energy`, type: `number`, default: 100, setTransform: x => parseInt(x) }
   ]
 };
 

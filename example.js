@@ -1,4 +1,4 @@
-/** Load muddy */
+/** Require muddy */
 const muddy = require(`./index`);
 
 /** Create new Muddy world */

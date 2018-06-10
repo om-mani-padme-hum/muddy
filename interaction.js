@@ -4,7 +4,7 @@ const commands = require(`./commands`);
 module.exports = [
   new commands.Command({
     name: `look`,
-    execute: (world, user, buffer) => {
+    execute: async (world, user, buffer) => {
       /** Send room name */
       user.send(`${user.room().name()}\r\n`);
 
@@ -20,7 +20,7 @@ module.exports = [
         user.send(` `);
 
         /** Send exit name based on direction */
-        user.send(user.room().exits(exit.dir()));
+        user.send(world.constants().dirNames[exit.dir()]);
 
         count++;
       });
@@ -35,14 +35,9 @@ module.exports = [
       user.send(`${user.room().description()}\r\n`);
 
       /** Send other users in the room */
-      user.room().users().forEach((other) => {
+      user.room().characters().forEach((other) => {
         if ( user != other )
           user.send(`${other.name()} is standing here.\r\n`);
-      });
-
-      /** Send any mobiles in the room */
-      user.room().mobiles().forEach((mobile) => {
-        user.send(`  ${mobile.name()} is standing here.\r\n`);
       });
 
       /** Send any objets in the room */

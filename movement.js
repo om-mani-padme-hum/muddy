@@ -5,13 +5,13 @@ const commands = require(`./commands`);
 const dirCommand = (dir) => {
   return new commands.Command({
     name: dir,
-    execute: (world, user, buffer) => {
+    execute: async (world, user, buffer) => {
       /** Look for an exit in that direction */
-      const exit = user.room().exits(dir);
+      const exit = user.room().exits().find(x => x.dir() == dir);
 
       if ( exit ) {
         /** If it exists, get the room it goes to */
-        const room = this.rooms(exit.to());
+        const room = this.rooms().find(x => x.id() == exit.to());
 
         if ( room ) {
           /** If room exists, move user to room and look */

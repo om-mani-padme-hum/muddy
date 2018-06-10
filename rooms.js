@@ -9,7 +9,7 @@ const configRoom = {
     { name: `id`, type: `number`, mysqlType: `int`, autoIncrement: true, primary: true, setTransform: x => parseInt(x) },
     { name: `name`, type: `string`, mysqlType: `varchar`, length: 32 },
     { name: `description`, type: `string`, mysqlType: `text` },
-    { name: `exits`, type: `Array`, mysqlType: `text`, setTransform: x => x.map(x => parseInt(x)), saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`) },
+    { name: `exits`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Exit`) ? x : null)  },
     { name: `flags`, type: `Array`, mysqlType: `text`, setTransform: x => x.map(x => parseInt(x)), saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`) },
     { name: `area`, type: `Area` },
     { name: `characters`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Character`) ? x : null) },

@@ -1,10 +1,10 @@
-/** Load external modules */
+/** Require external modules */
 const crypto = require(`crypto`);
 const ezobjects = require(`ezobjects`);
 const net = require(`net`);
 const winston = require(`winston`);
 
-/** Load local modules */
+/** Require local modules */
 const areas = require(`./areas`);
 const characters = require(`./characters`);
 const commands = require(`./commands`);
@@ -55,35 +55,35 @@ World.prototype.loadAreas = async function () {
   const areaList = await this.database().query(`SELECT * FROM areas`);
   
   areaList.forEach((row) => {
-    this.areas().push(new areas.Area().load(row));
+    this.areas().push(new areas.Area(row));
   });
   
   /** Load exits */
   const exitList = await this.database().query(`SELECT * FROM exits`);
 
   exitList.forEach((row) => {
-    this.exits().push(new exits.Exit().load(row));
+    this.exits().push(new exits.Exit(row));
   });
   
   /** Load items */
   const itemList = await this.database().query(`SELECT * FROM items`);
 
   itemList.forEach((row) => {
-    this.itemPrototypes().push(new items.Item().load(row));
+    this.itemPrototypes().push(new items.Item(row));
   });
   
   /** Load mobiles */
   const mobileList = await this.database().query(`SELECT * FROM mobiles`);
 
   mobileList.forEach((row) => {
-    this.mobilePrototypes().push(new mobiles.Mobile().load(row));
+    this.mobilePrototypes().push(new mobiles.Mobile(row));
   });
   
   /** Load rooms */
   const roomList = await this.database().query(`SELECT * FROM rooms`);
 
   roomList.forEach((row) => {
-    this.rooms().push(new rooms.Room().load(row));
+    this.rooms().push(new rooms.Room(row));
   });
 };
 
@@ -100,7 +100,7 @@ World.prototype.setStage = function () {
  */
 World.prototype.listen = async function () {
   /** Create custom winston logger */
-  const logger = new winston.Logger({
+  this.log(new winston.Logger({
     transports: [
       new winston.transports.Console({
         level: `silly`,
@@ -125,10 +125,8 @@ World.prototype.listen = async function () {
         prettyPrint: true
       })
     ]
-  });
+  }));
   
-  this.log(logger);
-
   /** Instantiate pooled MySQL DB connection */
   this.database(new ezobjects.MySQLConnection(this.mysqlConfig()));
   
@@ -152,7 +150,7 @@ World.prototype.listen = async function () {
   /** Set the stage */
   this.setStage();
   
-  /** Create server -- net.createServer constructor parameter is new connection handler */
+  /** Create server -- net.createServer argument is the new connection handler */
   const server = net.createServer((socket) => {
     this.log().info(`New socket from ${socket.address().address}.`);
 
@@ -172,15 +170,17 @@ World.prototype.listen = async function () {
       /** Look up the socket`s user, if one exists */
       const user = this.users().find(x => x.socket() == socket);
 
+      /** If user exists, disconnect them */
       if ( user ) {
-        /** User exists, disconnect them */
         this.log().info(`User ${user.name()} disconnected.`);
 
         /** Zero the user's socket and update their state to disconnected, but leave them in game */
         user.socket(null);
         user.state(constants.STATE_DISCONNECTED);
-      } else {
-        /** User doesn`t exist, just log disconnected socket */
+      } 
+      
+      /** Otherwise just log disconnected socket */
+      else {
         this.log().info(`Socket ${socket.lastAddress} disconnected.`);
       }
     });
@@ -197,7 +197,7 @@ World.prototype.listen = async function () {
 
   /** Re-throw errors for now */
   server.on(`error`, (error) => {
-    throw error;
+    this.log().error(error);
   });
 
   /** Time to get started */

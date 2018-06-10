@@ -1,9 +1,6 @@
 /** Require external modules */
 const crypto = require('crypto');
 
-/** Require local modules */
-const constants = require('./constants');
-
 /**
  * Process input from a user at the name state.
  * @param socket User's socket item
@@ -30,7 +27,7 @@ async function processStateName(world, user, buffer) {
 
     try {
       await user.load(world.database(), name);
-    } catch ( err ) {
+    } catch ( error ) {
       newUser = true;
     }
 
@@ -39,17 +36,17 @@ async function processStateName(world, user, buffer) {
       user.send('Please enter your password: ');
 
       /** Move on to ask for existing password */
-      user.state(constants.STATE_OLD_PASSWORD);
+      user.state(world.constants().STATE_OLD_PASSWORD);
     } else {
       user.send(`Welcome to Muddy, ${name}!\r\n`);
       user.send('Please choose a password: ');
 
       /** Move on to ask for them to pick a password */
-      user.state(constants.STATE_NEW_PASSWORD);
+      user.state(world.constants().STATE_NEW_PASSWORD);
     }
 
     /** Hide text for password */
-    user.send(constants.VT100_HIDE_TEXT);
+    user.send(world.constants().VT100_HIDE_TEXT);
   }
 }
 
@@ -70,15 +67,22 @@ function processStateOldPassword(world, user, buffer) {
   const password = hash.digest('hex');
 
   /** Stop hiding text */
-  user.send(constants.VT100_CLEAR);
+  user.send(world.constants().VT100_CLEAR);
 
   /** Validate password */
   if ( password == user.password() ) {
     /** Password matches, display message of the day */
-    user.send(this.world().motd());
+    user.send(world.motd());
 
+    /** Get the start room */
+    const room = world.rooms().find(x => x.id() == user.lastRoom());
+
+    /** Move the user to the start room */
+    user.room(room);
+    room.characters().push(user);
+    
     /** Move on and pause until they're done reading the message of the day */
-    user.state(constants.STATE_MOTD);
+    user.state(world.constants().STATE_MOTD);
 
     world.log().info(`User ${user.name()} connected.`);
   } else {
@@ -100,7 +104,7 @@ function processStateOldPassword(world, user, buffer) {
  */
 function processStateNewPassword(world, user, buffer) {
   /** Stop hiding text */
-  user.send(constants.VT100_CLEAR);
+  user.send(world.constants().VT100_CLEAR);
 
   if ( buffer.match(/\s/i) ) {
     /** Whitespaces in password not allowed */
@@ -130,10 +134,10 @@ function processStateNewPassword(world, user, buffer) {
     user.send('Please confirm your new password: ');
 
     /** Hide text for password */
-    user.send(constants.VT100_HIDE_TEXT);
+    user.send(world.constants().VT100_HIDE_TEXT);
 
     /** Move on and confirm the password */
-    user.state(constants.STATE_CONFIRM_PASSWORD);
+    user.state(world.constants().STATE_CONFIRM_PASSWORD);
   }
 }
 
@@ -154,27 +158,29 @@ function processStateConfirmPassword(world, user, buffer) {
   const password = hash.digest('hex');
 
   /** Stop hiding text */
-  user.send(constants.VT100_CLEAR);
+  user.send(world.constants().VT100_CLEAR);
 
   if ( password == user.password() ) {
     /** Password matches, proceed to the message of the day */
     user.send(world.motd());
 
     /** Get the start room */
-    const room = world.rooms().find(x => x.id() == constants.START_ROOM);
+    const room = world.rooms().find(x => x.id() == world.constants().START_ROOM);
 
     /** Move the user to the start room */
     user.room(room);
+    room.characters().push(user);
+    user.lastRoom(room.id());
 
     /** Move on and pause until they're done reading the message of the day */
-    user.state(constants.STATE_MOTD);
+    user.state(world.constants().STATE_MOTD);
 
     world.log().info(`User ${user.name()} connected.`);
   } else {
     /** Password does not match, let's try this again */
     user.send('Passwords do not match, please try again!\r\n');
     user.send('Please choose a password: ');
-    user.state(constants.STATE_NEW_PASSWORD);
+    user.state(world.constants().STATE_NEW_PASSWORD);
   }
 }
 
@@ -184,7 +190,7 @@ function processStateConfirmPassword(world, user, buffer) {
  * @param buffer User's input buffer
  * @param user User item
  */
-function processStateMOTD(world, user, buffer) {
+async function processStateMOTD(world, user, buffer) {
   /** Replace user if he already exists */
   const oldUser = world.users().find((worldUser) => {
     return user.name() == worldUser.name() && user !== worldUser;
@@ -216,13 +222,13 @@ function processStateMOTD(world, user, buffer) {
   //setTimeout(user.flush.bind(user), 1000);
 
   /** Find and execute the look command for this user */
-  world.commands().find(x => x.name() == 'look').execute()(world, user, '');
+  await world.commands().find(x => x.name() == 'look').execute()(world, user, '');
 
   /** Send prompt */
   user.prompt();
 
   /** Move on and put user in game */
-  user.state(constants.STATE_CONNECTED);
+  user.state(world.constants().STATE_CONNECTED);
 }
 
 /**
@@ -231,7 +237,7 @@ function processStateMOTD(world, user, buffer) {
  * @param buffer User's input buffer
  * @param user User item
  */
-function processStateConnected(world, user, buffer) {
+async function processStateConnected(world, user, buffer) {
   /** @todo Process user commands */
   const matches = buffer.toString().trim().match(/^([^\s]*)\s*(.*)/);
 
@@ -248,7 +254,7 @@ function processStateConnected(world, user, buffer) {
 
   /** If it exists, execute it for this user, otherwise send error */
   if ( command )
-    command.execute()(world, user, matches[2]);
+    await command.execute()(world, user, matches[2]);
   else
     user.send('That action does not exist in this world.\r\n');
 
@@ -263,26 +269,26 @@ function processStateConnected(world, user, buffer) {
  */
 module.exports.process = async function (world, user, buffer) {
   /** User is at the name state, first input of the game */
-  if ( user.state() == constants.STATE_NAME )
+  if ( user.state() == world.constants().STATE_NAME )
     await processStateName(world, user, buffer);
 
   /** User submitted name and was found to be previously saved, require old password */
-  else if ( user.state() == constants.STATE_OLD_PASSWORD )
+  else if ( user.state() == world.constants().STATE_OLD_PASSWORD )
     processStateOldPassword(world, user, buffer);
   
   /** User submitted name and is new, ask for a new password */  
-  else if ( user.state() == constants.STATE_NEW_PASSWORD )
+  else if ( user.state() == world.constants().STATE_NEW_PASSWORD )
     processStateNewPassword(world, user, buffer);
   
   /** User is new and provided a password, confirm it to be sure they typed it right */
-  else if ( user.state() == constants.STATE_CONFIRM_PASSWORD )
+  else if ( user.state() == world.constants().STATE_CONFIRM_PASSWORD )
     processStateConfirmPassword(world, user, buffer);
   
   /** User has successfully logged in and is seeing MOTD, pause until they hit enter */
-  else if ( user.state() == constants.STATE_MOTD ) 
-    processStateMOTD(world, user, buffer);
+  else if ( user.state() == world.constants().STATE_MOTD ) 
+    await processStateMOTD(world, user, buffer);
   
   /** User is connected and in world */
-  else if ( user.state() == constants.STATE_CONNECTED )
-    processStateConnected(world, user, buffer);
+  else if ( user.state() == world.constants().STATE_CONNECTED )
+    await processStateConnected(world, user, buffer);
 }
