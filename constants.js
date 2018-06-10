@@ -19,30 +19,29 @@ module.exports = {
   OBJECT_WIELDABLE_2H: 3,
   OBJECT_CONTAINER: 4,
     
-  /** Define direction flags */
-  DIR_NORTH: 1,                    /**< n */
-  DIR_NORTHEAST: 2,                /**< ne */
-  DIR_EAST: 3,                     /**< e */
-  DIR_SOUTHEAST: 4,                /**< se */
-  DIR_SOUTH: 5,                    /**< s */
-  DIR_SOUTHWEST: 6,                /**< sw */
-  DIR_WEST: 7,                     /**< w */
-  DIR_NORTHWEST: 8,                /**< nw */
-  DIR_UP: 9,                       /**< u */
-  DIR_DOWN: 10,                    /**< d */
+  /** Define deployment flags */
+  DEPLOY_MOBILE_TO_ROOM: 1,
+  DEPLOY_ITEM_TO_ROOM: 2,
+  DEPLOY_ITEM_TO_MOBILE: 3,
+  DEPLOY_ITEM_TO_ITEM: 4,
   
-  dirNames: {
-    1: `north`,
-    2: `northeast`,
-    3: `east`,
-    4: `southeast`,
-    5: `south`,
-    6: `southwest`,
-    7: `west`,
-    8: `northwest`,
-    9: `up`,
-    10: `down`
-  },
+  /** Define direction flags */
+  DIR_NORTH: 0,                    /**< n */
+  DIR_NORTHEAST: 1,                /**< ne */
+  DIR_EAST: 2,                     /**< e */
+  DIR_SOUTHEAST: 3,                /**< se */
+  DIR_SOUTH: 4,                    /**< s */
+  DIR_SOUTHWEST: 5,                /**< sw */
+  DIR_WEST: 6,                     /**< w */
+  DIR_NORTHWEST: 7,                /**< nw */
+  DIR_UP: 8,                       /**< u */
+  DIR_DOWN: 9,                    /**< d */
+  
+  dirNames: [`north`, `northeast`, `east`, `southeast`, `south`,
+             `southwest`, `west`, `northwest`, `up`, `down`],
+  
+  dirShortNames: [`n`, `ne`, `e`, `se`, `s`, `sw`, `w`, `nw`, `u`, `d`],
+  dirOpposite: [4, 5, 6, 7, 0, 1, 2, 3, 9, 8],
   
   /** Define start room */
   START_ROOM: 1,

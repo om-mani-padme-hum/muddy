@@ -1,5 +1,6 @@
 /** Require external modules */
-const crypto = require('crypto');
+const crypto = require(`crypto`);
+const parseValues = require(`parse-values`).default;
 
 /**
  * Process input from a user at the name state.
@@ -11,14 +12,14 @@ async function processStateName(world, user, buffer) {
   /** Force name to start with uppercase letter */
   let name = buffer.toString().trim().charAt(0).toUpperCase() + buffer.toString().trim().slice(1);
 
-  if ( !name.match(/[a-zA-Z]{1}[a-z0-9]+/i) ) {
+  if ( !name.match(/^[a-z]+$/i) ) {
     /** Invalid characters in name */
-    user.send('Your name must start with a letter and contain only letters and numbers.\r\n');
-    user.send('Please enter a new name: ');
+    user.send(`Your name must contain only letters.\r\n`);
+    user.send(`Please enter a new name: `);
   } else if ( name.length < 3 || name.length > 14 ) { 
     /** Invalid name length */
-    user.send('Your name must be between 3 and 14 characters long.\r\n');
-    user.send('Please enter a new name: ');
+    user.send(`Your name must be between 3 and 14 characters long.\r\n`);
+    user.send(`Please enter a new name: `);
   } else { 
     let newUser = false;
     
@@ -33,13 +34,13 @@ async function processStateName(world, user, buffer) {
 
     if ( !newUser ) {     
       /** Existing user */
-      user.send('Please enter your password: ');
+      user.send(`Please enter your password: `);
 
       /** Move on to ask for existing password */
       user.state(world.constants().STATE_OLD_PASSWORD);
     } else {
       user.send(`Welcome to Muddy, ${name}!\r\n`);
-      user.send('Please choose a password: ');
+      user.send(`Please choose a password: `);
 
       /** Move on to ask for them to pick a password */
       user.state(world.constants().STATE_NEW_PASSWORD);
@@ -58,13 +59,13 @@ async function processStateName(world, user, buffer) {
  */
 function processStateOldPassword(world, user, buffer) {
   /** Set up the crypto */
-  const hash = crypto.createHmac('sha512', user.salt());
+  const hash = crypto.createHmac(`sha512`, user.salt());
 
   /** Provide it the unencrypted password */
   hash.update(buffer);
 
   /** Get the encrypted password back */
-  const password = hash.digest('hex');
+  const password = hash.digest(`hex`);
 
   /** Stop hiding text */
   user.send(world.constants().VT100_CLEAR);
@@ -74,12 +75,24 @@ function processStateOldPassword(world, user, buffer) {
     /** Password matches, display message of the day */
     user.send(world.motd());
 
-    /** Get the start room */
-    const room = world.rooms().find(x => x.id() == user.lastRoom());
+    /** Get the last room */
+    let room = world.rooms().find(x => x.id() == user.lastRoom());
 
-    /** Move the user to the start room */
-    user.room(room);
-    room.characters().push(user);
+    /** Verify last room exists or bug out */
+    if ( !room ) {
+      world.log().error(`User ${user.name()} trying to start with bad last room ${user.lastRoom()}, redirecting to start.`);
+      
+      room = world.rooms().find(x => x.id() == world.constants().START_ROOM);
+      
+      /** Verify start room exists or bug out */
+      if ( !room ) {
+        world.log().error(`Fatal error: Unable to load start room.`);
+        process.exit(1);
+      }
+    }
+    
+    /** Move the user to the last room */
+    world.characterToRoom(user, room);
     
     /** Move on and pause until they're done reading the message of the day */
     user.state(world.constants().STATE_MOTD);
@@ -90,7 +103,7 @@ function processStateOldPassword(world, user, buffer) {
     world.users().splice(world.users().indexOf(user), 1);
 
     /** Terminate socket */
-    user.socket().end("Incorrect password, goodbye!\r\n");
+    user.socket().end(`Incorrect password, goodbye!\r\n`);
 
     world.log().info(`Failed login by ${user.name()}.`);
   }
@@ -108,30 +121,30 @@ function processStateNewPassword(world, user, buffer) {
 
   if ( buffer.match(/\s/i) ) {
     /** Whitespaces in password not allowed */
-    user.send('Your password must not contain spaces or other whitespace characters.\r\n');
-    user.send('Please enter a new password: ');
+    user.send(`Your password must not contain spaces or other whitespace characters.\r\n`);
+    user.send(`Please enter a new password: `);
   } else if ( buffer.length < 8 || buffer.length > 32 ) { 
     /** Invalid password length */
-    user.send('Your password must be between 8 and 32 characters long.\r\n');
-    user.send('Please enter a new password: ');
+    user.send(`Your password must be between 8 and 32 characters long.\r\n`);
+    user.send(`Please enter a new password: `);
   } else {
     /** Generate a random salt */
-    const salt = crypto.randomBytes(8).toString('hex');
+    const salt = crypto.randomBytes(8).toString(`hex`);
 
     /** Set up the crypto */
-    const hash = crypto.createHmac('sha512', salt);
+    const hash = crypto.createHmac(`sha512`, salt);
 
     /** Provide it the unencrypted password */
     hash.update(buffer);
 
     /** Get the encrypted password back */
-    const password = hash.digest('hex');
+    const password = hash.digest(`hex`);
 
     /** Store the encrypted password and salt */
     user.password(password);
     user.salt(salt);
 
-    user.send('Please confirm your new password: ');
+    user.send(`Please confirm your new password: `);
 
     /** Hide text for password */
     user.send(world.constants().VT100_HIDE_TEXT);
@@ -149,13 +162,13 @@ function processStateNewPassword(world, user, buffer) {
  */
 function processStateConfirmPassword(world, user, buffer) {
   /** Set up the crypto */
-  const hash = crypto.createHmac('sha512', user.salt());
+  const hash = crypto.createHmac(`sha512`, user.salt());
 
   /** Provide it the unencrypted password */
   hash.update(buffer);
 
   /** Get the encrypted password back */
-  const password = hash.digest('hex');
+  const password = hash.digest(`hex`);
 
   /** Stop hiding text */
   user.send(world.constants().VT100_CLEAR);
@@ -167,10 +180,14 @@ function processStateConfirmPassword(world, user, buffer) {
     /** Get the start room */
     const room = world.rooms().find(x => x.id() == world.constants().START_ROOM);
 
+    /** Verify start room exists or bug out */
+    if ( !room ) {
+      world.log().error(`Fatal error: Unable to load start room.`);
+      process.exit(1);
+    }
+    
     /** Move the user to the start room */
-    user.room(room);
-    room.characters().push(user);
-    user.lastRoom(room.id());
+    world.characterToRoom(user, room);
 
     /** Move on and pause until they're done reading the message of the day */
     user.state(world.constants().STATE_MOTD);
@@ -178,8 +195,8 @@ function processStateConfirmPassword(world, user, buffer) {
     world.log().info(`User ${user.name()} connected.`);
   } else {
     /** Password does not match, let's try this again */
-    user.send('Passwords do not match, please try again!\r\n');
-    user.send('Please choose a password: ');
+    user.send(`Passwords do not match, please try again!\r\n`);
+    user.send(`Please choose a password: `);
     user.state(world.constants().STATE_NEW_PASSWORD);
   }
 }
@@ -212,17 +229,17 @@ async function processStateMOTD(world, user, buffer) {
     world.log().info(`User ${oldUser.name()} has been replaced with a new user and socket.`);
 
     /** Close old socket and tell them they've been taken over */
-    oldUser.socket().end('Your body has been taken over!\r\n');
+    oldUser.socket().end(`Your body has been taken over!\r\n`);
 
     /** Tell user he's taken over */
-    user.send('You have reconnected to your old body.\r\n');
+    user.send(`You have reconnected to your old body.\r\n`);
   }
 
   /** Set periodic flush of output buffer */
   //setTimeout(user.flush.bind(user), 1000);
 
   /** Find and execute the look command for this user */
-  await world.commands().find(x => x.name() == 'look').execute()(world, user, '');
+  await world.commands().find(x => x.name() == `look`).execute()(world, user, ``);
 
   /** Send prompt */
   user.prompt();
@@ -239,24 +256,32 @@ async function processStateMOTD(world, user, buffer) {
  */
 async function processStateConnected(world, user, buffer) {
   /** @todo Process user commands */
-  const matches = buffer.toString().trim().match(/^([^\s]*)\s*(.*)/);
+  const matches = buffer.toString().trim().match(/^\s*([^\s]+)\s*(.*)/);
 
-  if ( matches[1] == '' ) {
+  if ( !matches ) {
     /** Just send prompt */
     user.prompt();
     return;
   }
 
+  /** Create a sort function for prioritizing commands */
+  const sortCommands = (a, b) => {
+    if ( a.priority() > b.priority() )
+      return -1;
+    else if ( a.priority() < b.priority() )
+      return 1;
+    
+    return 0;
+  };
+  
   /** Find the first matching command, if one exists */
-  const command = world.commands().find((command) => {
-    return command.name().match(new RegExp(`^${matches[1]}`, 'i'));
-  });
+  const command = world.commands().filter(x => x.name().startsWith(matches[1].toLowerCase())).sort(sortCommands)[0];
 
   /** If it exists, execute it for this user, otherwise send error */
   if ( command )
-    await command.execute()(world, user, matches[2]);
+    await command.execute()(world, user, matches[2], parseValues(matches[2]).map(x => x.toLowerCase()));
   else
-    user.send('That action does not exist in this world.\r\n');
+    user.send(`That action does not exist in this world.\r\n`);
 
   /** Send prompt */
   user.prompt();
@@ -291,4 +316,4 @@ module.exports.process = async function (world, user, buffer) {
   /** User is connected and in world */
   else if ( user.state() == world.constants().STATE_CONNECTED )
     await processStateConnected(world, user, buffer);
-}
+};

@@ -5,18 +5,23 @@ const net = require(`net`);
 const winston = require(`winston`);
 
 /** Require local modules */
+const admin = require(`./admin`);
 const areas = require(`./areas`);
+const builder = require(`./builder`);
 const characters = require(`./characters`);
 const commands = require(`./commands`);
 const constants = require(`./constants`);
 const deployments = require(`./deployments`);
 const exits = require(`./exits`);
+const fighting = require(`./fighting`);
+const info = require(`./info`);
 const input = require(`./input`);
 const interaction = require(`./interaction`);
 const items = require(`./items`);
 const mobiles = require(`./mobiles`);
 const movement = require(`./movement`);
 const rooms = require(`./rooms`);
+const senses = require(`./senses`);
 const system = require(`./system`);
 const users = require(`./users`);
 
@@ -55,35 +60,35 @@ World.prototype.loadAreas = async function () {
   const areaList = await this.database().query(`SELECT * FROM areas`);
   
   areaList.forEach((row) => {
-    this.areas().push(new areas.Area(row));
-  });
-  
-  /** Load exits */
-  const exitList = await this.database().query(`SELECT * FROM exits`);
-
-  exitList.forEach((row) => {
-    this.exits().push(new exits.Exit(row));
+    this.areas().push(new this.Area(row));
   });
   
   /** Load items */
   const itemList = await this.database().query(`SELECT * FROM items`);
 
   itemList.forEach((row) => {
-    this.itemPrototypes().push(new items.Item(row));
+    this.itemPrototypes().push(new this.Item(row));
   });
   
   /** Load mobiles */
   const mobileList = await this.database().query(`SELECT * FROM mobiles`);
 
   mobileList.forEach((row) => {
-    this.mobilePrototypes().push(new mobiles.Mobile(row));
+    this.mobilePrototypes().push(new this.Mobile(row));
   });
   
   /** Load rooms */
   const roomList = await this.database().query(`SELECT * FROM rooms`);
 
   roomList.forEach((row) => {
-    this.rooms().push(new rooms.Room(row));
+    this.rooms().push(new this.Room(row));
+  });
+  
+  /** Load exits */
+  const exitList = await this.database().query(`SELECT * FROM exits`);
+
+  exitList.forEach((row) => {
+    this.exits().push(new this.Exit(row));
   });
 };
 
@@ -92,6 +97,25 @@ World.prototype.loadAreas = async function () {
  * @description Deploy the initial items and mobiles into the world.
  */
 World.prototype.setStage = function () {
+};
+
+World.prototype.characterToRoom = function (character, room) {
+  if ( character.room() )
+    character.room().characters().splice(user.room().characters().indexOf(character), 1);
+  
+  if ( ezobjects.instanceOf(character, 'User') )
+    character.lastRoom(room.id());
+  
+  character.room(room);
+  room.characters().push(character);
+};
+
+World.prototype.itemToRoom = function (item, room) {
+  if ( item.room() )
+    item.room().items().splice(item.room().items().indexOf(item), 1);
+  
+  item.room(item);
+  room.items().push(item);
 };
 
 /**
@@ -130,22 +154,73 @@ World.prototype.listen = async function () {
   /** Instantiate pooled MySQL DB connection */
   this.database(new ezobjects.MySQLConnection(this.mysqlConfig()));
   
-  /** Create tables if they doesn't exist */
-  await ezobjects.createTable(this.database(), areas.configArea);
-  await ezobjects.createTable(this.database(), exits.configExit);
-  await ezobjects.createTable(this.database(), items.configItem);
-  await ezobjects.createTable(this.database(), deployments.configDeployment);
-  await ezobjects.createTable(this.database(), mobiles.configMobile);
-  await ezobjects.createTable(this.database(), rooms.configRoom);
-  await ezobjects.createTable(this.database(), users.configUser);
+  /** Configure the objects */
+  const configArea = areas.configArea(this);
+  const configCharacter = characters.configCharacter(this);
+  const configCommand = commands.configCommand(this);
+  const configExit = exits.configExit(this);
+  const configDeployment = deployments.configDeployment(this);
+  const configItem = items.configItem(this);
+  const configRoom = rooms.configRoom(this);
 
-  /** Load commands */
-  this.commands(this.commands().concat(interaction));
-  this.commands(this.commands().concat(movement));
-  this.commands(this.commands().concat(system));
-    
+  await ezobjects.createTable(this.database(), configArea);
+  await ezobjects.createTable(this.database(), configExit);
+  await ezobjects.createTable(this.database(), configDeployment);
+  await ezobjects.createTable(this.database(), configItem);
+  await ezobjects.createTable(this.database(), configRoom);
+  
+  /** Create objects */
+  ezobjects.createObject(configArea);
+  ezobjects.createObject(configCharacter);
+  ezobjects.createObject(configCommand);
+  ezobjects.createObject(configExit);
+  ezobjects.createObject(configDeployment);
+  ezobjects.createObject(configItem);
+  ezobjects.createObject(configRoom);
+  
+  /** Create prompt function */
+  Character.prototype.prompt = function () {
+    this.send(`\r\n[${this.experience()}xp] <${this.health()}hp ${this.mana()}m ${this.energy()}e> `);
+  };
+  
+  const configMobile = mobiles.configMobile(this, Character, configCharacter);
+  const configUser = users.configUser(this, Character, configCharacter);
+
+  await ezobjects.createTable(this.database(), configMobile);
+  await ezobjects.createTable(this.database(), configUser);
+  
+  ezobjects.createObject(configMobile);
+  ezobjects.createObject(configUser);
+
+  /** Create send function */
+  User.prototype.send = function (buffer) {
+    if ( this.state() != constants.STATE_DISCONNECTED && this.socket() )
+      this.socket().write(buffer);
+  };
+  
+  this.Area = Area;
+  this.Character = Character;
+  this.Command = Command;
+  this.Exit = Exit;
+  this.Deployment = Deployment;
+  this.Item = Item;
+  this.Mobile = Mobile;
+  this.Room = Room;
+  this.User = User;
+  
   /** Load the areas from database */
   await this.loadAreas();
+  
+  /** Load commands */
+  this.commands(this.commands().concat(admin.createCommands(this)));
+  this.commands(this.commands().concat(builder.createCommands(this)));
+  this.commands(this.commands().concat(fighting.createCommands(this)));
+  this.commands(this.commands().concat(info.createCommands(this)));
+  this.commands(this.commands().concat(interaction.createCommands(this)));
+  this.commands(this.commands().concat(movement.createCommands(this)));
+  this.commands(this.commands().concat(senses.createCommands(this)));
+  this.commands(this.commands().concat(system.createCommands(this)));
+  
   
   /** Set the stage */
   this.setStage();
@@ -155,7 +230,7 @@ World.prototype.listen = async function () {
     this.log().info(`New socket from ${socket.address().address}.`);
 
     /** Create a new user */
-    const user = new users.User({
+    const user = new this.User({
       lastAddress: socket.address().address,
       socket: socket
     });

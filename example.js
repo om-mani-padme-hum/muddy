@@ -1,15 +1,23 @@
+/** Require external modules */
+const fs = require(`fs`);
+
 /** Require muddy */
 const muddy = require(`./index`);
 
+/**
+ * Read MySQL config from JSON file with the format:
+ * {
+ *   "host"            : `localhost`,
+ *   "user"            : `muddy`,
+ *   "password"        : `S3cur3UrMuD!`,
+ *   "database"        : `muddy`
+ * }
+ */
+const mysqlConfig = JSON.parse(fs.readFileSync(`mysql-config.json`));
+
 /** Create new Muddy world */
 const world = new muddy.World({
-  mysqlConfig: {
-    connectionLimit : 20,
-    host            : `localhost`,
-    user            : `muddy`,
-    password        : `S3cur3UrMuD!`,
-    database        : `muddy`
-  },
+  mysqlConfig: mysqlConfig,
   port: 9000
 });
 

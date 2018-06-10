@@ -1,10 +1,10 @@
 module.exports.createCommands = (world) => {
   return [
     new world.Command({
-      name: `get`,
+      name: `kill`,
       execute: async (world, user, buffer, args) => {
       },
-      priority: 0
+      priority: 999
     })
   ];
 };

@@ -1,6 +1,9 @@
 # My line counter
 line_count.sh
 
+# MySQL Config
+mysql-config.json
+
 # Logs
 logs/
 *.log
