@@ -21,7 +21,7 @@ const dirCommand = (dir) => {
           this.commands(`look`).execute(user, ``);
         } else {
           /** If room doesn`t exist, notify imps and send user an error message */
-          console.log(`Bad exit: direction ${dir} from room ${user.room().id()}.`);
+          world.log().info(`Bad exit: direction ${dir} from room ${user.room().id()}.`);
 
           user.send(`Some kind of force is blocking your way.\r\n`);
         }

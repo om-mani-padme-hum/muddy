@@ -1,7 +1,6 @@
 /** Load external modules */
 const crypto = require(`crypto`);
 const ezobjects = require(`ezobjects`);
-const mysql = require(`mysql`);
 const net = require(`net`);
 const winston = require(`winston`);
 
@@ -32,6 +31,7 @@ const configWorld = {
     { name: `database`, type: `MySQLConnection` },
     { name: `itemPrototypes`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Item`) ? x : null) },
     { name: `items`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Item`) ? x : null) },
+    { name: `log`, instanceOf: `Object` },
     { name: `mobilePrototypes`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Mobile`) ? x : null) },
     { name: `mobiles`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Mobile`) ? x : null) },
     { name: `motd`, type: `string`, default: constants.DEFAULT_MOTD },
@@ -99,6 +99,36 @@ World.prototype.setStage = function () {
  * @description Start the server listening on the configured port!
  */
 World.prototype.listen = async function () {
+  /** Create custom winston logger */
+  const logger = new winston.Logger({
+    transports: [
+      new winston.transports.Console({
+        level: `silly`,
+        timestamp: true,
+        prettyPrint: true
+      }),
+      new winston.transports.File({
+        name: `info-file`,
+        filename: `logs/info.log`,
+        level: `info`,
+        levelOnly: true,
+        json: false,
+        timestamp: true,
+        prettyPrint: true
+      }),
+      new winston.transports.File({
+        name: `error-file`,
+        filename: `logs/error.log`,
+        level: `warn`,
+        json: false,
+        timestamp: true,
+        prettyPrint: true
+      })
+    ]
+  });
+  
+  this.log(logger);
+
   /** Instantiate pooled MySQL DB connection */
   this.database(new ezobjects.MySQLConnection(this.mysqlConfig()));
   
@@ -124,7 +154,7 @@ World.prototype.listen = async function () {
   
   /** Create server -- net.createServer constructor parameter is new connection handler */
   const server = net.createServer((socket) => {
-    console.log(`New socket from ${socket.address().address}.`);
+    this.log().info(`New socket from ${socket.address().address}.`);
 
     /** Create a new user */
     const user = new users.User({
@@ -144,14 +174,14 @@ World.prototype.listen = async function () {
 
       if ( user ) {
         /** User exists, disconnect them */
-        console.log(`User ${user.name()} disconnected.`);
+        this.log().info(`User ${user.name()} disconnected.`);
 
         /** Zero the user's socket and update their state to disconnected, but leave them in game */
         user.socket(null);
         user.state(constants.STATE_DISCONNECTED);
       } else {
         /** User doesn`t exist, just log disconnected socket */
-        console.log(`Socket ${socket.lastAddress} disconnected.`);
+        this.log().info(`Socket ${socket.lastAddress} disconnected.`);
       }
     });
 
@@ -172,9 +202,12 @@ World.prototype.listen = async function () {
 
   /** Time to get started */
   server.listen(this.port(), () => {
-    console.log(`Muddy is up and running on port ${this.port()}!`);
+    this.log().info(`Muddy is up and running on port ${this.port()}!`);
   });
 };
 
-/** Export objects */
+/** Export config */
+exports.configWorld = configWorld;
+
+/** Export object */
 exports.World = World;

@@ -80,7 +80,7 @@ function processStateOldPassword(world, user, buffer) {
     /** Move on and pause until they're done reading the message of the day */
     user.state(constants.STATE_MOTD);
 
-    console.log(`User ${user.name()} connected.`);
+    world.log().info(`User ${user.name()} connected.`);
   } else {
     /** Password incorrect, remove user from world and terminate socket */
     world.users().splice(world.users().indexOf(user), 1);
@@ -88,7 +88,7 @@ function processStateOldPassword(world, user, buffer) {
     /** Terminate socket */
     user.socket().end("Incorrect password, goodbye!\r\n");
 
-    console.log(`Failed login by ${user.name()}.`);
+    world.log().info(`Failed login by ${user.name()}.`);
   }
 }
 
@@ -169,7 +169,7 @@ function processStateConfirmPassword(world, user, buffer) {
     /** Move on and pause until they're done reading the message of the day */
     user.state(constants.STATE_MOTD);
 
-    console.log(`User ${user.name()} connected.`);
+    world.log().info(`User ${user.name()} connected.`);
   } else {
     /** Password does not match, let's try this again */
     user.send('Passwords do not match, please try again!\r\n');
@@ -203,7 +203,7 @@ function processStateMOTD(world, user, buffer) {
     /** Remove user from world */
     world.users().splice(world.users().indexOf(oldUser), 1);
 
-    console.log(`User ${oldUser.name()} has been replaced with a new user and socket.`);
+    world.log().info(`User ${oldUser.name()} has been replaced with a new user and socket.`);
 
     /** Close old socket and tell them they've been taken over */
     oldUser.socket().end('Your body has been taken over!\r\n');

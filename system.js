@@ -5,7 +5,7 @@ module.exports = [
   new commands.Command({
     name: `quit`,
     execute: (world, user, buffer) => {
-      console.log(`User ${user.name()} has quit.`);
+      world.log().info(`User ${user.name()} has quit.`);
 
       /** Remove user from room */
       if ( user.room() )

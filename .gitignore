@@ -1,10 +1,8 @@
-# My debug example file
-example.js
-
 # My line counter
 line_count.sh
+
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -61,3 +59,6 @@ typings/
 
 # dotenv environment variables file
 .env
+
+# Scratch file
+scratch.txt

@@ -17,7 +17,7 @@ const configMobile = {
 /** Create Mobile object */
 ezobjects.createObject(configMobile);
 
-/** Export configs */
+/** Export config */
 module.exports.configMobile = configMobile;
 
 /** Export objects */

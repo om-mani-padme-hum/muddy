@@ -12,8 +12,8 @@ const configRoom = {
     { name: `exits`, type: `Array`, mysqlType: `text`, setTransform: x => x.map(x => parseInt(x)), saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`) },
     { name: `flags`, type: `Array`, mysqlType: `text`, setTransform: x => x.map(x => parseInt(x)), saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`) },
     { name: `area`, type: `Area` },
-    { name: `characters`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Character`) ? null : x) },
-    { name: `items`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Item`) ? null : x) }
+    { name: `characters`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Character`) ? x : null) },
+    { name: `items`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Item`) ? x : null) }
   ],
   indexes: [
     { name: `name`, type: `BTREE`, columns: [ `name` ] }
@@ -23,8 +23,8 @@ const configRoom = {
 /** Create room object */
 ezobjects.createObject(configRoom);
 
-/** Export configs*/
+/** Export config */
 module.exports.configRoom = configRoom;
 
-/** Export objects */
+/** Export object */
 module.exports.Room = Room;

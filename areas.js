@@ -1,5 +1,6 @@
 /** Require external modules */
 const ezobjects = require(`ezobjects`);
+const moment = require('moment');
 
 /** Configure area object */
 const configArea = {
@@ -12,9 +13,9 @@ const configArea = {
     { name: `description`, type: `string`, mysqlType: `text` },
     { name: `flags`, type: `Array`, mysqlType: `text`, setTransform: x => x.map(x => parseInt(x)), saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`) },
     { name: `created`, type: `Date`, mysqlType: `datetime`, saveTransform: x => moment(x).format(`Y-MM-DD HH:mm:ss`), loadTransform: x => new Date(x) },
-    { name: `characters`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Character`) ? null : x) },
-    { name: `items`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Item`) ? null : x) },
-    { name: `rooms`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Room`) ? null : x) }
+    { name: `characters`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Character`) ? x : null) },
+    { name: `items`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Item`) ? x : null) },
+    { name: `rooms`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Room`) ? x : null) }
   ],
   indexes: [
     { name: `name`, type: `BTREE`, columns: [ `name` ] }
@@ -24,8 +25,8 @@ const configArea = {
 /** Create area object */
 ezobjects.createObject(configArea);
 
-/** Export configs*/
+/** Export config */
 module.exports.configArea = configArea;
 
-/** Export objects */
+/** Export object */
 module.exports.Area = Area;
