@@ -1,20 +1,21 @@
-/** Require external modules */
-const ezobjects = require(`ezobjects`);
-
-/** Configure room object */
+/** Configure Room object */
 module.exports.configRoom = (world) => {
   return {
     tableName: `rooms`,
     className: `Room`,
     properties: [
-      { name: `id`, type: `number`, mysqlType: `int`, autoIncrement: true, primary: true, setTransform: x => parseInt(x) },
-      { name: `area`, type: `Area`, mysqlType: `int`, initTransform: x => typeof x == 'number' ? world.areas().find(y => y.id() == x) : x, saveTransform: x => x.id(), loadTransform: x => world.areas().find(y => y.id() == x) },
-      { name: `name`, type: `string`, mysqlType: `varchar`, length: 32 },
-      { name: `description`, type: `string`, mysqlType: `text` },
-      { name: `flags`, type: `Array`, mysqlType: `text`, setTransform: x => x.map(x => parseInt(x)), saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`) },
-      { name: `exits`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Exit`) ? x : null) },
-      { name: `characters`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Character`) ? x : null) },
-      { name: `items`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Item`) ? x : null) }
+      { name: `id`, type: `int`},
+      { name: `area`, instanceOf: 'Area', store: false },
+      { name: `name`, type: `varchar`, length: 64 },
+      { name: `description`, type: `varchar`, length: 512 },
+      { name: `details`, type: `plainobject` },
+      { name: `flags`, type: `array`, arrayOf: { type: 'int' } },
+      { name: `exits`, type: `array`, arrayOf: { instanceOf: 'Exit' } },
+      { name: `itemPrototypes`, type: `array`, arrayOf: { instanceOf: 'Item' } },
+      { name: `items`, type: `array`, arrayOf: { instanceOf: 'ItemInstance' } },
+      { name: `mobilePrototypes`, type: `array`, arrayOf: { instanceOf: 'Mobile' } },
+      { name: `mobiles`, type: `array`, arrayOf: { instanceOf: 'MobileInstance' } },
+      { name: `users`, type: `array`, arrayOf: { instanceOf: 'User' }, store: false }
     ],
     indexes: [
       { name: `name`, type: `BTREE`, columns: [ `name` ] }

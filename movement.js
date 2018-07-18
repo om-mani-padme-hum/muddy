@@ -1,51 +1,41 @@
-/** Create template for all direction commands */
+/** Create template for all directionection commands */
 module.exports.createCommands = (world) => {
-  const dirCommand = (dir) => {
+  const directionCommand = (direction) => {
     return new world.Command({
-      name: dir,
+      name: direction,
       execute: async (world, user, buffer) => {
         /** Look for an exit in that direction */
-        const exit = user.room().exits().find(x => world.constants().dirNames[x.dir()] == dir);
+        const exit = user.room().exits().find(x => world.constants().directionNames[x.direction()] == direction);
 
         if ( exit ) {
-          /** If it exists, get the room it goes to */
-          const room = world.rooms().find(x => x.id() == exit.target());
+          /** If room exists, move user to room and look */
+          world.characterToRoom(user, exit.target());
 
-          if ( room ) {
-            /** If room exists, move user to room and look */
-            user.room(room);
-
-            /** Find the look command and execute it for this user */
-            this.commands(`look`).execute()(world, user, ``);
-          } else {
-            /** If room doesn`t exist, notify imps and send user an error message */
-            world.log().info(`Bad exit: direction ${dir} from room ${user.room().id()}.`);
-
-            user.send(`Some kind of invisible force is blocking your way.\r\n`);
-          }
+          /** Find the look command and execute it for this user */
+          world.commands().find(x => x.name() == `look`).execute()(world, user, ``, []);
         } else {
           /** If it doesn`t exist, send error message */
           user.send(`You cannot go that way.\r\n`);
         }
       },
-      priority: [`northeast`, `southeast`, `southwest`, `northwest`].includes(dir) ? 0 : 999
+      priority: [`se`, `sw`, `ne`, `nw`, `northeast`, `southeast`, `southwest`, `northwest`].includes(direction) ? 0 : 999
     });
   };
 
   return [
-    dirCommand(`north`),
-    dirCommand(`northeast`),
-    dirCommand(`ne`),
-    dirCommand(`east`),
-    dirCommand(`southeast`),
-    dirCommand(`se`),
-    dirCommand(`south`),
-    dirCommand(`southwest`),
-    dirCommand(`sw`),
-    dirCommand(`west`),
-    dirCommand(`northwest`),
-    dirCommand(`nw`),
-    dirCommand(`up`),
-    dirCommand(`down`)
+    directionCommand(`north`),
+    directionCommand(`northeast`),
+    directionCommand(`ne`),
+    directionCommand(`east`),
+    directionCommand(`southeast`),
+    directionCommand(`se`),
+    directionCommand(`south`),
+    directionCommand(`southwest`),
+    directionCommand(`sw`),
+    directionCommand(`west`),
+    directionCommand(`northwest`),
+    directionCommand(`nw`),
+    directionCommand(`up`),
+    directionCommand(`down`)
   ];
 };

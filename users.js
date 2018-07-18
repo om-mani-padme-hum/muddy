@@ -1,26 +1,26 @@
-/** Configure user object as extension of character */
+/** Configure User object as extension of Character */
 module.exports.configUser = (world, ext, extConfig) => {
   return {
     tableName: `users`,
     className: `User`,
     extends: ext,
     extendsConfig: extConfig,
+    otherSearchField: `name`,
     properties: [
-      { name: `addresses`, type: `Array`, mysqlType: `text`, setTransform: x => x.map(x => typeof x == `string` ? `` : x), saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`) },
-      { name: `lastRoom`, type: `number`, mysqlType: `int`, setTransform: x => parseInt(x) },
-      { name: `password`, type: `string`, mysqlType: `text` },
-      { name: `salt`, type: `string`, mysqlType: `text` },
-      { name: `experience`, type: `number`, mysqlType: `int`, setTransform: x => parseInt(x) },
-      { name: `health`, type: `number`, mysqlType: `int`, default: 100, setTransform: x => parseInt(x) },
-      { name: `mana`, type: `number`, mysqlType: `int`, default: 100, setTransform: x => parseInt(x) },
-      { name: `energy`, type: `number`, mysqlType: `int`, default: 100, setTransform: x => parseInt(x) },
-      { name: `area`, instanceOf: `Area` },
-      { name: `socket`, instanceOf: `Socket` },
-      { name: `state`, type: `number`, default: world.constants().STATE_NAME, setTransform: x => parseInt(x) }
+      { name: `addresses`, type: `array`, arrayOf: { type: `varchar`, length: 32 } },
+      { name: `password`, type: `varchar`, length: 512 },
+      { name: `salt`, type: `varchar`, length: 32 },
+      { name: `experience`, type: `int` },
+      { name: `promptFormat`, type: `varchar`, length: 64, default: `\r\n[$xpxp] <$hphp $mm $ee> ` },
+      { name: `fightPromptFormat`, type: `varchar`, length: 64, default: `\r\n[$xpxp] <$hphp $mm $ee> ` },
+      { name: `socket`, instanceOf: `Socket`, store: false },
+      { name: `state`, type: `int`, default: world.constants().STATE_NAME, store: false },
+      { name: `room`, instanceOf: `Room`, loadTransform: x => new world.Room({ id: x }) },
+      { name: `equipment`, type: `Array`, arrayOf: { instanceOf: `ItemInstance` } },
+      { name: `inventory`, type: `Array`, arrayOf: { instanceOf: `ItemInstance` } }
     ],
     indexes: [
       { name: `name`, type: `BTREE`, columns: [ `name` ] }
-    ],
-    stringSearchField: `name`
+    ]
   };
 };

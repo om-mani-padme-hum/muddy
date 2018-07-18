@@ -21,29 +21,23 @@ async function processStateName(world, user, buffer) {
     user.send(`Your name must be between 3 and 14 characters long.\r\n`);
     user.send(`Please enter a new name: `);
   } else { 
-    let newUser = false;
-    
     /** Store name (will be overwritten if successfully loaded) */
     user.name(name);
 
-    try {
-      await user.load(world.database(), name);
-    } catch ( error ) {
-      newUser = true;
-    }
-
-    if ( !newUser ) {     
-      /** Existing user */
-      user.send(`Please enter your password: `);
-
-      /** Move on to ask for existing password */
-      user.state(world.constants().STATE_OLD_PASSWORD);
-    } else {
+    const existingUser = await user.load(name, world.database());
+            
+    if ( !existingUser ) {
       user.send(`Welcome to Muddy, ${name}!\r\n`);
       user.send(`Please choose a password: `);
 
       /** Move on to ask for them to pick a password */
       user.state(world.constants().STATE_NEW_PASSWORD);
+    } else {
+      /** Existing user */
+      user.send(`Please enter your password: `);
+
+      /** Move on to ask for existing password */
+      user.state(world.constants().STATE_OLD_PASSWORD);
     }
 
     /** Hide text for password */
@@ -57,30 +51,33 @@ async function processStateName(world, user, buffer) {
  * @param buffer User's input buffer
  * @param user User item
  */
-function processStateOldPassword(world, user, buffer) {
+async function processStateOldPassword(world, user, buffer) {
   /** Set up the crypto */
   const hash = crypto.createHmac(`sha512`, user.salt());
-
-  /** Provide it the unencrypted password */
-  hash.update(buffer);
-
-  /** Get the encrypted password back */
-  const password = hash.digest(`hex`);
+  
+  /** Get the encrypted password */
+  const password = hash.update(buffer).digest(`hex`);
 
   /** Stop hiding text */
   user.send(world.constants().VT100_CLEAR);
 
-  /** Validate password */
+  /** Correct password? */
   if ( password == user.password() ) {
+    /** Record the address if it's not already on the user's list */
+    if ( !user.addresses().includes(user.socket().address().address) )
+      user.addresses().push(user.socket().address().address);
+    
+    await user.update(world.database());
+    
     /** Password matches, display message of the day */
     user.send(world.motd());
 
     /** Get the last room */
-    let room = world.rooms().find(x => x.id() == user.lastRoom());
+    let room = world.rooms().find(x => x.id() == user.room().id());
 
     /** Verify last room exists or bug out */
     if ( !room ) {
-      world.log().error(`User ${user.name()} trying to start with bad last room ${user.lastRoom()}, redirecting to start.`);
+      world.log().error(`User ${user.name()} trying to start with bad last room ${user.room().id()}, redirecting to start.`);
       
       room = world.rooms().find(x => x.id() == world.constants().START_ROOM);
       
@@ -115,7 +112,7 @@ function processStateOldPassword(world, user, buffer) {
  * @param buffer User's input buffer
  * @param user User item
  */
-function processStateNewPassword(world, user, buffer) {
+async function processStateNewPassword(world, user, buffer) {
   /** Stop hiding text */
   user.send(world.constants().VT100_CLEAR);
 
@@ -134,11 +131,8 @@ function processStateNewPassword(world, user, buffer) {
     /** Set up the crypto */
     const hash = crypto.createHmac(`sha512`, salt);
 
-    /** Provide it the unencrypted password */
-    hash.update(buffer);
-
-    /** Get the encrypted password back */
-    const password = hash.digest(`hex`);
+    /** Get the encrypted password */
+    const password = hash.update(buffer).digest(`hex`);
 
     /** Store the encrypted password and salt */
     user.password(password);
@@ -160,20 +154,24 @@ function processStateNewPassword(world, user, buffer) {
  * @param buffer User's input buffer
  * @param user User item
  */
-function processStateConfirmPassword(world, user, buffer) {
+async function processStateConfirmPassword(world, user, buffer) {
   /** Set up the crypto */
   const hash = crypto.createHmac(`sha512`, user.salt());
 
-  /** Provide it the unencrypted password */
-  hash.update(buffer);
-
   /** Get the encrypted password back */
-  const password = hash.digest(`hex`);
+  const password = hash.update(buffer).digest(`hex`);
 
   /** Stop hiding text */
   user.send(world.constants().VT100_CLEAR);
 
+  /** Correct password? */
   if ( password == user.password() ) {
+    /** Record the address if it's not already on the user's list */
+    if ( !user.addresses().includes(user.socket().address().address) )
+      user.addresses().push(user.socket().address().address);
+    
+    await user.update(world.database());
+    
     /** Password matches, proceed to the message of the day */
     user.send(world.motd());
 
@@ -234,9 +232,6 @@ async function processStateMOTD(world, user, buffer) {
     /** Tell user he's taken over */
     user.send(`You have reconnected to your old body.\r\n`);
   }
-
-  /** Set periodic flush of output buffer */
-  //setTimeout(user.flush.bind(user), 1000);
 
   /** Find and execute the look command for this user */
   await world.commands().find(x => x.name() == `look`).execute()(world, user, ``);
@@ -299,15 +294,15 @@ module.exports.process = async function (world, user, buffer) {
 
   /** User submitted name and was found to be previously saved, require old password */
   else if ( user.state() == world.constants().STATE_OLD_PASSWORD )
-    processStateOldPassword(world, user, buffer);
+    await processStateOldPassword(world, user, buffer);
   
   /** User submitted name and is new, ask for a new password */  
   else if ( user.state() == world.constants().STATE_NEW_PASSWORD )
-    processStateNewPassword(world, user, buffer);
+    await processStateNewPassword(world, user, buffer);
   
   /** User is new and provided a password, confirm it to be sure they typed it right */
   else if ( user.state() == world.constants().STATE_CONFIRM_PASSWORD )
-    processStateConfirmPassword(world, user, buffer);
+    await processStateConfirmPassword(world, user, buffer);
   
   /** User has successfully logged in and is seeing MOTD, pause until they hit enter */
   else if ( user.state() == world.constants().STATE_MOTD ) 

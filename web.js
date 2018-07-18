@@ -1,6 +1,6 @@
 /** Require external modules */
 const express = require(`express`);
-const ezobjects = require(`ezobjects`);
+const ezobjects = require(`ezobjects-mysql`);
 const fs = require(`fs`);
 const strapped = require(`strapped`);
 
@@ -23,5 +23,5 @@ app.get(`/`, async (req, res, next) => {
 });
 
 app.listen(8080, () => {
-  console.log(`Web builder app up and runing on port 8080.`);
+  console.log(`Web building app up and runing on port 8080.`);
 });

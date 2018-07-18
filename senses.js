@@ -1,3 +1,16 @@
+const terminalWrap = (text) => {
+  const words = text.split(` `);
+  
+  return words.reduce((accumulator, val) => {
+    if ( accumulator.length > 0 && val.length + accumulator[accumulator.length - 1].length + 1 <= 80 )
+      accumulator[accumulator.length - 1] += ` ${val}`;
+    else
+      accumulator.push(val);
+    
+    return accumulator;
+  }, []).join(`\r\n`);
+};
+
 module.exports.createCommands = (world) => {
   return [
     new world.Command({
@@ -18,7 +31,7 @@ module.exports.createCommands = (world) => {
           user.send(` `);
 
           /** Send exit name based on direction */
-          user.send(world.constants().dirNames[exit.dir()]);
+          user.send(world.constants().directionNames[exit.direction()]);
 
           count++;
         });
@@ -30,12 +43,17 @@ module.exports.createCommands = (world) => {
         user.send(`]\r\n`);
 
         /** Send room description */
-        user.send(`${user.room().description()}\r\n`);
+        user.send(`${terminalWrap(user.room().description())}\r\n`);
 
-        /** Send other users in the room */
-        user.room().characters().forEach((other) => {
+        /** Send any mobiles in the room */
+        user.room().mobiles().forEach((other) => {
+          user.send(`  ${other.name()} is standing here.\r\n`);
+        });
+        
+        /** Send any other users in the room */
+        user.room().users().forEach((other) => {
           if ( user != other )
-            user.send(`${other.name()} is standing here.\r\n`);
+            user.send(`  ${other.name()} is standing here.\r\n`);
         });
 
         /** Send any objets in the room */

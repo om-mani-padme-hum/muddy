@@ -1,26 +1,24 @@
-/** Require external modules */
-const ezobjects = require(`ezobjects`);
-const moment = require(`moment`);
-
-/** Configure area object */
+/** Configure Area object */
 module.exports.configArea = (world) => {
   return {
     tableName: `areas`,
     className: `Area`,
     properties: [
-      { name: `id`, type: `number`, mysqlType: `int`, autoIncrement: true, primary: true, setTransform: x => parseInt(x) },
-      { name: `name`, type: `string`, mysqlType: `varchar`, length: 32 },
-      { name: `author`, type: `string`, mysqlType: `varchar`, length: 32 },
-      { name: `description`, type: `string`, mysqlType: `text` },
-      { name: `flags`, type: `Array`, mysqlType: `text`, setTransform: x => x.map(x => parseInt(x)), saveTransform: x => x.join(`,`), loadTransform: x => x.split(`,`) },
-      { name: `created`, type: `Date`, mysqlType: `datetime`, saveTransform: x => moment(x).format(`Y-MM-DD HH:mm:ss`), loadTransform: x => new Date(x) },
-      { name: `characters`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Character`) ? x : null) },
-      { name: `items`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Item`) ? x : null) },
-      { name: `rooms`, type: `Array`, setTransform: x => x.map(x => ezobjects.instanceOf(x, `Room`) ? x : null) }
+      { name: `id`, type: `int` },
+      { name: `name`, type: `varchar`, length: 32 },
+      { name: `author`, type: `varchar`, length: 32 },
+      { name: `description`, type: `varchar`, length: 512 },
+      { name: `flags`, type: `Array`, arrayOf: { type: `int` } },
+      { name: `created`, type: `datetime` },
+      { name: `itemPrototypes`, type: `array`, arrayOf: { instanceOf: 'Item' } },
+      { name: `items`, type: `Array`, arrayOf: { instanceOf: `ItemInstance` }, store: false },
+      { name: `mobilePrototypes`, type: `array`, arrayOf: { instanceOf: 'Mobile' } },
+      { name: `mobiles`, type: `Array`, arrayOf: { instanceOf: `MobileInstance` }, store: false },
+      { name: `rooms`, type: `Array`, arrayOf: { instanceOf: `Room` } },
+      { name: `users`, type: `Array`, arrayOf: { instanceOf: `User` }, store: false }
     ],
     indexes: [
       { name: `name`, type: `BTREE`, columns: [ `name` ] }
     ]
   };
 };
-

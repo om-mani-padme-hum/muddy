@@ -18,30 +18,39 @@ module.exports = {
   OBJECT_WIELDABLE_1H: 2,
   OBJECT_WIELDABLE_2H: 3,
   OBJECT_CONTAINER: 4,
-    
-  /** Define deployment flags */
-  DEPLOY_MOBILE_TO_ROOM: 1,
-  DEPLOY_ITEM_TO_ROOM: 2,
-  DEPLOY_ITEM_TO_MOBILE: 3,
-  DEPLOY_ITEM_TO_ITEM: 4,
+  
+  /** Define slot flags */
+  SLOT_WIELD: 1,
+  SLOT_HOLD: 2,
+  SLOT_CHEST: 3,
+  SLOT_FACE: 4,
+  SLOT_ARMS: 5,
+  SLOT_WRISTS: 6,
+  SLOT_LEGS: 7,
+  SLOT_FEET: 8,
+  SLOT_BACK: 9,
+  SLOT_SHOULDERS: 10,
+  SLOT_HANDS: 11,
+  SLOT_FINGER: 12,
+  SLOT_WAIST: 13,
   
   /** Define direction flags */
-  DIR_NORTH: 0,                    /**< n */
-  DIR_NORTHEAST: 1,                /**< ne */
-  DIR_EAST: 2,                     /**< e */
-  DIR_SOUTHEAST: 3,                /**< se */
-  DIR_SOUTH: 4,                    /**< s */
-  DIR_SOUTHWEST: 5,                /**< sw */
-  DIR_WEST: 6,                     /**< w */
-  DIR_NORTHWEST: 7,                /**< nw */
-  DIR_UP: 8,                       /**< u */
-  DIR_DOWN: 9,                    /**< d */
+  DIR_NORTH: 0,                    /** n */
+  DIR_NORTHEAST: 1,                /** ne */
+  DIR_EAST: 2,                     /** e */
+  DIR_SOUTHEAST: 3,                /** se */
+  DIR_SOUTH: 4,                    /** s */
+  DIR_SOUTHWEST: 5,                /** sw */
+  DIR_WEST: 6,                     /** w */
+  DIR_NORTHWEST: 7,                /** nw */
+  DIR_UP: 8,                       /** u */
+  DIR_DOWN: 9,                     /** d */
   
-  dirNames: [`north`, `northeast`, `east`, `southeast`, `south`,
-             `southwest`, `west`, `northwest`, `up`, `down`],
+  directionNames: [`north`, `northeast`, `east`, `southeast`, `south`,
+                   `southwest`, `west`, `northwest`, `up`, `down`],
   
-  dirShortNames: [`n`, `ne`, `e`, `se`, `s`, `sw`, `w`, `nw`, `u`, `d`],
-  dirOpposite: [4, 5, 6, 7, 0, 1, 2, 3, 9, 8],
+  directionShortNames: [`n`, `ne`, `e`, `se`, `s`, `sw`, `w`, `nw`, `u`, `d`],
+  directionOpposites: [4, 5, 6, 7, 0, 1, 2, 3, 9, 8],
   
   /** Define start room */
   START_ROOM: 1,
@@ -50,12 +59,9 @@ module.exports = {
   DEFAULT_PORT: 7000,
   
   /** Define default welcome */
-  DEFAULT_WELCOME: [`\r\n`,
-                    `\r\n`,
-                    `\r\n`,
+  DEFAULT_WELCOME: [`\r\n`.repeat(3),
                     `                              W E L C O M E    T O\r\n`,
-                    `\r\n`,
-                    `\r\n`,
+                    `\r\n`.repeat(2),
                     `                                          _     _\r\n`,
                     `                          /\\/\\  _   _  __| | __| |_   _\r\n`,
                     `                         /    \\| | | |/ _' |/ _' | | | |\r\n`,
@@ -65,14 +71,7 @@ module.exports = {
                     `\r\n`,
                     `                              Created by Rich Lowe\r\n`,
                     `                                  MIT Licensed\r\n`,
-                    `\r\n`,
-                    `\r\n`,
-                    `\r\n`,
-                    `\r\n`,
-                    `\r\n`,
-                    `\r\n`,
-                    `\r\n`,
-                    `\r\n`,
+                    `\r\n`.repeat(8),
                     `Hello, what is your name? `].join(``),
     
   /** Define default message of the day */

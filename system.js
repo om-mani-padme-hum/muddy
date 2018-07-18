@@ -5,9 +5,8 @@ module.exports.createCommands = (world) => {
       execute: async (world, user, buffer) => {
         world.log().info(`User ${user.name()} has quit.`);
 
-        /** Remove user from room */
-        if ( user.room() )
-          user.room().characters().splice(user.room().characters().indexOf(user), 1);
+        /** Remove user from anywhere */
+        world.characterFromAnywhere(user);
 
         /** Remove user from world */
         world.users().splice(world.users().indexOf(user), 1);
@@ -27,6 +26,8 @@ module.exports.createCommands = (world) => {
         else
           await user.update(world.database());
 
+        world.log().silly(`${user.name()} saved.`);
+        
         user.send(`Saved.\r\n`);
       }
     })

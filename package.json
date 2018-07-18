@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node example.js",
-    "test": "node_modules/.bin/eslint admin.js areas.js builder.js characters.js commands.js constants.js deployments.js example.js exits.js fighting.js index.js info.js input.js interaction.js items.js mobiles.js movement.js rooms.js senses.js system.js users.js web.js world.js"
+    "test": "node_modules/.bin/eslint admin.js areas.js building.js characters.js commands.js constants.js example.js exits.js fighting.js index.js info.js input.js interaction.js items.js mobiles.js movement.js rooms.js senses.js system.js users.js web.js world.js"
   },
   "repository": {
     "type": "git",
@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "express": "^4.16.3",
-    "ezobjects": "^2.10.0",
+    "ezobjects-mysql": "^4.1.0",
     "moment": "^2.22.2",
     "parse-values": "^1.1.0",
     "strapped": "^0.3.1",
