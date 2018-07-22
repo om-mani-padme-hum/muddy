@@ -261,7 +261,7 @@ async function processStateMOTD(world, user, buffer) {
   }
 
   /** Find and execute the look command for this user */
-  await world.commands().find(x => x.name() == `look`).execute()(world, user, ``);
+  await world.commands().find(x => x.name() == `look`).execute()(world, user, ``, []);
 
   /** Send prompt */
   user.prompt(world);

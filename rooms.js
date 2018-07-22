@@ -8,7 +8,7 @@ module.exports.configRoom = (world) => {
       { name: `area`, instanceOf: 'Area', store: false },
       { name: `name`, type: `varchar`, length: 64 },
       { name: `description`, type: `varchar`, length: 512 },
-      { name: `details`, type: `plainobject` },
+      { name: `details`, type: `object` },
       { name: `flags`, type: `array`, arrayOf: { type: 'int' } },
       { name: `exits`, type: `array`, arrayOf: { instanceOf: 'Exit' } },
       { name: `itemPrototypes`, type: `array`, arrayOf: { instanceOf: 'Item' } },

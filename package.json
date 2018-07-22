@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "express": "^4.16.3",
-    "ezobjects-mysql": "^4.1.1",
+    "ezobjects-mysql": "^5.0.0",
     "moment": "^2.22.2",
     "parse-values": "^1.1.0",
     "strapped": "^0.3.2",

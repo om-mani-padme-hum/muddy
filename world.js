@@ -253,7 +253,38 @@ World.prototype.itemToContainer = async function (item, container) {
   await container.update(this.database());
 };
 
-World.prototype.parseDepth = (user, args, num) => {
+World.prototype.sendUserEquipment = function (user, other) {
+  user.send(`Equipment:\r\n`);
+
+  user.send(this.colorize(`  #y[Head       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_HEAD) ? other.equipment().find(x => x.slot() == this.constants().SLOT_HEAD).name() : `none`}\r\n`));
+  user.send(this.colorize(`  #y[Face       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_FACE) ? other.equipment().find(x => x.slot() == this.constants().SLOT_FACE).name() : `none`}\r\n`));
+  user.send(this.colorize(`  #y[Neck       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_NECK) ? other.equipment().find(x => x.slot() == this.constants().SLOT_NECK).name() : `none`}\r\n`));
+  user.send(this.colorize(`  #y[Shoulders  ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_SHOULDERS) ? other.equipment().find(x => x.slot() == this.constants().SLOT_SHOULDERS).name() : `none`}\r\n`));
+  user.send(this.colorize(`  #y[Chest      ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_CHEST) ? other.equipment().find(x => x.slot() == this.constants().SLOT_CHEST).name() : `none`}\r\n`));
+  user.send(this.colorize(`  #y[Back       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_BACK) ? other.equipment().find(x => x.slot() == this.constants().SLOT_BACK).name() : `none`}\r\n`));
+  user.send(this.colorize(`  #y[Arms       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_ARMS) ? other.equipment().find(x => x.slot() == this.constants().SLOT_ARMS).name() : `none`}\r\n`));
+  user.send(this.colorize(`  #y[Wrists     ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_WRISTS) ? other.equipment().find(x => x.slot() == this.constants().SLOT_WRISTS).name() : `none`}\r\n`));
+  user.send(this.colorize(`  #y[Gloves     ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_GLOVES) ? other.equipment().find(x => x.slot() == this.constants().SLOT_GLOVES).name() : `none`}\r\n`));
+  user.send(this.colorize(`  #y[Waist      ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_WAIST) ? other.equipment().find(x => x.slot() == this.constants().SLOT_WAIST).name() : `none`}\r\n`));
+  user.send(this.colorize(`  #y[Legs       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_LEGS) ? other.equipment().find(x => x.slot() == this.constants().SLOT_LEGS).name() : `none`}\r\n`));
+  user.send(this.colorize(`  #y[Feet       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_FEET) ? other.equipment().find(x => x.slot() == this.constants().SLOT_FEET).name() : `none`}\r\n`));
+
+  const wieldedItems = other.equipment().filter(x => x.slot() == this.constants().SLOT_WIELD);
+
+  if ( wieldedItems.length == 2 ) {
+    user.send(this.colorize(`  #y[Right Hand ]#n ${wieldedItems[0].name()}\r\n`));
+    user.send(this.colorize(`  #y[Left Hand  ]#n ${wieldedItems[1].name()}\r\n`));
+  } else if ( wieldedItems.length == 1 ) {
+    if ( wieldedItems[0].type() == this.constants().ITEM_2H_WEAPON )
+      user.send(this.colorize(`  #y[Hands      ]#n ${wieldedItems[0].name()}\r\n`));
+    else
+      user.send(this.colorize(`  #y[Right Hand ]#n ${wieldedItems[0].name()}\r\n`));
+  } else {
+    user.send(this.colorize(`  #y[Hands      ]#n none\r\n`));
+  }
+};
+
+World.prototype.parseDepth = function (user, args, num) {
   let depth = 0;
 
   if ( typeof args[num] == `string` ) {
@@ -270,7 +301,7 @@ World.prototype.parseDepth = (user, args, num) => {
   return depth;
 };
 
-World.prototype.parseName = (user, args, num) => {
+World.prototype.parseName = function (user, args, num) {
   const matches = args[num].match(/^([0-9]+)\.(.+)$/);
   let name = args[num];
   let count = 1;
@@ -283,7 +314,7 @@ World.prototype.parseName = (user, args, num) => {
   return [name, count];
 };
 
-World.prototype.terminalWrap = (text) => {
+World.prototype.terminalWrap = function (text) {
   const words = text.split(` `);
   
   return words.reduce((accumulator, val) => {
@@ -296,7 +327,7 @@ World.prototype.terminalWrap = (text) => {
   }, []).join(`\r\n`);
 };
 
-World.prototype.colorize = (text) => {
+World.prototype.colorize = function (text) {
   text = text.replace(/\#\#/g, `@&#$!*;`);
   text = text.replace(/\%\%/g, `*!$#&@;`);
   

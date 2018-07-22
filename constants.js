@@ -35,6 +35,7 @@ module.exports = {
   ITEM_1H_WEAPON: 13,
   ITEM_2H_WEAPON: 14,
   ITEM_HELD: 15,
+  ITEM_SHIELD: 16,
   
   /** Define slot flags */
   SLOT_NONE: 0,
