@@ -14,25 +14,43 @@ module.exports = {
   VT100_HIDE_TEXT: `\x1b[8m`,
     
   /** Define item flags */
-  OBJECT_WEARABLE: 1,
-  OBJECT_WIELDABLE_1H: 2,
-  OBJECT_WIELDABLE_2H: 3,
-  OBJECT_CONTAINER: 4,
+  ITEM_EQUIPPABLE: 1,
+  ITEM_CONTAINER: 2,
+  ITEM_FIXED: 3,
+  
+  /** Define item types */
+  ITEM_OTHER: 0,
+  ITEM_HEAD: 1,
+  ITEM_FACE: 2,
+  ITEM_NECK: 3,
+  ITEM_SHOULDERS: 4,
+  ITEM_CHEST: 5,
+  ITEM_BACK: 6,
+  ITEM_ARMS: 7,
+  ITEM_WRISTS: 8,
+  ITEM_GLOVES: 9,
+  ITEM_WAIST: 10,
+  ITEM_LEGS: 11,
+  ITEM_FEET: 12,
+  ITEM_1H_WEAPON: 13,
+  ITEM_2H_WEAPON: 14,
+  ITEM_HELD: 15,
   
   /** Define slot flags */
-  SLOT_WIELD: 1,
-  SLOT_HOLD: 2,
-  SLOT_CHEST: 3,
-  SLOT_FACE: 4,
-  SLOT_ARMS: 5,
-  SLOT_WRISTS: 6,
-  SLOT_LEGS: 7,
-  SLOT_FEET: 8,
-  SLOT_BACK: 9,
-  SLOT_SHOULDERS: 10,
-  SLOT_HANDS: 11,
-  SLOT_FINGER: 12,
-  SLOT_WAIST: 13,
+  SLOT_NONE: 0,
+  SLOT_HEAD: 1,
+  SLOT_FACE: 2,
+  SLOT_NECK: 3,
+  SLOT_SHOULDERS: 4,
+  SLOT_CHEST: 5,
+  SLOT_BACK: 6,
+  SLOT_ARMS: 7,
+  SLOT_WRISTS: 8,
+  SLOT_GLOVES: 9,
+  SLOT_WAIST: 10,
+  SLOT_LEGS: 11,
+  SLOT_FEET: 12,
+  SLOT_WIELD: 13,
   
   /** Define direction flags */
   DIR_NORTH: 0,                    /** n */
@@ -45,6 +63,23 @@ module.exports = {
   DIR_NORTHWEST: 7,                /** nw */
   DIR_UP: 8,                       /** u */
   DIR_DOWN: 9,                     /** d */
+  
+  directions: {
+    north: 0,
+    northeast: 1,
+    east: 2,
+    southeast: 3,
+    south: 4,
+    southwest: 5,
+    west: 6,
+    northwest: 7,
+    up: 8,
+    down: 9,
+    ne: 1,
+    se: 3,
+    sw: 5,
+    nw: 7
+  },
   
   directionNames: [`north`, `northeast`, `east`, `southeast`, `south`,
                    `southwest`, `west`, `northwest`, `up`, `down`],
@@ -75,7 +110,8 @@ module.exports = {
                     `Hello, what is your name? `].join(``),
     
   /** Define default message of the day */
-  DEFAULT_MOTD: [`--------------------------------------------------------------------------------\r\n`,
+  DEFAULT_MOTD: [`\r\n`,
+                 `--------------------------------------------------------------------------------\r\n`,
                  `Message of the day:\r\n`,
                  `\r\n`,
                  `New features:\r\n`,

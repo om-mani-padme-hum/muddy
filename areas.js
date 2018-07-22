@@ -11,11 +11,8 @@ module.exports.configArea = (world) => {
       { name: `flags`, type: `Array`, arrayOf: { type: `int` } },
       { name: `created`, type: `datetime` },
       { name: `itemPrototypes`, type: `array`, arrayOf: { instanceOf: 'Item' } },
-      { name: `items`, type: `Array`, arrayOf: { instanceOf: `ItemInstance` }, store: false },
       { name: `mobilePrototypes`, type: `array`, arrayOf: { instanceOf: 'Mobile' } },
-      { name: `mobiles`, type: `Array`, arrayOf: { instanceOf: `MobileInstance` }, store: false },
-      { name: `rooms`, type: `Array`, arrayOf: { instanceOf: `Room` } },
-      { name: `users`, type: `Array`, arrayOf: { instanceOf: `User` }, store: false }
+      { name: `rooms`, type: `Array`, arrayOf: { instanceOf: `Room` } }
     ],
     indexes: [
       { name: `name`, type: `BTREE`, columns: [ `name` ] }

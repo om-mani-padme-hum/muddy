@@ -9,6 +9,7 @@ module.exports.configItemInstance = (world) => {
       { name: `name`, type: `varchar`, length: 32 },
       { name: `names`, type: `Array`, arrayOf: { type: `varchar`, length: 32 } },
       { name: `description`, type: `varchar`, length: 512 },
+      { name: `roomDescription`, type: `varchar`, length: 80 },
       { name: `type`, type: `int` },
       { name: `slot`, type: `int` },
       { name: `flags`, type: `Array`, arrayOf: { type: `int` } },

@@ -5,7 +5,7 @@ module.exports.createCommands = (world) => {
       name: direction,
       execute: async (world, user, buffer) => {
         /** Look for an exit in that direction */
-        const exit = user.room().exits().find(x => world.constants().directionNames[x.direction()] == direction);
+        const exit = user.room().exits().find(x => x.direction() == world.constants().directions[direction]);
 
         if ( exit ) {
           /** If room exists, move user to room and look */

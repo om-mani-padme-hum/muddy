@@ -34,11 +34,7 @@ const configWorld = {
     { name: `commands`, type: `Array`, arrayOf: { instanceOf: `Command` } },
     { name: `constants`, type: `Object`, default: constants },
     { name: `database`, type: `MySQLConnection` },
-    { name: `itemPrototypes`, type: `Array`, arrayOf: { type: `Item` } },
-    { name: `items`, type: `Array`, arrayOf: { type: `ItemInstance` } },
     { name: `log`, instanceOf: `Object` },
-    { name: `mobilePrototypes`, type: `Array`, arrayOf: { type: `Mobile` } },
-    { name: `mobiles`, type: `Array`, arrayOf: { type: `MobileInstance` } },
     { name: `motd`, type: `text`, default: constants.DEFAULT_MOTD },
     { name: `mysqlConfig`, type: `Object` },
     { name: `port`, type: `int`, default: 7000 },
@@ -82,16 +78,16 @@ World.prototype.loadAreas = async function () {
       /** Set area of room */
       area.rooms()[i].area(area);
       
+      /** Add room to world */
+      this.rooms().push(area.rooms()[i]);
+      
       /** Loop through item instances in room */
       area.rooms()[i].items().forEach((item) => {
         /** Set room of item */
         item.room(area.rooms()[i]);
         
-        /** Add item to area */
-        area.items().push(item);
-        
-        /** Add item to world */
-        this.items().push(item);
+        /** Set prototype of item */
+        item.prototype(area.rooms()[i].itemPrototypes().find(x => x.id() == item.prototype().id()));
         
         /** Recursively add any item contents to world and set container of each */
         recursiveItemContents(item);
@@ -102,37 +98,16 @@ World.prototype.loadAreas = async function () {
         /** Set room of mobile */
         mobile.room(area.rooms()[i]);
         
-        /** Add mobile to area */
-        area.mobiles().push(mobile);
-        
-        /** Add mobile to world */
-        this.mobiles().push(mobile);
+        /** Set prototype of mobile */
+        mobile.prototype(area.rooms()[i].mobilePrototypes().find(x => x.id() == mobile.prototype().id()));
       });
       
       /** Loop through exits in room */
       area.rooms()[i].exits().forEach((exit) => {
         /** Set room of exit */
         exit.room(area.rooms()[i]);
-      });
-      
-      /** Loop through mobile prototypes in room and add to world */
-      for ( let i = 0, i_max = area.rooms()[i].mobilePrototypes().length; i < i_max; i++ )
-        this.mobilePrototypes().push(area.rooms()[i].mobilePrototypes()[i]);
-
-      /** Loop through item prototypes in room and add to world */ 
-      for ( let i = 0, i_max = area.rooms()[i].itemPrototypes().length; i < i_max; i++ )
-        this.itemPrototypes().push(area.rooms()[i].itemPrototypes()[i]);
-      
-      this.rooms().push(area.rooms()[i]);
+      });    
     }
-    
-    /** Loop through mobile prototypes in area and add to world */
-    for ( let i = 0, i_max = area.mobilePrototypes().length; i < i_max; i++ )
-      this.mobilePrototypes().push(area.mobilePrototypes()[i]);
-
-    /** Loop through item prototypes in area and add to world */ 
-    for ( let i = 0, i_max = area.itemPrototypes().length; i < i_max; i++ )
-      this.itemPrototypes().push(area.itemPrototypes()[i]);
   }
   
   /** Connect exits */
@@ -143,38 +118,18 @@ World.prototype.loadAreas = async function () {
       });
     });
   });
-  
-  /** Set mobile instance rooms and prototypes */
-  this.mobiles().forEach((mobile) => {
-    mobile.room(this.rooms().find(x => x.id() == mobile.room().id()));
-    mobile.prototype(this.mobilePrototypes().find(x => x.id() == mobile.prototype().id()));
-  });
-  
-  /** Set item instance rooms */
-  this.items().forEach((item) => {
-    item.room(this.rooms().find(x => x.id() == item.room().id()));
-    item.prototype(this.itemPrototypes().find(x => x.id() == item.prototype().id()));
-  });
 };
 
 World.prototype.characterFromAnywhere = function (character) {  
   /** If character's room exists */
   if ( character.room() ) {
     /** If character is a User, remove from room's and area's users lists */
-    if ( character instanceof this.User ) {
+    if ( character instanceof this.User && character.room().users().indexOf(character) !== -1 )
       character.room().users().splice(character.room().users().indexOf(character), 1);
-      
-      if ( character.room().area() )
-        character.room().area().users().splice(character.room().area().users().indexOf(character), 1);
-    } 
-    
+
     /** If character is a MobileInstance, remove from room's and area's mobiles lists */
-    else if ( character instanceof this.MobileInstance ) {
+    else if ( character instanceof this.MobileInstance && character.room().mobiles().indexOf(character) !== -1 )
       character.room().mobiles().splice(character.room().mobiles().indexOf(character), 1);
-      
-      if ( character.room().area() )
-        character.room().area().mobiles().splice(character.room().area().mobiles().indexOf(character), 1);
-    }
   }
   
   /** Null out character's room */
@@ -189,24 +144,23 @@ World.prototype.characterToRoom = function (character, room) {
   character.room(room);
 
   /** If character is a User, add to room's and area's users lists */
-  if ( character instanceof this.User ) {
+  if ( character instanceof this.User )
     room.users().push(character);
-    room.area().users().push(character);
-  } 
   
   /** If character is a MobileInstance, add to room's and area's mobiles lists */
-  else if ( character instanceof this.MobileInstance ) {
+  else if ( character instanceof this.MobileInstance )
     room.mobiles().push(character);
-    room.area().mobiles().push(character);
-  }
 };
 
-World.prototype.itemFromAnywhere = function (item) {
+World.prototype.itemFromAnywhere = async function (item) {
   /** If item's room exists */
   if ( item.room() ) {
     /** Remove item from item room's and area's items lists */
-    item.room().items().splice(item.room().items().indexOf(item), 1);
-    item.room().area().items().splice(item.room().area().items().indexOf(item), 1);
+    if ( item.room().items().indexOf(item) !== -1 )
+      item.room().items().splice(item.room().items().indexOf(item), 1);
+
+    /** Save room */
+    await item.room().update(this.database());
     
     /** Null out item's room */
     item.room(null);
@@ -217,10 +171,13 @@ World.prototype.itemFromAnywhere = function (item) {
     /** If item is in the inventory, remove it from the inventory list */
     if ( item.character().inventory().indexOf(item) !== -1 )
       item.character().inventory().splice(item.character().inventory().indexOf(item), 1);
-    
+        
     /** If item is part of the equipment, remove it from the equipment list */
     if ( item.character().equipment().indexOf(item) !== -1 )
       item.character().equipment().splice(item.character().equipment().indexOf(item), 1);
+    
+    /** Save character */
+    await item.character().update(this.database());
     
     /** Null out item's character */
     item.character(null);
@@ -229,62 +186,172 @@ World.prototype.itemFromAnywhere = function (item) {
   /** If item's container exists */
   if ( item.container() ) {
     /** Remove item from container's contents list */
-    item.container().contents().splice(item.container().contents().indexOf(item), 1);
+    if ( item.container().contents().indexOf(item) !== -1 )
+      item.container().contents().splice(item.container().contents().indexOf(item), 1);
+    
+    /** Save container */
+    await item.container().update(this.database());
     
     /** Null out item's container */
     item.container(null);
   }
 }
 
-World.prototype.itemToRoom = function (item, room) {
+World.prototype.itemToRoom = async function (item, room) {
   /** Remove item from any old location */
-  this.itemFromAnywhere(item);
+  await this.itemFromAnywhere(item);
   
   /** Set item's room */
-  item.room(item);
+  item.room(room);
   
   /** Add item to room's items list */
   room.items().push(item);
+  
+  /** Save room */
+  await room.update(this.database());
 };
 
-World.prototype.itemToInventory = function (item, character) {
+World.prototype.itemToInventory = async function (item, character) {
   /** Remove item from any old location */
-  this.itemFromAnywhere(item);
+  await this.itemFromAnywhere(item);
   
   /** Set item's character */
-  item.character(item);
+  item.character(character);
   
   /** Add item to character's inventory list */
   character.inventory().push(item);
+  
+  /** Save character */
+  await character.update(this.database());
 };
 
-World.prototype.itemToEquipment = function (item, character) {
+World.prototype.itemToEquipment = async function (item, character) {
   /** Remove item from any old location */
-  this.itemFromAnywhere(item);
+  await this.itemFromAnywhere(item);
   
   /** Set item's character */
-  item.character(item);
+  item.character(character);
   
   /** Add item to character's equipment list */
   character.equipment().push(item);
+  
+  /** Save character */
+  await character.update(this.database());
 };
 
-World.prototype.itemToContainer = function (item, container) {
+World.prototype.itemToContainer = async function (item, container) {
   /** Remove item from any old location */
-  this.itemFromAnywhere(item);
+  await this.itemFromAnywhere(item);
   
   /** Set item's container */
   item.container(container);
   
   /** Add item to container's contents list */
   container.contents().push(item);
+  
+  /** Save container */
+  await container.update(this.database());
+};
+
+World.prototype.parseDepth = (user, args, num) => {
+  let depth = 0;
+
+  if ( typeof args[num] == `string` ) {
+    depth = parseInt(args[num]);
+
+    if ( `infinity`.startsWith(args[num].toLowerCase()) ) {
+      depth = Infinity;
+    } else if ( isNaN(depth) || depth < 0 ) {
+      user.send(`That is not an allowed inspection depth, only numbers >= 0 or infinity are allowed.\r\n`);
+      return -1;
+    }
+  }
+  
+  return depth;
+};
+
+World.prototype.parseName = (user, args, num) => {
+  const matches = args[num].match(/^([0-9]+)\.(.+)$/);
+  let name = args[num];
+  let count = 1;
+
+  if ( matches && matches.length == 3 ) {
+    name = matches[2];
+    count = parseInt(matches[1]);
+  }
+  
+  return [name, count];
+};
+
+World.prototype.terminalWrap = (text) => {
+  const words = text.split(` `);
+  
+  return words.reduce((accumulator, val) => {
+    if ( accumulator.length > 0 && val.length + accumulator[accumulator.length - 1].length + 1 <= 80 )
+      accumulator[accumulator.length - 1] += ` ${val}`;
+    else
+      accumulator.push(val);
+    
+    return accumulator;
+  }, []).join(`\r\n`);
+};
+
+World.prototype.colorize = (text) => {
+  text = text.replace(/\#\#/g, `@&#$!*;`);
+  text = text.replace(/\%\%/g, `*!$#&@;`);
+  
+  text = text.replace(/\#k/g, `\u001b[30m`);
+  text = text.replace(/\#r/g, `\u001b[31m`);
+  text = text.replace(/\#g/g, `\u001b[32m`);
+  text = text.replace(/\#y/g, `\u001b[33m`);
+  text = text.replace(/\#b/g, `\u001b[34m`);
+  text = text.replace(/\#p/g, `\u001b[35m`);
+  text = text.replace(/\#c/g, `\u001b[36m`);
+  text = text.replace(/\#w/g, `\u001b[37m`);
+
+  text = text.replace(/\#K/g, `\u001b[30;1m`);
+  text = text.replace(/\#R/g, `\u001b[31;1m`);
+  text = text.replace(/\#G/g, `\u001b[32;1m`);
+  text = text.replace(/\#Y/g, `\u001b[33;1m`);
+  text = text.replace(/\#B/g, `\u001b[34;1m`);
+  text = text.replace(/\#P/g, `\u001b[35;1m`);
+  text = text.replace(/\#C/g, `\u001b[36;1m`);
+  text = text.replace(/\#W/g, `\u001b[37;1m`);
+  text = text.replace(/\#g/g, `\u001b[32;1m`);
+  
+  text = text.replace(/\%k/g, `\u001b[40m`);
+  text = text.replace(/\%r/g, `\u001b[41m`);
+  text = text.replace(/\%g/g, `\u001b[42m`);
+  text = text.replace(/\%y/g, `\u001b[43m`);
+  text = text.replace(/\%b/g, `\u001b[44m`);
+  text = text.replace(/\%p/g, `\u001b[45m`);
+  text = text.replace(/\%c/g, `\u001b[46m`);
+  text = text.replace(/\%w/g, `\u001b[47m`);
+
+  text = text.replace(/\%K/g, `\u001b[40;1m`);
+  text = text.replace(/\%R/g, `\u001b[41;1m`);
+  text = text.replace(/\%G/g, `\u001b[42;1m`);
+  text = text.replace(/\%Y/g, `\u001b[43;1m`);
+  text = text.replace(/\%B/g, `\u001b[44;1m`);
+  text = text.replace(/\%P/g, `\u001b[45;1m`);
+  text = text.replace(/\%C/g, `\u001b[46;1m`);
+  text = text.replace(/\%W/g, `\u001b[47;1m`);
+  text = text.replace(/\%g/g, `\u001b[42;1m`);
+
+  text = text.replace(/\#n/g, `\u001b[0m`);
+  text = text.replace(/\%n/g, `\u001b[0m`);
+  
+  text = text.replace(/\@\&\#\$\!\*\;/g, `#`);
+  text = text.replace(/\*\!\$\#\&\@\;/g, `%`);
+  
+  return `${text}\u001b[0m`;
 };
 
 /**
  * @signature world.listen()
  * @description Start the server listening on the configured port!
  */
-World.prototype.listen = async function () {
+World.prototype.listen = async function () {  
   /** Create custom winston logger */
   this.log(new winston.Logger({
     transports: [
@@ -353,14 +420,70 @@ World.prototype.listen = async function () {
   ezobjects.createClass(configUser);
 
   /** Create prompt function */
-  User.prototype.prompt = function () {
-    this.send(this.promptFormat());
+  User.prototype.prompt = function (world) {
+    const healthRatio = this.health() / this.maxHealth();
+    const manaRatio = this.mana() / this.maxMana();
+    const energyRatio = this.energy() / this.maxEnergy();
+    
+    let health;
+    
+    if ( healthRatio < 0.2 )
+      health = `#R${this.health()}#n`;
+    else if ( healthRatio < 0.4 )
+      health = `#P${this.health()}#n`;
+    else if ( healthRatio < 0.6 )
+      health = `#B${this.health()}#n`;
+    else if ( healthRatio < 0.8 )
+      health = `#Y${this.health()}#n`;
+    else if ( healthRatio < 1 )
+      health = `#G${this.health()}#n`;
+    else
+      health = `#C${this.health()}#n`;
+    
+    let mana;
+    
+    if ( manaRatio < 0.2 )
+      mana = `#R${this.mana()}#n`;
+    else if ( manaRatio < 0.4 )
+      mana = `#P${this.mana()}#n`;
+    else if ( manaRatio < 0.6 )
+      mana = `#B${this.mana()}#n`;
+    else if ( manaRatio < 0.8 )
+      mana = `#Y${this.mana()}#n`;
+    else if ( manaRatio < 1 )
+      mana = `#G${this.mana()}#n`;
+    else
+      mana = `#C${this.mana()}#n`;
+    
+    let energy;
+    
+    if ( energyRatio < 0.2 )
+      energy = `#R${this.energy()}#n`;
+    else if ( energyRatio < 0.4 )
+      energy = `#P${this.energy()}#n`;
+    else if ( energyRatio < 0.6 )
+      energy = `#B${this.energy()}#n`;
+    else if ( energyRatio < 0.8 )
+      energy = `#Y${this.energy()}#n`;
+    else if ( energyRatio < 1 )
+      energy = `#G${this.energy()}#n`;
+    else
+      energy = `#C${this.energy()}#n`;
+
+    let prompt = this.promptFormat();
+    
+    prompt = prompt.replace(/\$xp/g, `#c${this.experience()}#n`);
+    prompt = prompt.replace(/\$hp/g, health);
+    prompt = prompt.replace(/\$m/g, mana);
+    prompt = prompt.replace(/\$e/g, energy);
+    
+    this.send(world.colorize(prompt));
   };
   
   /** Create send function */
-  User.prototype.send = function (buffer) {
+  User.prototype.send = function (text) {
     if ( this.state() != constants.STATE_DISCONNECTED && this.socket() )
-      this.socket().write(buffer);
+      this.socket().write(text);
   };
   
   this.Area = Area;

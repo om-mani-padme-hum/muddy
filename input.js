@@ -52,6 +52,17 @@ async function processStateName(world, user, buffer) {
  * @param user User item
  */
 async function processStateOldPassword(world, user, buffer) {
+  /** Define recursive helper function for adding any item contents to world and setting container of each */
+  const recursiveItemContents = (item) => {
+    item.contents().forEach((content) => {
+      content.container(item);
+      
+      this.items().push(content);
+      
+      recursiveItemContents(content);
+    });
+  };
+  
   /** Set up the crypto */
   const hash = crypto.createHmac(`sha512`, user.salt());
   
@@ -87,7 +98,21 @@ async function processStateOldPassword(world, user, buffer) {
         process.exit(1);
       }
     }
+        
+    /** Set all inventory item's character to user */
+    user.inventory().forEach((item) => {
+      item.character(user);
+      
+      recursiveItemContents(item);
+    });
     
+    /** Set all equipment item's character to user */
+    user.equipment().forEach((item) => {
+      item.character(user);
+      
+      recursiveItemContents(item);
+    });
+        
     /** Move the user to the last room */
     world.characterToRoom(user, room);
     
@@ -97,7 +122,8 @@ async function processStateOldPassword(world, user, buffer) {
     world.log().info(`User ${user.name()} connected.`);
   } else {
     /** Password incorrect, remove user from world and terminate socket */
-    world.users().splice(world.users().indexOf(user), 1);
+    if ( world.users().indexOf(user) !== -1 )
+      world.users().splice(world.users().indexOf(user), 1);
 
     /** Terminate socket */
     user.socket().end(`Incorrect password, goodbye!\r\n`);
@@ -154,7 +180,7 @@ async function processStateNewPassword(world, user, buffer) {
  * @param buffer User's input buffer
  * @param user User item
  */
-async function processStateConfirmPassword(world, user, buffer) {
+async function processStateConfirmPassword(world, user, buffer) {  
   /** Set up the crypto */
   const hash = crypto.createHmac(`sha512`, user.salt());
 
@@ -174,7 +200,7 @@ async function processStateConfirmPassword(world, user, buffer) {
     
     /** Password matches, proceed to the message of the day */
     user.send(world.motd());
-
+    
     /** Get the start room */
     const room = world.rooms().find(x => x.id() == world.constants().START_ROOM);
 
@@ -218,11 +244,12 @@ async function processStateMOTD(world, user, buffer) {
     });
 
     /** Remove user from room */
-    if ( oldUser.room() )
+    if ( oldUser.room() && oldUser.room().users().indexOf(oldUser) !== -1 )
       oldUser.room().users().splice(oldUser.room().users().indexOf(oldUser), 1);
 
     /** Remove user from world */
-    world.users().splice(world.users().indexOf(oldUser), 1);
+    if ( world.users().indexOf(oldUser) !== -1 )
+      world.users().splice(world.users().indexOf(oldUser), 1);
 
     world.log().info(`User ${oldUser.name()} has been replaced with a new user and socket.`);
 
@@ -237,7 +264,7 @@ async function processStateMOTD(world, user, buffer) {
   await world.commands().find(x => x.name() == `look`).execute()(world, user, ``);
 
   /** Send prompt */
-  user.prompt();
+  user.prompt(world);
 
   /** Move on and put user in game */
   user.state(world.constants().STATE_CONNECTED);
@@ -279,7 +306,7 @@ async function processStateConnected(world, user, buffer) {
     user.send(`That action does not exist in this world.\r\n`);
 
   /** Send prompt */
-  user.prompt();
+  user.prompt(world);
 }
 
 /**
