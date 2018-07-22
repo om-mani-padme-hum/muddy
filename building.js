@@ -7,7 +7,7 @@ module.exports.createCommands = (world) => {
         if ( typeof args[0] != `string` ) {
           user.send(`Create what? [area|room|prototype|deployment|instance]\r\n`);
         } else if ( `deployment`.startsWith(args[0]) ) {
-          
+          /** Todo */
         } else if ( `instance`.startsWith(args[0]) ) {
           /** Is there a valid instance type argument? */
           if ( typeof args[1] != `string` ) {
@@ -31,7 +31,7 @@ module.exports.createCommands = (world) => {
                 return;
               }
                 
-              const roomItem = typeof args[3] == 'string' && 'room'.startsWith(args[3]);
+              const roomItem = typeof args[3] == `string` && `room`.startsWith(args[3]);
 
               const itemInstance = new world.ItemInstance({
                 prototype: prototype,
@@ -53,7 +53,7 @@ module.exports.createCommands = (world) => {
               
               user.send(`You draw in energy from the space around and materialize it into a tiny sphere.\r\n`);
             }          
-          } else if ( `mobile`.startsWith(args[1])  ) {
+          } else if ( `mobile`.startsWith(args[1]) ) {
             if ( typeof args[2] != `string` ) {
               user.send(`Create an instance of what mobile prototype ID?\r\n`);
             } else {

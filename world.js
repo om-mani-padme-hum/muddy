@@ -195,7 +195,7 @@ World.prototype.itemFromAnywhere = async function (item) {
     /** Null out item's container */
     item.container(null);
   }
-}
+};
 
 World.prototype.itemToRoom = async function (item, room) {
   /** Remove item from any old location */
@@ -328,52 +328,52 @@ World.prototype.terminalWrap = function (text) {
 };
 
 World.prototype.colorize = function (text) {
-  text = text.replace(/\#\#/g, `@&#$!*;`);
-  text = text.replace(/\%\%/g, `*!$#&@;`);
+  text = text.replace(/##/g, `@&#$!*;`);
+  text = text.replace(/%%/g, `*!$#&@;`);
   
-  text = text.replace(/\#k/g, `\u001b[30m`);
-  text = text.replace(/\#r/g, `\u001b[31m`);
-  text = text.replace(/\#g/g, `\u001b[32m`);
-  text = text.replace(/\#y/g, `\u001b[33m`);
-  text = text.replace(/\#b/g, `\u001b[34m`);
-  text = text.replace(/\#p/g, `\u001b[35m`);
-  text = text.replace(/\#c/g, `\u001b[36m`);
-  text = text.replace(/\#w/g, `\u001b[37m`);
+  text = text.replace(/#k/g, `\u001b[30m`);
+  text = text.replace(/#r/g, `\u001b[31m`);
+  text = text.replace(/#g/g, `\u001b[32m`);
+  text = text.replace(/#y/g, `\u001b[33m`);
+  text = text.replace(/#b/g, `\u001b[34m`);
+  text = text.replace(/#p/g, `\u001b[35m`);
+  text = text.replace(/#c/g, `\u001b[36m`);
+  text = text.replace(/#w/g, `\u001b[37m`);
 
-  text = text.replace(/\#K/g, `\u001b[30;1m`);
-  text = text.replace(/\#R/g, `\u001b[31;1m`);
-  text = text.replace(/\#G/g, `\u001b[32;1m`);
-  text = text.replace(/\#Y/g, `\u001b[33;1m`);
-  text = text.replace(/\#B/g, `\u001b[34;1m`);
-  text = text.replace(/\#P/g, `\u001b[35;1m`);
-  text = text.replace(/\#C/g, `\u001b[36;1m`);
-  text = text.replace(/\#W/g, `\u001b[37;1m`);
-  text = text.replace(/\#g/g, `\u001b[32;1m`);
+  text = text.replace(/#K/g, `\u001b[30;1m`);
+  text = text.replace(/#R/g, `\u001b[31;1m`);
+  text = text.replace(/#G/g, `\u001b[32;1m`);
+  text = text.replace(/#Y/g, `\u001b[33;1m`);
+  text = text.replace(/#B/g, `\u001b[34;1m`);
+  text = text.replace(/#P/g, `\u001b[35;1m`);
+  text = text.replace(/#C/g, `\u001b[36;1m`);
+  text = text.replace(/#W/g, `\u001b[37;1m`);
+  text = text.replace(/#g/g, `\u001b[32;1m`);
   
-  text = text.replace(/\%k/g, `\u001b[40m`);
-  text = text.replace(/\%r/g, `\u001b[41m`);
-  text = text.replace(/\%g/g, `\u001b[42m`);
-  text = text.replace(/\%y/g, `\u001b[43m`);
-  text = text.replace(/\%b/g, `\u001b[44m`);
-  text = text.replace(/\%p/g, `\u001b[45m`);
-  text = text.replace(/\%c/g, `\u001b[46m`);
-  text = text.replace(/\%w/g, `\u001b[47m`);
+  text = text.replace(/%k/g, `\u001b[40m`);
+  text = text.replace(/%r/g, `\u001b[41m`);
+  text = text.replace(/%g/g, `\u001b[42m`);
+  text = text.replace(/%y/g, `\u001b[43m`);
+  text = text.replace(/%b/g, `\u001b[44m`);
+  text = text.replace(/%p/g, `\u001b[45m`);
+  text = text.replace(/%c/g, `\u001b[46m`);
+  text = text.replace(/%w/g, `\u001b[47m`);
 
-  text = text.replace(/\%K/g, `\u001b[40;1m`);
-  text = text.replace(/\%R/g, `\u001b[41;1m`);
-  text = text.replace(/\%G/g, `\u001b[42;1m`);
-  text = text.replace(/\%Y/g, `\u001b[43;1m`);
-  text = text.replace(/\%B/g, `\u001b[44;1m`);
-  text = text.replace(/\%P/g, `\u001b[45;1m`);
-  text = text.replace(/\%C/g, `\u001b[46;1m`);
-  text = text.replace(/\%W/g, `\u001b[47;1m`);
-  text = text.replace(/\%g/g, `\u001b[42;1m`);
+  text = text.replace(/%K/g, `\u001b[40;1m`);
+  text = text.replace(/%R/g, `\u001b[41;1m`);
+  text = text.replace(/%G/g, `\u001b[42;1m`);
+  text = text.replace(/%Y/g, `\u001b[43;1m`);
+  text = text.replace(/%B/g, `\u001b[44;1m`);
+  text = text.replace(/%P/g, `\u001b[45;1m`);
+  text = text.replace(/%C/g, `\u001b[46;1m`);
+  text = text.replace(/%W/g, `\u001b[47;1m`);
+  text = text.replace(/%g/g, `\u001b[42;1m`);
 
-  text = text.replace(/\#n/g, `\u001b[0m`);
-  text = text.replace(/\%n/g, `\u001b[0m`);
+  text = text.replace(/#n/g, `\u001b[0m`);
+  text = text.replace(/%n/g, `\u001b[0m`);
   
-  text = text.replace(/\@\&\#\$\!\*\;/g, `#`);
-  text = text.replace(/\*\!\$\#\&\@\;/g, `%`);
+  text = text.replace(/@&#\$!\*;/g, `#`);
+  text = text.replace(/\*!\$#&@;/g, `%`);
   
   return `${text}\u001b[0m`;
 };

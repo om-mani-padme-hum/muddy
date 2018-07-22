@@ -10,8 +10,8 @@ module.exports.configArea = (world) => {
       { name: `description`, type: `varchar`, length: 512 },
       { name: `flags`, type: `Array`, arrayOf: { type: `int` } },
       { name: `created`, type: `datetime` },
-      { name: `itemPrototypes`, type: `array`, arrayOf: { instanceOf: 'Item' } },
-      { name: `mobilePrototypes`, type: `array`, arrayOf: { instanceOf: 'Mobile' } },
+      { name: `itemPrototypes`, type: `array`, arrayOf: { instanceOf: `Item` } },
+      { name: `mobilePrototypes`, type: `array`, arrayOf: { instanceOf: `Mobile` } },
       { name: `rooms`, type: `Array`, arrayOf: { instanceOf: `Room` } }
     ],
     indexes: [

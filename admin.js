@@ -1,4 +1,4 @@
-const util = require('util');
+const util = require(`util`);
 
 module.exports.createCommands = (world) => {
   return [
@@ -15,7 +15,7 @@ module.exports.createCommands = (world) => {
     new world.Command({
       name: `goto`,
       execute: async (world, user, buffer, args) => {
-        if ( typeof args[0] != 'string' ) {
+        if ( typeof args[0] != `string` ) {
           user.send(`Goto where?\r\n`);
           return;
         }
@@ -35,7 +35,7 @@ module.exports.createCommands = (world) => {
     new world.Command({
       name: `istat`,
       execute: async (world, user, buffer, args) => {
-        if ( typeof args[0] != 'string' ) {
+        if ( typeof args[0] != `string` ) {
           user.send(`Istat what?\r\n`);
           return;
         }
@@ -61,7 +61,7 @@ module.exports.createCommands = (world) => {
     new world.Command({
       name: `mstat`,
       execute: async (world, user, buffer, args) => {
-        if ( typeof args[0] != 'string' ) {
+        if ( typeof args[0] != `string` ) {
           user.send(`Mstat who?\r\n`);
           return;
         }
@@ -114,7 +114,7 @@ module.exports.createCommands = (world) => {
     new world.Command({
       name: `ustat`,
       execute: async (world, user, buffer, args) => {
-        if ( typeof args[0] != 'string' ) {
+        if ( typeof args[0] != `string` ) {
           user.send(`Ustat who?\r\n`);
           return;
         }

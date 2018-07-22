@@ -52,14 +52,14 @@ module.exports.createCommands = (world) => {
 
             let results = users.concat(mobiles.concat(inventory.concat(equipment.concat(items))));
 
-            const details = results.filter(x => typeof x.details == 'function' && Object.keys(x.details()).filter(y => y.startsWith(name)).length > 0);
+            const details = results.filter(x => typeof x.details == `function` && Object.keys(x.details()).filter(y => y.startsWith(name)).length > 0);
 
             results = results.concat(details);
 
             if ( results.length < count ) {
               user.send(`You can't find that item anywhere.\r\n`);
             } else {
-              if ( results[count - 1].constructor.name == 'Object' ) {
+              if ( results[count - 1].constructor.name == `Object` ) {
                 user.send(`${results[count - 1]}\r\n`);
               } else if ( results[count - 1] instanceof world.User ) {
                 user.send(`${results[count - 1].name()} is standing here.\r\n\r\n`);
@@ -77,7 +77,7 @@ module.exports.createCommands = (world) => {
           user.send(`${user.room().name()}\r\n`);
 
           /** Send exits */
-          let exits = `#G[Exits:`
+          let exits = `#G[Exits:`;
 
           /** Loop through exits in user`s room */
           user.room().exits().forEach((exit) => {

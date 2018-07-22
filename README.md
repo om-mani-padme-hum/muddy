@@ -1,4 +1,4 @@
-# Muddy v0.4.1 [![Build Status](https://www.travis-ci.org/om-mani-padme-hum/muddy.svg?branch=master)](https://www.travis-ci.org/om-mani-padme-hum/muddy) [![HitCount](http://hits.dwyl.com/om-mani-padme-hum/muddy.svg)](http://hits.dwyl.com/om-mani-padme-hum/muddy)
+# Muddy v0.4.2 [![Build Status](https://www.travis-ci.org/om-mani-padme-hum/muddy.svg?branch=master)](https://www.travis-ci.org/om-mani-padme-hum/muddy) [![HitCount](http://hits.dwyl.com/om-mani-padme-hum/muddy.svg)](http://hits.dwyl.com/om-mani-padme-hum/muddy)
 A Node.js Multi-User Dungeon (MUD) Framework
 
 ## Current Status:

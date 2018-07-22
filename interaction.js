@@ -3,7 +3,7 @@ module.exports.createCommands = (world) => {
     new world.Command({
       name: `drop`,
       execute: async (world, user, buffer, args) => {
-        if ( typeof args[0] != 'string' ) {
+        if ( typeof args[0] != `string` ) {
           user.send(`Drop what?\r\n`);
           return;
         }
@@ -24,7 +24,7 @@ module.exports.createCommands = (world) => {
     new world.Command({
       name: `get`,
       execute: async (world, user, buffer, args) => {
-        if ( typeof args[0] != 'string' ) {
+        if ( typeof args[0] != `string` ) {
           user.send(`Get what?\r\n`);
           return;
         }
@@ -50,7 +50,7 @@ module.exports.createCommands = (world) => {
     new world.Command({
       name: `remove`,
       execute: async (world, user, buffer, args) => {
-        if ( typeof args[0] != 'string' ) {
+        if ( typeof args[0] != `string` ) {
           user.send(`Remove what?\r\n`);
           return;
         }
@@ -75,7 +75,7 @@ module.exports.createCommands = (world) => {
     new world.Command({
       name: `say`,
       execute: async (world, user, buffer, args) => {
-        if ( typeof args[0] != 'string' ) {
+        if ( typeof args[0] != `string` ) {
           user.send(`Say what?\r\n`);
           return;
         }
@@ -93,7 +93,7 @@ module.exports.createCommands = (world) => {
     new world.Command({
       name: `wear`,
       execute: async (world, user, buffer, args) => {
-        if ( typeof args[0] != 'string' ) {
+        if ( typeof args[0] != `string` ) {
           user.send(`Wear what?\r\n`);
           return;
         }
@@ -130,7 +130,7 @@ module.exports.createCommands = (world) => {
     new world.Command({
       name: `wield`,
       execute: async (world, user, buffer, args) => {
-        if ( typeof args[0] != 'string' ) {
+        if ( typeof args[0] != `string` ) {
           user.send(`Wield what?\r\n`);
           return;
         }
