@@ -1,821 +1,600 @@
-'use strict';
+/** Require external modules */
+const crypto = require(`crypto`);
+const ezobjects = require(`ezobjects-mysql`);
+const net = require(`net`);
+const winston = require(`winston`);
 
-/** External modules */
-const net = require('net');
-const crypto = require('crypto');
+/** Require local modules */
+const admin = require(`./admin`);
+const areas = require(`./areas`);
+const building = require(`./building`);
+const characters = require(`./characters`);
+const commands = require(`./commands`);
+const constants = require(`./constants`);
+const exits = require(`./exits`);
+const fighting = require(`./fighting`);
+const info = require(`./info`);
+const input = require(`./input`);
+const interaction = require(`./interaction`);
+const itemInstances = require(`./item-instances`);
+const items = require(`./items`);
+const mobileInstances = require(`./mobile-instances`);
+const mobiles = require(`./mobiles`);
+const movement = require(`./movement`);
+const rooms = require(`./rooms`);
+const senses = require(`./senses`);
+const system = require(`./system`);
+const users = require(`./users`);
 
-/** Muddy modules */
-const input = require('./input');
-const users = require('./users');
-const areas = require('./areas');
-const rooms = require('./rooms');
-const items = require('./items');
-const mobiles = require('./mobiles');
-const exits = require('./exits');
-const commands = require('./commands');
+/** Configure world object */
+const configWorld = {
+  className: `World`,
+  properties: [
+    { name: `areas`, type: `Array`, arrayOf: { instanceOf: `Area` } },
+    { name: `commands`, type: `Array`, arrayOf: { instanceOf: `Command` } },
+    { name: `constants`, type: `Object`, default: constants },
+    { name: `database`, type: `MySQLConnection` },
+    { name: `log`, instanceOf: `Object` },
+    { name: `motd`, type: `text`, default: constants.DEFAULT_MOTD },
+    { name: `mysqlConfig`, type: `Object` },
+    { name: `port`, type: `int`, default: 7000 },
+    { name: `rooms`, type: `Array`, arrayOf: { type: `Room` } },
+    { name: `users`, type: `Array`, arrayOf: { type: `User` } },
+    { name: `welcome`, type: `text`, default: constants.DEFAULT_WELCOME }
+  ]
+};
+
+/** Create world object */
+ezobjects.createClass(configWorld);
 
 /**
- * Data model and helper class for a Muddy world.
+ * @signature world.loadAreas()
+ * @description Load all areas in the database.
  */
-class World {
-  /**
-   * Instantiate a new world.
-   * @param data (optional) Configuration object
-   */
-  constructor(data = {}) {
-    /** Define user state flags */
-    this.STATE_NAME = 0;
-    this.STATE_OLD_PASSWORD = 1;
-    this.STATE_NEW_PASSWORD = 2;
-    this.STATE_CONFIRM_PASSWORD = 3;
-    this.STATE_MOTD = 4;
-    this.STATE_CONNECTED = 5;
-    this.STATE_DISCONNECTED = 6;
-    
-    /** Define VT100 terminal modifiers */
-    this.VT100_CLEAR = '\x1b[0m';
-    this.VT100_HIDE_TEXT = '\x1b[8m';
-    
-    /** Define item flags */
-    this.OBJECT_WEARABLE = 1;
-    this.OBJECT_WIELDABLE_1H = 2;
-    this.OBJECT_WIELDABLE_2H = 3;
-    this.OBJECT_CONTAINER = 4;
-    
-    /** Define direction flags */
-    this.DIR_NORTH = 1;                    /**< n */
-    this.DIR_NORTHEAST = 2;                /**< ne */
-    this.DIR_EAST = 3;                     /**< e */
-    this.DIR_SOUTHEAST = 4;                /**< se */
-    this.DIR_SOUTH = 5;                    /**< s */
-    this.DIR_SOUTHWEST = 6;                /**< sw */
-    this.DIR_WEST = 7;                     /**< w */
-    this.DIR_NORTHWEST = 8;                /**< nw */
-    this.DIR_UP = 9;                       /**< u */
-    this.DIR_DOWN = 10;                    /**< d */
-    
-    this.init(data);
-  }
-
-  /**
-   * Initialize the world to provided data or defaults.
-   * @param data (optional) Configuration object
-   * @todo Remove users and items from this class and put them under areas
-   */
-  init(data = {}) {
-    /** Set the default Muddy pot */
-    const defaultPort = 9000;
-    
-    /** Set the default welcome message */
-    const defaultWelcome = ['\r\n',
-                            '\r\n',
-                            '\r\n',
-                            '                              W E L C O M E    T O\r\n',
-                            '\r\n',
-                            '\r\n',
-                            '                                          _     _\r\n',
-                            '                          /\\/\\  _   _  __| | __| |_   _\r\n',
-                            '                         /    \\| | | |/ _` |/ _` | | | |\r\n',
-                            '                        / /\\/\\ \\ |_| | (_| | (_| | |_| |\r\n',
-                            '                        \\/    \\/\\__,_|\\__,_|\\__,_|\\__, |\r\n',
-                            '                                                  |___/\r\n',
-                            '\r\n',
-                            '                              Created by Rich Lowe\r\n',
-                            '                                  MIT Licensed\r\n',
-                            '\r\n',
-                            '\r\n',
-                            '\r\n',
-                            '\r\n',
-                            '\r\n',
-                            '\r\n',
-                            '\r\n',
-                            '\r\n',
-                            'Hello, what is your name? '].join('');
-    
-    /** Set the default message of the day */
-    const defaultMotd = ['--------------------------------------------------------------------------------\r\n',
-                         'Message of the day:\r\n',
-                         '\r\n',
-                         'New features:\r\n',
-                         '  * Three default rooms to test movement\r\n',
-                         '  * All directions implemented\r\n',
-                         '  * Ability to look at rooms and see exits\r\n',
-                         '  * Saving of users, new and existing\r\n',
-                         '\r\n',
-                         '--------------------------------------------------------------------------------\r\n',
-                         'Press ENTER to continue...\r\n',
-                         '--------------------------------------------------------------------------------\r\n'].join('');
-
-    /** Set the default loadAreas() handler with two explicitly defined rooms in one area */
-    const defaultLoadAreas = () => {
-      /** Create new area */
-      const area = new areas.Area(this, {
-        id: 1,
-        name: 'Stuck in the mud'
-      });
+World.prototype.loadAreas = async function () {
+  /** Define recursive helper function for adding any item contents to world and setting container of each */
+  const recursiveItemContents = (item) => {
+    item.contents().forEach((content) => {
+      content.container(item);
       
-      /** Create an item */
-      const item = new items.Item(this, {
-        id: 1,
-        name: 'a muddy stick',
-        description: `It's a stick covered in mud.`
-      });
+      this.items().push(content);
       
-      area.items().push(item);
-      
-      /** Create a mobile */
-      const mobile = new mobiles.Mobile(this, {
-        id: 1,
-        name: 'a mud monster',
-        description: `Well, it looks like mud, but it's alive, what would you call it?`
-      });
-      
-      area.mobiles().push(mobile);
-      
-      /** Create three rooms */
-      let room;
-      
-      /** First */
-      room = new rooms.Room(this, {
-        id: 1,
-        area: area,
-        name: 'Stuck in the mud',
-        description: [`There seems to be lots to explore 'out there', but you can't do much of\r\n`,
-                      `anything as you're stuck in the mud.  Might want to pray the immortals\r\n`,
-                      `help you find a way out and back into a worthy world.`].join(''),
-        exits: [
-          new exits.Exit(this, {
-            dir: this.DIR_NORTH,
-            to: 2
-          }),
-          new exits.Exit(this, {
-            dir: this.DIR_DOWN,
-            to: 3
-          })
-        ]
-      });
-      
-      area.rooms().push(room);
-      
-      /** Second */
-      room = new rooms.Room(this, {
-        id: 2,
-        area: area,
-        name: 'Stuck in the mud',
-        description: [`There seems to be lots to explore 'out there', but you can't do much of\r\n`,
-                      `anything as you're stuck in the mud.  Might want to pray the immortals\r\n`,
-                      `help you find a way out and back into a worthy world.`].join(''),
-        exits: [
-          new exits.Exit(this, {
-            dir: this.DIR_SOUTH,
-            to: 1
-          })
-        ]
-      });
-      
-      area.rooms().push(room);
-      
-      /** Third */
-      room = new rooms.Room(this, {
-        id: 3,
-        area: area,
-        name: 'Drowning in the mud',
-        description: `There's *gurgle*, not much of interest *gurgle*, down here!`,
-        exits: [
-          new exits.Exit(this, {
-            dir: this.DIR_UP,
-            to: 1
-          })
-        ]
-      });
-      
-      area.rooms().push(room);
-      
-      /** Add area to world */
-      this.areas().push(area);
-    };
-    
-    /** Set the default stage setting handler which places an objet and a mobile */
-    const defaultSetStage = () => {
-      /** Create item from id #1 */
-      const item = this.items(1).copy();
-      
-      /** Put it in room id #1 */
-      item.room(this.rooms(1));
-      
-      /** Create mobile from id #1 */
-      const mobile = this.mobiles(1).copy();
-      
-      /** Put it in room id #2 */
-      mobile.room(this.rooms(2));
-    };
-    
-    /** Set the default loadUserByName() handler which just loads an empty user and is expected to be replaced */
-    const defaultLoadUserByName = (name, next) => { 
-      next(null);
-    };
-    
-    /** Create template for all direction commands */
-    const dirCommand = (dir) => {
-      return new commands.Command(this, {
-        name: dir,
-        command: (user, buffer) => {
-          /** Look for an exit in that direction */
-          const exit = user.room().exits(dir);
-
-          if ( exit ) {
-            /** If it exists, get the room it goes to */
-            const room = this.rooms(exit.to());
-
-            if ( room ) {
-              /** If room exists, move user to room and look */
-              user.room(room);
-
-              /** Find the look command and execute it for this user */
-              this.commands('look').execute(user, '');
-            } else {
-              /** If room doesn't exist, notify imps and send user an error message */
-              console.log(`Bad exit: direction ${dir} from room ${user.room().id()}.`);
-
-              user.send('Some kind of force is blocking your way.\r\n');
-            }
-          } else {
-            /** If it doesn't exist, send error message */
-            user.send('You cannot go that way.\r\n');
-          }
-        },
-        priority: dir == 'north' || dir == 'south' ? true : false
-      });
-    };
-
-    /** Set the default commands, which are generally expected to be retained */
-    const defaultCommands = [
-      new commands.Command(this, {
-        name: 'look',
-        command: (user, buffer) => {
-          /** Send room name */
-          user.send(`${user.room().name()}\r\n`);
-          
-          /** Send exits */
-          user.send('[Exits:');
-          
-          /** Count the exits to see if there are any */
-          let count = 0;
-          
-          /** Loop through exits in user's room */
-          user.room().exits().forEach((exit) => {
-            /** Separate exit names with spaces */
-            user.send(' ');
-            
-            /** Send exit name based on direction */
-            user.send(user.room().exits(exit.dir()));
-            
-            count++;
-          });
-          
-          /** No exits, output none */
-          if ( count == 0 )
-            user.send(' None');
-          
-          user.send(']\r\n');
-          
-          /** Send room description */
-          user.send(`${user.room().description()}\r\n`);
-          
-          /** Send other users in the room */
-          user.room().users().forEach((other) => {
-            if ( user != other )
-              user.send(`${other.name()} is standing here.\r\n`);
-          });
-          
-          /** Send any mobiles in the room */
-          user.room().mobiles().forEach((mobile) => {
-            user.send(`  ${mobile.name()} is standing here.\r\n`);
-          });
-          
-          /** Send any objets in the room */
-          user.room().items().forEach((item) => {
-            user.send(`    ${item.name()} sits here.\r\n`);
-          });
-        },
-        priority: true
-      }),
-      new commands.Command(this, {
-        name: 'quit',
-        command: (user, buffer) => {
-          console.log(`User ${user.name()} has quit.`);
-
-          /** Remove user from room */
-          if ( user.room() )
-            user.room().users().splice(user.room().users().indexOf(user), 1);
-          
-          /** Remove user from world */
-          this.users().splice(this.users().indexOf(user), 1);
-
-          /** Goodbye */
-          user.socket().end('Goodbye!\r\n');
-        }
-      }),
-      new commands.Command(this, {
-        name: 'save',
-        command: (user, buffer) => {
-          this.saveUser()(user);
-          
-          user.send('Saved.\r\n');
-        }
-      }),
-      dirCommand('north'),
-      dirCommand('northeast'),
-      dirCommand('ne'),
-      dirCommand('east'),
-      dirCommand('southeast'),
-      dirCommand('se'),
-      dirCommand('south'),
-      dirCommand('southwest'),
-      dirCommand('sw'),
-      dirCommand('west'),
-      dirCommand('northwest'),
-      dirCommand('nw'),
-      dirCommand('up'),
-      dirCommand('down')
-    ];
-    
-    /** Items and values */
-    this.port(data.port == null ? defaultPort : data.port);
-    this.areas(data.areas == null ? [] : data.areas);
-    this.rooms(data.rooms == null ? [] : data.rooms);
-    this.items(data.items == null ? [] : data.items);
-    this.mobiles(data.mobiles == null ? [] : data.mobiles);
-    this.users(data.users == null ? [] : data.users);
-    this.commands(data.commands == null ? defaultCommands : data.commands);
-    this.welcome(data.welcome == null ? defaultWelcome : data.welcome);
-    this.motd(data.motd == null ? defaultMotd : data.motd);
-    this.start(data.start == null ? 1 : data.start);
-    
-    /** Handlers */
-    this.loadUserByName(data.loadUserByName == null ? defaultLoadUserByName : data.loadUserByName);
-    this.saveUser(data.saveUser == null ? (user) => {} : data.saveUser);
-    this.loadAreas(data.loadAreas == null ? defaultLoadAreas : data.loadAreas);
-    this.saveArea(data.saveArea == null ? (area) => {} : data.saveArea);
-    this.setStage(data.setStage == null ? defaultSetStage : data.setStage);
-  }
-
-  /**
-   * Start server and periodic world update.
-   */
-  listen() {
-    /** Create input processor */
-    const inputProcessor = new input.InputProcessor(this);
-
-    /** Load areas, note loadAreas() returns a function, thus the ()() */
-    this.loadAreas()();
-    
-    /** Sort commands alphabetically */
-    this.commands().sort((cmd1, cmd2) => {
-      const name1 = cmd1.name().toUpperCase();
-      const name2 = cmd2.name().toUpperCase();
-      
-      /** If command 2 has priority and command 1 doesn't, prioritize command 2 */
-      if ( cmd2.priority() && !cmd1.priority() )
-        return 1;
-      
-      /** If command 1 has priority and command 2 doesn't, prioritize command 1 */
-      if ( cmd1.priority() && !cmd2.priority() )
-        return -1;
-      
-      /** If command 1's name comes earlier in the alphabet than command 2's name, prioritize command 1 */
-      if ( name1 < name2 )
-        return -1;
-      
-      /** If command 2's name comes earlier in the alphabet than command 1's name, prioritize command 2 */
-      if ( name1 > name2 )
-        return 1;
-      
-      /** If they are the same priority, move on */
-      return 0;
+      recursiveItemContents(content);
     });
+  };
+  
+  /** Load areas */
+  const areaList = await this.database().query(`SELECT * FROM areas`);
+  
+  for ( let i = 0, i_max = areaList.length; i < i_max; i++ ) {
+    /** Load area from database */
+    const area = await new this.Area().load(areaList[i], this.database());
     
-    /** Log loaded commands */
-    this.commands().forEach((command) => {
-      console.log(`Loaded command ${command.name()}...`);
-    });
-    
-    /** Log loaded areas */
-    this.areas().forEach((area) => {
-      console.log(`Loaded area ${area.name()}...`);
+    /** Add area to world */
+    this.areas().push(area);
+  
+    /** Loop through area rooms */
+    for ( let i = 0, i_max = area.rooms().length; i < i_max; i++ ) {
+      /** Set area of room */
+      area.rooms()[i].area(area);
       
-      /** Log loaded rooms */
-      area.rooms().forEach((room) => {
-        /** Add to the world */
-        this.rooms().push(room);
+      /** Add room to world */
+      this.rooms().push(area.rooms()[i]);
+      
+      /** Loop through item instances in room */
+      area.rooms()[i].items().forEach((item) => {
+        /** Set room of item */
+        item.room(area.rooms()[i]);
         
-        console.log(`Loaded room ${room.name()}...`);
+        /** Set prototype of item */
+        item.prototype(area.rooms()[i].itemPrototypes().find(x => x.id() == item.prototype().id()));
         
-        /** Set exit 'from' rooms */
-        room.exits().forEach((exit) => {
-          exit.from(room);
-        });
+        /** Recursively add any item contents to world and set container of each */
+        recursiveItemContents(item);
       });
       
-      /** Log loaded items */
-      area.items().forEach((item) => {
-        /** Add to the world */
-        this.items().push(item);
+      /** Loop through mobile instances in room */
+      area.rooms()[i].mobiles().forEach((mobile) => {
+        /** Set room of mobile */
+        mobile.room(area.rooms()[i]);
         
-        console.log(`Loaded item ${item.name()}...`);
+        /** Set prototype of mobile */
+        mobile.prototype(area.rooms()[i].mobilePrototypes().find(x => x.id() == mobile.prototype().id()));
       });
       
-      /** Log loaded mobiles */
-      area.mobiles().forEach((mobile) => {
-        /** Add to the world */
-        this.mobiles().push(mobile);
+      /** Loop through exits in room */
+      area.rooms()[i].exits().forEach((exit) => {
+        /** Set room of exit */
+        exit.room(area.rooms()[i]);
+      });    
+    }
+  }
+  
+  /** Connect exits */
+  this.areas().forEach((area) => {
+    area.rooms().forEach((room) => {
+      room.exits().forEach((exit) => {
+        exit.target(this.rooms().find(x => x.id() == exit.target().id()));
+      });
+    });
+  });
+};
+
+World.prototype.characterFromAnywhere = function (character) {  
+  /** If character's room exists */
+  if ( character.room() ) {
+    /** If character is a User, remove from room's and area's users lists */
+    if ( character instanceof this.User && character.room().users().indexOf(character) !== -1 )
+      character.room().users().splice(character.room().users().indexOf(character), 1);
+
+    /** If character is a MobileInstance, remove from room's and area's mobiles lists */
+    else if ( character instanceof this.MobileInstance && character.room().mobiles().indexOf(character) !== -1 )
+      character.room().mobiles().splice(character.room().mobiles().indexOf(character), 1);
+  }
+  
+  /** Null out character's room */
+  character.room(null);
+};
+
+World.prototype.characterToRoom = function (character, room) {
+  /** Remove character from any old room */
+  this.characterFromAnywhere(character);
+  
+  /** Set chracter's room */
+  character.room(room);
+
+  /** If character is a User, add to room's and area's users lists */
+  if ( character instanceof this.User )
+    room.users().push(character);
+  
+  /** If character is a MobileInstance, add to room's and area's mobiles lists */
+  else if ( character instanceof this.MobileInstance )
+    room.mobiles().push(character);
+};
+
+World.prototype.itemFromAnywhere = async function (item) {
+  /** If item's room exists */
+  if ( item.room() ) {
+    /** Remove item from item room's and area's items lists */
+    if ( item.room().items().indexOf(item) !== -1 )
+      item.room().items().splice(item.room().items().indexOf(item), 1);
+
+    /** Save room */
+    await item.room().update(this.database());
+    
+    /** Null out item's room */
+    item.room(null);
+  }
+  
+  /** If item's character exists */
+  if ( item.character() ) {
+    /** If item is in the inventory, remove it from the inventory list */
+    if ( item.character().inventory().indexOf(item) !== -1 )
+      item.character().inventory().splice(item.character().inventory().indexOf(item), 1);
         
-        console.log(`Loaded mobile ${mobile.name()}...`);
-      });
-    });
-      
-    /** Set the stage, note setStage() returns a function, thus the ()() */
-    this.setStage()();
+    /** If item is part of the equipment, remove it from the equipment list */
+    if ( item.character().equipment().indexOf(item) !== -1 )
+      item.character().equipment().splice(item.character().equipment().indexOf(item), 1);
     
-    /** Create server -- net.createServer constructor parameter is new connection handler */
-    const server = net.createServer((socket) => {
-      console.log(`New socket from ${socket.address().address}.`);
-
-      /** Create a new user */
-      const user = new users.User(this, {
-        socket: socket
-      });
-
-      /** 
-       * Assign socket a random ID because apparently sockets aren't unique enough for comparison.
-       * @todo Find another way
-       */
-      socket.id = crypto.randomBytes(32).toString('hex');
-
-      /** Add user to active users list */
-      this.users().push(user);
-
-      /** Log user disconnects */
-      socket.on('end', () => {
-        /** Look up the socket's user, if one exists */
-        const user = this.users(socket);
-
-        if ( user ) {
-          /** User exists, disconnect them */
-          console.log(`User ${user.name()} disconnected.`);
-          
-          /** Zero the user's socket and update their state to disconnected, but leave them in game */
-          user.socket(null);
-          user.state(user.STATE_DISCONNECTED);
-        } else {
-          /** User doesn't exist, just log disconnected socket */
-          console.log('Socket disconnected.');
-        }
-      });
-
-      /** Data received from user */
-      socket.on('data', (buffer) => {    
-        /** Pass input to the input processor */
-        inputProcessor.process(socket, buffer);
-      });
-
-      /** Display welcome message */
-      socket.write(this.welcome());
-    });
-
-    /** Re-throw errors for now */
-    server.on('error', (error) => {
-      throw error;
-    });
-
-    /** Time to get started */
-    server.listen(this.port(), () => {
-      console.log(`Muddy is up and running on port ${this.port()}!`);
-    });
+    /** Save character */
+    await item.character().update(this.database());
+    
+    /** Null out item's character */
+    item.character(null);
   }
   
-  /** 
-   * Server port getter/setter.
-   * @param (optional) rooms Desired server port
-   * @return The world for set call chaining
-   */
-  port(port = null) {
-    /** Getter */
-    if ( port == null )
-      return this._port;
-
-    /** Setter */
-    this._port = parseInt(port);
-
-    /** Allow for set call chaining */
-    return this;
-  }
-  
-  /** 
-   * Welcome message getter/setter.
-   * @param (optional) welcome Desired welcome message
-   * @return The world for set call chaining
-   */
-  welcome(welcome = null) {
-    /** Getter */
-    if ( welcome == null )
-      return this._welcome;
-
-    /** Setter */
-    this._welcome = welcome.toString();
-
-    /** Allow for set call chaining */
-    return this;
-  }
-  
-  /** 
-   * Message of the day (MOTD) getter/setter.
-   * @param (optional) welcome Desired message of the day
-   * @return The world for set call chaining
-   */
-  motd(motd = null) {
-    /** Getter */
-    if ( motd == null )
-      return this._motd;
-
-    /** Setter */
-    this._motd = motd.toString();
-
-    /** Allow for set call chaining */
-    return this;
-  }
-  
-  /** 
-   * Areas getter/setter.
-   * @param (optional) areas Desired areas
-   * @return The world for set call chaining
-   */
-  areas(areas = null) {
-    /** Getter */
+  /** If item's container exists */
+  if ( item.container() ) {
+    /** Remove item from container's contents list */
+    if ( item.container().contents().indexOf(item) !== -1 )
+      item.container().contents().splice(item.container().contents().indexOf(item), 1);
     
-    /** If parameter is null, return array */
-    if ( areas == null )
-      return this._areas;
-
-    /** If parameter is number, return area by ID */
-    if ( typeof areas == 'number' ) {
-      return this._areas.find((area) => {
-        return area.id() == areas;
-      });
-    }
+    /** Save container */
+    await item.container().update(this.database());
     
-    /** Setter */
-    this._areas = areas;
-
-    /** Allow for set call chaining */
-    return this;
-  }
-  
-  /** 
-   * Rooms getter/setter.
-   * @param (optional) rooms Desired rooms
-   * @return The world for set call chaining
-   */
-  rooms(rooms = null) {
-    /** Getter */
-    
-    /** If parameter is null, return array */
-    if ( rooms == null )
-      return this._rooms;
-    
-    /** If parameter is number, return room by ID */
-    if ( typeof rooms == 'number' ) {
-      return this._rooms.find((room) => {
-        return room.id() == rooms;
-      });
-    }
-    
-    /** Setter */
-    this._rooms = rooms;
-
-    /** Allow for set call chaining */
-    return this;
-  }
-  
-  /** 
-   * Items getter/setter.
-   * @param (optional) users Desired items
-   * @return The world for set call chaining
-   */
-  items(items = null) {
-    /** Getter */
-    
-    /** If parameter is null, return array */
-    if ( items == null )
-      return this._items;
-    
-    /** If parameter is number, return item by ID */
-    if ( typeof items == 'number' ) {
-      return this._items.find((item) => {
-        return item.id() == items;
-      });
-    }
-
-    /** Setter */
-    this._items = items;
-
-    /** Allow for set call chaining */
-    return this;
-  }
-  
-  /** 
-   * Mobiles getter/setter.
-   * @param (optional) mobiles Desired mobiles
-   * @return The world for set call chaining
-   */
-  mobiles(mobiles = null) {
-    /** Getter */
-    
-    /** If parameter is null, return array */
-    if ( mobiles == null )
-      return this._mobiles;
-    
-    /** If parameter is number, return mobile by ID */
-    if ( typeof mobiles == 'number' ) {
-      return this._mobiles.find((mobile) => {
-        return mobile.id() == mobiles;
-      });
-    }
-
-    /** Setter */
-    this._mobiles = mobiles;
-
-    /** Allow for set call chaining */
-    return this;
-  }
-  
-  /** 
-   * Users getter/setter.
-   * @param (optional) users Desired users
-   * @return The world for set call chaining
-   */
-  users(users = null) {
-    /** Getter */
-    
-    /** If parameter is null, return array */
-    if ( users == null )
-      return this._users;
-    
-    /** If parameter is number, return user by ID */
-    if ( typeof users == 'number' ) {
-      return this._users.find((user) => {
-        return user.id() == users;
-      });
-    }
-    
-    /** If parameter is string, return user by name */
-    if ( typeof users == 'string' ) {
-      return this._users.find((user) => {
-        return user.name().toLowerCase() == users.toLowerCase();
-      });
-    }
-
-    /** If parameter is instace of net.Socket, return user by socket */
-    if ( users instanceof net.Socket ) {
-      return this._users.find((user) => {
-        return user.socket().id == users.id;
-      });
-    }
-    
-    /** Setter */
-    this._users = users;
-
-    /** Allow for set call chaining */
-    return this;
-  }
-  
-  /** 
-   * Commands getter/setter.
-   * @param (optional) users Desired commands
-   * @return The world for set call chaining
-   */
-  commands(commands = null) {
-    /** Getter */
-    
-    /** If parameter is null, return array */
-    if ( commands == null )
-      return this._commands;
-    
-    /** If parameter is string, return command by name */
-    if ( typeof commands == 'string' ) {
-      return this._commands.find((command) => {
-        return command.name().toLowerCase() == commands.toLowerCase();
-      });
-    }
-    
-    /** Setter */
-    this._commands = commands;
-
-    /** Allow for set call chaining */
-    return this;
-  }
-  
-  /** 
-   * Start room ID getter/setter.
-   * @param (optional) users Desired start room ID
-   * @return The world for set call chaining
-   */
-  start(start = null) {
-    /** Getter */
-    if ( start == null )
-      return this._start;
-    
-    /** Setter */
-    this._start = parseInt(start);
-
-    /** Allow for set call chaining */
-    return this;
-  }
-  
-  /** 
-   * Load user by name handler getter/setter.
-   * @param (optional) loadUserByName Desired load user by name handler
-   * @return The world for set call chaining
-   */
-  loadUserByName(loadUserByName = null) {
-    /** Getter */
-    if ( loadUserByName == null )
-      return this._loadUserByName;
-
-    /** Setter */
-    this._loadUserByName = loadUserByName;
-
-    /** Allow for set call chaining */
-    return this;
-  }
-  
-  /** 
-   * Save user handler getter/setter.
-   * @param (optional) saveUser Desired save user handler
-   * @return The world for set call chaining
-   */
-  saveUser(saveUser = null) {
-    /** Getter */
-    if ( saveUser == null )
-      return this._saveUser;
-
-    /** Setter */
-    this._saveUser = saveUser;
-
-    /** Allow for set call chaining */
-    return this;
-  }
-  
-  /** 
-   * Load areas handler getter/setter.
-   * @param (optional) loadAreas Desired load areas handler
-   * @return The world for set call chaining
-   */
-  loadAreas(loadAreas = null) {
-    /** Getter */
-    if ( loadAreas == null )
-      return this._loadAreas;
-
-    /** Setter */
-    this._loadAreas = loadAreas;
-
-    /** Allow for set call chaining */
-    return this;
-  }
-  
-  /** 
-   * Save area handler getter/setter.
-   * @param (optional) saveArea Desired save area handler
-   * @return The world for set call chaining
-   */
-  saveArea(saveArea = null) {
-    /** Getter */
-    if ( saveArea == null )
-      return this._saveArea;
-
-    /** Setter */
-    this._saveArea = saveArea;
-
-    /** Allow for set call chaining */
-    return this;
-  }
-  
-  /**
-   * Stage setting handler getter/setter.
-   * @param (optional) setStage Desired stage setting handler
-   * @return The world for set call chaining
-   */
-  setStage(setStage = null) {
-    /** Getter */
-    if ( setStage == null )
-      return this._setStage;
-    
-    /** Setter */
-    this._setStage = setStage;
-    
-    /** Allow for set call chaining */
-    return this;
+    /** Null out item's container */
+    item.container(null);
   }
 }
 
+World.prototype.itemToRoom = async function (item, room) {
+  /** Remove item from any old location */
+  await this.itemFromAnywhere(item);
+  
+  /** Set item's room */
+  item.room(room);
+  
+  /** Add item to room's items list */
+  room.items().push(item);
+  
+  /** Save room */
+  await room.update(this.database());
+};
+
+World.prototype.itemToInventory = async function (item, character) {
+  /** Remove item from any old location */
+  await this.itemFromAnywhere(item);
+  
+  /** Set item's character */
+  item.character(character);
+  
+  /** Add item to character's inventory list */
+  character.inventory().push(item);
+  
+  /** Save character */
+  await character.update(this.database());
+};
+
+World.prototype.itemToEquipment = async function (item, character) {
+  /** Remove item from any old location */
+  await this.itemFromAnywhere(item);
+  
+  /** Set item's character */
+  item.character(character);
+  
+  /** Add item to character's equipment list */
+  character.equipment().push(item);
+  
+  /** Save character */
+  await character.update(this.database());
+};
+
+World.prototype.itemToContainer = async function (item, container) {
+  /** Remove item from any old location */
+  await this.itemFromAnywhere(item);
+  
+  /** Set item's container */
+  item.container(container);
+  
+  /** Add item to container's contents list */
+  container.contents().push(item);
+  
+  /** Save container */
+  await container.update(this.database());
+};
+
+World.prototype.sendUserEquipment = function (user, other) {
+  user.send(`Equipment:\r\n`);
+
+  user.send(this.colorize(`  #y[Head       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_HEAD) ? other.equipment().find(x => x.slot() == this.constants().SLOT_HEAD).name() : `none`}\r\n`));
+  user.send(this.colorize(`  #y[Face       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_FACE) ? other.equipment().find(x => x.slot() == this.constants().SLOT_FACE).name() : `none`}\r\n`));
+  user.send(this.colorize(`  #y[Neck       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_NECK) ? other.equipment().find(x => x.slot() == this.constants().SLOT_NECK).name() : `none`}\r\n`));
+  user.send(this.colorize(`  #y[Shoulders  ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_SHOULDERS) ? other.equipment().find(x => x.slot() == this.constants().SLOT_SHOULDERS).name() : `none`}\r\n`));
+  user.send(this.colorize(`  #y[Chest      ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_CHEST) ? other.equipment().find(x => x.slot() == this.constants().SLOT_CHEST).name() : `none`}\r\n`));
+  user.send(this.colorize(`  #y[Back       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_BACK) ? other.equipment().find(x => x.slot() == this.constants().SLOT_BACK).name() : `none`}\r\n`));
+  user.send(this.colorize(`  #y[Arms       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_ARMS) ? other.equipment().find(x => x.slot() == this.constants().SLOT_ARMS).name() : `none`}\r\n`));
+  user.send(this.colorize(`  #y[Wrists     ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_WRISTS) ? other.equipment().find(x => x.slot() == this.constants().SLOT_WRISTS).name() : `none`}\r\n`));
+  user.send(this.colorize(`  #y[Gloves     ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_GLOVES) ? other.equipment().find(x => x.slot() == this.constants().SLOT_GLOVES).name() : `none`}\r\n`));
+  user.send(this.colorize(`  #y[Waist      ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_WAIST) ? other.equipment().find(x => x.slot() == this.constants().SLOT_WAIST).name() : `none`}\r\n`));
+  user.send(this.colorize(`  #y[Legs       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_LEGS) ? other.equipment().find(x => x.slot() == this.constants().SLOT_LEGS).name() : `none`}\r\n`));
+  user.send(this.colorize(`  #y[Feet       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_FEET) ? other.equipment().find(x => x.slot() == this.constants().SLOT_FEET).name() : `none`}\r\n`));
+
+  const wieldedItems = other.equipment().filter(x => x.slot() == this.constants().SLOT_WIELD);
+
+  if ( wieldedItems.length == 2 ) {
+    user.send(this.colorize(`  #y[Right Hand ]#n ${wieldedItems[0].name()}\r\n`));
+    user.send(this.colorize(`  #y[Left Hand  ]#n ${wieldedItems[1].name()}\r\n`));
+  } else if ( wieldedItems.length == 1 ) {
+    if ( wieldedItems[0].type() == this.constants().ITEM_2H_WEAPON )
+      user.send(this.colorize(`  #y[Hands      ]#n ${wieldedItems[0].name()}\r\n`));
+    else
+      user.send(this.colorize(`  #y[Right Hand ]#n ${wieldedItems[0].name()}\r\n`));
+  } else {
+    user.send(this.colorize(`  #y[Hands      ]#n none\r\n`));
+  }
+};
+
+World.prototype.parseDepth = function (user, args, num) {
+  let depth = 0;
+
+  if ( typeof args[num] == `string` ) {
+    depth = parseInt(args[num]);
+
+    if ( `infinity`.startsWith(args[num].toLowerCase()) ) {
+      depth = Infinity;
+    } else if ( isNaN(depth) || depth < 0 ) {
+      user.send(`That is not an allowed inspection depth, only numbers >= 0 or infinity are allowed.\r\n`);
+      return -1;
+    }
+  }
+  
+  return depth;
+};
+
+World.prototype.parseName = function (user, args, num) {
+  const matches = args[num].match(/^([0-9]+)\.(.+)$/);
+  let name = args[num];
+  let count = 1;
+
+  if ( matches && matches.length == 3 ) {
+    name = matches[2];
+    count = parseInt(matches[1]);
+  }
+  
+  return [name, count];
+};
+
+World.prototype.terminalWrap = function (text) {
+  const words = text.split(` `);
+  
+  return words.reduce((accumulator, val) => {
+    if ( accumulator.length > 0 && val.length + accumulator[accumulator.length - 1].length + 1 <= 80 )
+      accumulator[accumulator.length - 1] += ` ${val}`;
+    else
+      accumulator.push(val);
+    
+    return accumulator;
+  }, []).join(`\r\n`);
+};
+
+World.prototype.colorize = function (text) {
+  text = text.replace(/\#\#/g, `@&#$!*;`);
+  text = text.replace(/\%\%/g, `*!$#&@;`);
+  
+  text = text.replace(/\#k/g, `\u001b[30m`);
+  text = text.replace(/\#r/g, `\u001b[31m`);
+  text = text.replace(/\#g/g, `\u001b[32m`);
+  text = text.replace(/\#y/g, `\u001b[33m`);
+  text = text.replace(/\#b/g, `\u001b[34m`);
+  text = text.replace(/\#p/g, `\u001b[35m`);
+  text = text.replace(/\#c/g, `\u001b[36m`);
+  text = text.replace(/\#w/g, `\u001b[37m`);
+
+  text = text.replace(/\#K/g, `\u001b[30;1m`);
+  text = text.replace(/\#R/g, `\u001b[31;1m`);
+  text = text.replace(/\#G/g, `\u001b[32;1m`);
+  text = text.replace(/\#Y/g, `\u001b[33;1m`);
+  text = text.replace(/\#B/g, `\u001b[34;1m`);
+  text = text.replace(/\#P/g, `\u001b[35;1m`);
+  text = text.replace(/\#C/g, `\u001b[36;1m`);
+  text = text.replace(/\#W/g, `\u001b[37;1m`);
+  text = text.replace(/\#g/g, `\u001b[32;1m`);
+  
+  text = text.replace(/\%k/g, `\u001b[40m`);
+  text = text.replace(/\%r/g, `\u001b[41m`);
+  text = text.replace(/\%g/g, `\u001b[42m`);
+  text = text.replace(/\%y/g, `\u001b[43m`);
+  text = text.replace(/\%b/g, `\u001b[44m`);
+  text = text.replace(/\%p/g, `\u001b[45m`);
+  text = text.replace(/\%c/g, `\u001b[46m`);
+  text = text.replace(/\%w/g, `\u001b[47m`);
+
+  text = text.replace(/\%K/g, `\u001b[40;1m`);
+  text = text.replace(/\%R/g, `\u001b[41;1m`);
+  text = text.replace(/\%G/g, `\u001b[42;1m`);
+  text = text.replace(/\%Y/g, `\u001b[43;1m`);
+  text = text.replace(/\%B/g, `\u001b[44;1m`);
+  text = text.replace(/\%P/g, `\u001b[45;1m`);
+  text = text.replace(/\%C/g, `\u001b[46;1m`);
+  text = text.replace(/\%W/g, `\u001b[47;1m`);
+  text = text.replace(/\%g/g, `\u001b[42;1m`);
+
+  text = text.replace(/\#n/g, `\u001b[0m`);
+  text = text.replace(/\%n/g, `\u001b[0m`);
+  
+  text = text.replace(/\@\&\#\$\!\*\;/g, `#`);
+  text = text.replace(/\*\!\$\#\&\@\;/g, `%`);
+  
+  return `${text}\u001b[0m`;
+};
+
+/**
+ * @signature world.listen()
+ * @description Start the server listening on the configured port!
+ */
+World.prototype.listen = async function () {  
+  /** Create custom winston logger */
+  this.log(new winston.Logger({
+    transports: [
+      new winston.transports.Console({
+        level: `silly`,
+        timestamp: true,
+        prettyPrint: true
+      }),
+      new winston.transports.File({
+        name: `info-file`,
+        filename: `logs/info.log`,
+        level: `info`,
+        levelOnly: true,
+        json: false,
+        timestamp: true,
+        prettyPrint: true
+      }),
+      new winston.transports.File({
+        name: `error-file`,
+        filename: `logs/error.log`,
+        level: `warn`,
+        json: false,
+        timestamp: true,
+        prettyPrint: true
+      })
+    ]
+  }));
+  
+  /** Instantiate pooled MySQL DB connection */
+  this.database(new ezobjects.MySQLConnection(this.mysqlConfig()));
+  
+  /** Configure the objects */
+  const configArea = areas.configArea(this);
+  const configCharacter = characters.configCharacter(this);
+  const configCommand = commands.configCommand(this);
+  const configExit = exits.configExit(this);
+  const configItem = items.configItem(this);
+  const configRoom = rooms.configRoom(this);
+
+  await ezobjects.createTable(configArea, this.database());
+  await ezobjects.createTable(configExit, this.database());
+  await ezobjects.createTable(configItem, this.database());
+  await ezobjects.createTable(configRoom, this.database());
+  
+  /** Create objects */
+  ezobjects.createClass(configArea);
+  ezobjects.createClass(configCharacter);
+  ezobjects.createClass(configCommand);
+  ezobjects.createClass(configExit);
+  ezobjects.createClass(configItem);
+  ezobjects.createClass(configRoom);
+  
+  const configItemInstance = itemInstances.configItemInstance(this, Item, configItem);
+  const configMobile = mobiles.configMobile(this, Character, configCharacter);
+  const configMobileInstance = mobileInstances.configMobileInstance(this, Character, configCharacter);
+  const configUser = users.configUser(this, Character, configCharacter);
+
+  await ezobjects.createTable(configItemInstance, this.database());
+  await ezobjects.createTable(configMobile, this.database());
+  await ezobjects.createTable(configMobileInstance, this.database());
+  await ezobjects.createTable(configUser, this.database());
+  
+  ezobjects.createClass(configItemInstance);
+  ezobjects.createClass(configMobile);
+  ezobjects.createClass(configMobileInstance);
+  ezobjects.createClass(configUser);
+
+  /** Create prompt function */
+  User.prototype.prompt = function (world) {
+    const healthRatio = this.health() / this.maxHealth();
+    const manaRatio = this.mana() / this.maxMana();
+    const energyRatio = this.energy() / this.maxEnergy();
+    
+    let health;
+    
+    if ( healthRatio < 0.2 )
+      health = `#R${this.health()}#n`;
+    else if ( healthRatio < 0.4 )
+      health = `#P${this.health()}#n`;
+    else if ( healthRatio < 0.6 )
+      health = `#B${this.health()}#n`;
+    else if ( healthRatio < 0.8 )
+      health = `#Y${this.health()}#n`;
+    else if ( healthRatio < 1 )
+      health = `#G${this.health()}#n`;
+    else
+      health = `#C${this.health()}#n`;
+    
+    let mana;
+    
+    if ( manaRatio < 0.2 )
+      mana = `#R${this.mana()}#n`;
+    else if ( manaRatio < 0.4 )
+      mana = `#P${this.mana()}#n`;
+    else if ( manaRatio < 0.6 )
+      mana = `#B${this.mana()}#n`;
+    else if ( manaRatio < 0.8 )
+      mana = `#Y${this.mana()}#n`;
+    else if ( manaRatio < 1 )
+      mana = `#G${this.mana()}#n`;
+    else
+      mana = `#C${this.mana()}#n`;
+    
+    let energy;
+    
+    if ( energyRatio < 0.2 )
+      energy = `#R${this.energy()}#n`;
+    else if ( energyRatio < 0.4 )
+      energy = `#P${this.energy()}#n`;
+    else if ( energyRatio < 0.6 )
+      energy = `#B${this.energy()}#n`;
+    else if ( energyRatio < 0.8 )
+      energy = `#Y${this.energy()}#n`;
+    else if ( energyRatio < 1 )
+      energy = `#G${this.energy()}#n`;
+    else
+      energy = `#C${this.energy()}#n`;
+
+    let prompt = this.promptFormat();
+    
+    prompt = prompt.replace(/\$xp/g, `#c${this.experience()}#n`);
+    prompt = prompt.replace(/\$hp/g, health);
+    prompt = prompt.replace(/\$m/g, mana);
+    prompt = prompt.replace(/\$e/g, energy);
+    
+    this.send(world.colorize(prompt));
+  };
+  
+  /** Create send function */
+  User.prototype.send = function (text) {
+    if ( this.state() != constants.STATE_DISCONNECTED && this.socket() )
+      this.socket().write(text);
+  };
+  
+  this.Area = Area;
+  this.Character = Character;
+  this.Command = Command;
+  this.Exit = Exit;
+  this.Item = Item;
+  this.ItemInstance = ItemInstance;
+  this.Mobile = Mobile;
+  this.MobileInstance = MobileInstance;
+  this.Room = Room;
+  this.User = User;
+  
+  /** Load the areas from database */
+  await this.loadAreas();
+  
+  /** Load commands */
+  this.commands(this.commands().concat(admin.createCommands(this)));
+  this.commands(this.commands().concat(building.createCommands(this)));
+  this.commands(this.commands().concat(fighting.createCommands(this)));
+  this.commands(this.commands().concat(info.createCommands(this)));
+  this.commands(this.commands().concat(interaction.createCommands(this)));
+  this.commands(this.commands().concat(movement.createCommands(this)));
+  this.commands(this.commands().concat(senses.createCommands(this)));
+  this.commands(this.commands().concat(system.createCommands(this)));
+  
+  /** Create server -- net.createServer argument is the new connection handler */
+  const server = net.createServer((socket) => {
+    this.log().info(`New socket from ${socket.address().address}.`);
+
+    /** Create a new user */
+    const user = new this.User({
+      socket: socket
+    });
+    
+    socket.lastAddress = socket.address().address;
+    
+    /** Add user to active users list */
+    this.users().push(user);
+
+    /** Log user disconnects */
+    socket.on(`end`, () => {
+      /** Look up the socket`s user, if one exists */
+      const user = this.users().find(x => x.socket() == socket);
+
+      /** If user exists, disconnect them */
+      if ( user ) {
+        this.log().info(`User ${user.name()} disconnected.`);
+
+        /** Zero the user's socket and update their state to disconnected, but leave them in game */
+        user.socket(null);
+        user.state(constants.STATE_DISCONNECTED);
+      } 
+      
+      /** Otherwise just log disconnected socket */
+      else {
+        this.log().info(`Socket ${socket.lastAddress} disconnected.`);
+      }
+    });
+
+    /** Data received from user */
+    socket.on(`data`, (buffer) => {    
+      /** Pass input to the input processor */
+      input.process(this, user, buffer.toString().trim());
+    });
+
+    /** Display welcome message */
+    user.socket().write(this.welcome());
+  });
+
+  /** Re-throw errors for now */
+  server.on(`error`, (error) => {
+    this.log().error(error);
+  });
+
+  /** Time to get started */
+  server.listen(this.port(), () => {
+    this.log().info(`Muddy is up and running on port ${this.port()}!`);
+  });
+};
+
+/** Export object */
 exports.World = World;

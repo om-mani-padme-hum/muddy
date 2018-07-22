@@ -1,8 +1,8 @@
-# Muddy [![Build Status](https://www.travis-ci.org/om-mani-padme-hum/muddy.svg?branch=master)](https://www.travis-ci.org/om-mani-padme-hum/muddy) [![HitCount](http://hits.dwyl.com/om-mani-padme-hum/muddy.svg)](http://hits.dwyl.com/om-mani-padme-hum/muddy)
+# Muddy v0.4.0 [![Build Status](https://www.travis-ci.org/om-mani-padme-hum/muddy.svg?branch=master)](https://www.travis-ci.org/om-mani-padme-hum/muddy) [![HitCount](http://hits.dwyl.com/om-mani-padme-hum/muddy.svg)](http://hits.dwyl.com/om-mani-padme-hum/muddy)
 A Node.js Multi-User Dungeon (MUD) Framework
 
 ## Current Status:
-Operational in limited form.  Three default rooms exist.  One item and one mobile exist in memory and one copy of each are in world.  Login supported for both existing and new users, both can save, multiple users can be on simultaneously and see each other.  Basic movement and the ability to look at rooms and see other users, mobiles, items exist.  Can now take over your body by reconnecting.  Added buffered output for users indirectly affected by other users or world events.
+The framework has been completely rewritten using EZ Objects and async/await.
 
 ## Future Vision:
 * Web-based user interface that can be enabled/disabled for area development and mobile scripting.

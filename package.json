@@ -2,21 +2,24 @@
   "name": "muddy",
   "version": "0.3.3",
   "description": "A Node.js Multi-User Dungeon (MUD) Framework",
-  "main": "muddy.js",
+  "main": "index.js",
   "scripts": {
     "start": "node example.js",
-    "test": "./node_modules/jshint/bin/jshint muddy.js world.js input.js users.js areas.js rooms.js items.js mobiles.js"
+    "test": "node_modules/.bin/eslint admin.js areas.js building.js characters.js commands.js constants.js example.js exits.js fighting.js index.js info.js input.js interaction.js items.js mobiles.js movement.js rooms.js senses.js system.js users.js web.js world.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/om-mani-padme-hum/muddy.git"
   },
   "keywords": [
-    "muddy",
     "mud",
+    "game",
     "multi-user",
+    "multi",
+    "user",
     "dungeon",
-    "game"
+    "telnet",
+    "muddy"
   ],
   "author": "Rich Lowe",
   "license": "MIT",
@@ -25,10 +28,19 @@
   },
   "homepage": "https://github.com/om-mani-padme-hum/muddy#readme",
   "devDependencies": {
-    "jshint": "^2.9.5"
+    "docket-parser": "^0.6.7",
+    "eslint": "^4.19.1"
   },
   "jshintConfig": {
     "esversion": 6,
     "node": true
+  },
+  "dependencies": {
+    "express": "^4.16.3",
+    "ezobjects-mysql": "^5.0.0",
+    "moment": "^2.22.2",
+    "parse-values": "^1.1.0",
+    "strapped": "^0.3.2",
+    "winston": "^2.4.3"
   }
 }
