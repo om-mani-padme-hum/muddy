@@ -2,41 +2,41 @@
 A Node.js Multi-User Dungeon (MUD) Framework
 
 ## Current Status:
-The framework has been completely rewritten using EZ Objects and async/await.
+A good amount of basic functionality in place, but under development.  Builder features for creating rooms in-world partially in place.  Fighting not yet programmed.  Equipment stats coming very soon.
 
-## Future Vision:
+## Planned Track:
 * Web-based user interface that can be enabled/disabled for area development and mobile scripting.
 * Full-fledged fight engine with easy to implement modifiers for powerful, yet easy fight customizability
 * Massive, in-game expandable, interactive and dynamic world, with a range of areas, rooms, items, and mobiles
+* Random and wide-ranging item rarities and stats, customization on top of that
 * Advanced mobile scripting capabilities, along with dynamic weather and other periodic events, all customizable
 * Races and lineages, each with their unique benefits, deficiencies, and skillsets, again completely customizable
 
 ## Current Commands:
+* astat
+* create
 * down
+* drop
 * east
+* get
+* goto
 * look
+* istat
+* mstat
 * north
 * northeast (ne)
 * northwest (nw)
 * quit
+* remove
+* rstat
+* say
 * save
+* shutdown
 * south
 * southeast (se)
 * southwest (sw)
 * up
+* ustat
+* wear
 * west
-
-## Project Todo List:
-
-* Finish loading and saving of areas, rooms, items, mobiles with MySQL source
-* Add output processor to interpret VT100 colors and styles
-* Implement socials
-* Implement the ability to get and drop items, use containers, wear equipables
-* Implement fight engine with support for user defined fight modifiers
-* Implement periodic world updates
-* Implement mobile scripting
-* Implement user defined races, lineages, skills, spells, etc.
-
-## Example Use:
-
-* See https://github.com/om-mani-padme-hum/muddy_examples
+* wield
