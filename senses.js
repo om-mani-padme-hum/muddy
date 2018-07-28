@@ -175,7 +175,7 @@ module.exports.createCommands = (world) => {
             return;
           
           /** Pad to 80 chars + ANSI color characters */
-          if ( other.name().toLowerCase() == 'xodin' )
+          if ( other.name().toLowerCase() == `xodin` )
             user.send(world.colorize(`#y[The Designer ] #W${other.name()} #w${other.title()}`.padEnd(86) + `\r\n`));
           else
             user.send(world.colorize(`#y[Honored Guest] #W${other.name()} #w${other.title()}`.padEnd(86) + `\r\n`));

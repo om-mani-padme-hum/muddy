@@ -78,7 +78,7 @@ module.exports.createCommands = (world) => {
       execute: async (world, user, buffer) => {
         user.title(buffer);
         
-        await world.commands().find(x => x.name() == 'save').execute()(world, user, '');
+        await world.commands().find(x => x.name() == `save`).execute()(world, user, ``);
       }
     })
   ];
