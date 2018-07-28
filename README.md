@@ -1,4 +1,4 @@
-# Muddy v0.5.0 [![Build Status](https://www.travis-ci.org/om-mani-padme-hum/muddy.svg?branch=master)](https://www.travis-ci.org/om-mani-padme-hum/muddy) [![HitCount](http://hits.dwyl.com/om-mani-padme-hum/muddy.svg)](http://hits.dwyl.com/om-mani-padme-hum/muddy)
+# Muddy v0.5.1 [![Build Status](https://www.travis-ci.org/om-mani-padme-hum/muddy.svg?branch=master)](https://www.travis-ci.org/om-mani-padme-hum/muddy) [![HitCount](http://hits.dwyl.com/om-mani-padme-hum/muddy.svg)](http://hits.dwyl.com/om-mani-padme-hum/muddy)
 A Node.js Multi-User Dungeon (MUD) Framework
 
 ## Current Status:
@@ -12,15 +12,19 @@ A good amount of basic functionality in place, but under development.  Builder f
 * Advanced mobile scripting capabilities, along with dynamic weather and other periodic events, all customizable
 * Races and lineages, each with their unique benefits, deficiencies, and skillsets, again completely customizable
 
-## Current Commands:
+## Currently Implemented Commands:
 * astat
+* colors
+* commands
 * create
 * down
 * drop
 * east
+* equipment
 * get
 * goto
 * look
+* inventory
 * istat
 * mstat
 * north
@@ -35,8 +39,10 @@ A good amount of basic functionality in place, but under development.  Builder f
 * south
 * southeast (se)
 * southwest (sw)
+* title
 * up
 * ustat
 * wear
 * west
+* who
 * wield
