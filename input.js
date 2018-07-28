@@ -10,7 +10,7 @@ const parseValues = require(`parse-values`).default;
  */
 async function processStateName(world, user, buffer) {
   /** Force name to start with uppercase letter */
-  let name = buffer.toString().trim().charAt(0).toUpperCase() + buffer.toString().trim().slice(1);
+  const name = buffer.toString().trim().charAt(0).toUpperCase() + buffer.toString().trim().toLowerCase().slice(1);
 
   if ( !name.match(/^[a-z]+$/i) ) {
     /** Invalid characters in name */
@@ -21,18 +21,29 @@ async function processStateName(world, user, buffer) {
     user.send(`Your name must be between 3 and 14 characters long.\r\n`);
     user.send(`Please enter a new name: `);
   } else { 
-    /** Store name (will be overwritten if successfully loaded) */
-    user.name(name);
+    /** Backup socket */
+    const socket = user.socket();
+    
+    /** Attempt to load (which initializes user first) */
+    let existingUser = await user.load(name, world.database());
+    
+    /** Restore user socket */
+    user.socket(socket);
 
-    const existingUser = await user.load(name, world.database());
-            
+    /** If failed to load, send new password prompt */
     if ( !existingUser ) {
+      /** Store name with original capitalization */
+      user.name(buffer.toString());
+
       user.send(`Welcome to Muddy, ${name}!\r\n`);
       user.send(`Please choose a password: `);
 
       /** Move on to ask for them to pick a password */
       user.state(world.constants().STATE_NEW_PASSWORD);
-    } else {
+    } 
+    
+    /** Otherwise, send old pasword prompt */
+    else {
       /** Existing user */
       user.send(`Please enter your password: `);
 
@@ -166,12 +177,12 @@ async function processStateNewPassword(world, user, buffer) {
 
     user.send(`Please confirm your new password: `);
 
-    /** Hide text for password */
-    user.send(world.constants().VT100_HIDE_TEXT);
-
     /** Move on and confirm the password */
     user.state(world.constants().STATE_CONFIRM_PASSWORD);
   }
+  
+  /** Hide text for password */
+  user.send(world.constants().VT100_HIDE_TEXT);
 }
 
 /**
@@ -222,6 +233,9 @@ async function processStateConfirmPassword(world, user, buffer) {
     user.send(`Passwords do not match, please try again!\r\n`);
     user.send(`Please choose a password: `);
     user.state(world.constants().STATE_NEW_PASSWORD);
+    
+    /** Hide text for password */
+    user.send(world.constants().VT100_HIDE_TEXT);
   }
 }
 
@@ -282,7 +296,7 @@ async function processStateConnected(world, user, buffer) {
 
   if ( !matches ) {
     /** Just send prompt */
-    user.prompt();
+    user.prompt(world);
     return;
   }
 

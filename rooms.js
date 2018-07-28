@@ -16,9 +16,6 @@ module.exports.configRoom = (world) => {
       { name: `mobilePrototypes`, type: `array`, arrayOf: { instanceOf: `Mobile` } },
       { name: `mobiles`, type: `array`, arrayOf: { instanceOf: `MobileInstance` } },
       { name: `users`, type: `array`, arrayOf: { instanceOf: `User` }, store: false }
-    ],
-    indexes: [
-      { name: `name`, type: `BTREE`, columns: [ `name` ] }
     ]
   };
 };

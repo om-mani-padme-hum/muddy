@@ -53,6 +53,9 @@ module.exports = {
   SLOT_FEET: 12,
   SLOT_WIELD: 13,
   
+  /** Define user flags */
+  AFFECT_CLOAKED: 1,
+  
   /** Define direction flags */
   DIR_NORTH: 0,                    /** n */
   DIR_NORTHEAST: 1,                /** ne */
@@ -116,10 +119,12 @@ module.exports = {
                  `Message of the day:\r\n`,
                  `\r\n`,
                  `New features:\r\n`,
-                 `  * Three default rooms to test movement\r\n`,
+                 `  * Basic object interaction, except 'put' which is coming soon\r\n`,
                  `  * All directions implemented\r\n`,
-                 `  * Ability to look at rooms and see exits\r\n`,
-                 `  * Saving of users, new and existing\r\n`,
+                 `  * Admin commands for goto, rstat, istat, mstat, ustat, astat\r\n`,
+                 `  * Create command can so far create areas/rooms/prototypes/instances\r\n`,
+                 `  * Ability to look at rooms, or at item/user/mobile/detail descriptions\r\n`,
+                 `  * Saving of users, new and existing, taking over body\r\n`,
                  `\r\n`,
                  `--------------------------------------------------------------------------------\r\n`,
                  `Press ENTER to continue...\r\n`,

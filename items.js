@@ -14,10 +14,6 @@ module.exports.configItem = (world) => {
       { name: `slot`, type: `int` },
       { name: `flags`, type: `Array`, arrayOf: { type: `int` } },
       { name: `contents`, type: `Array`, arrayOf: { instanceOf: `Item` } }
-    ],
-    indexes: [
-      { name: `type`, type: `BTREE`, columns: [ `type` ] },
-      { name: `slot`, type: `BTREE`, columns: [ `slot` ] }
     ]
   };
 };

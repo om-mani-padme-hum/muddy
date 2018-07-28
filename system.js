@@ -1,6 +1,44 @@
 module.exports.createCommands = (world) => {
   return [
     new world.Command({
+      name: `colors`,
+      execute: async (world, user, buffer) => {
+        user.send(world.colorize(`##W - #WWhite\r\n`));
+        user.send(world.colorize(`##w - #wLight gray\r\n`));
+        user.send(world.colorize(`##K - #KDark gray\r\n`));
+        user.send(world.colorize(`##k - #kBlack\r\n`));
+        user.send(world.colorize(`##R - #RLight red\r\n`));
+        user.send(world.colorize(`##r - #rDark red\r\n`));
+        user.send(world.colorize(`##B - #BLight blue\r\n`));
+        user.send(world.colorize(`##b - #bDark blue\r\n`));
+        user.send(world.colorize(`##G - #GLight green\r\n`));
+        user.send(world.colorize(`##g - #gDark green\r\n`));
+        user.send(world.colorize(`##Y - #YLight yellow\r\n`));
+        user.send(world.colorize(`##y - #yDark yellow\r\n`));
+        user.send(world.colorize(`##P - #PLight purple\r\n`));
+        user.send(world.colorize(`##p - #pDark purple\r\n`));
+        user.send(world.colorize(`##C - #CLight cyan\r\n`));
+        user.send(world.colorize(`##c - #cDark cyan\r\n\r\n`));
+        
+        user.send(world.colorize(`%%W - %WWhite background\r\n`));
+        user.send(world.colorize(`%%w - %wLight gray background\r\n`));
+        user.send(world.colorize(`%%K - %KDark gray background\r\n`));
+        user.send(world.colorize(`%%k - %kBlack background\r\n`));
+        user.send(world.colorize(`%%R - %RLight red background\r\n`));
+        user.send(world.colorize(`%%r - %rDark red background\r\n`));
+        user.send(world.colorize(`%%B - %BLight blue background\r\n`));
+        user.send(world.colorize(`%%b - %bDark blue background\r\n`));
+        user.send(world.colorize(`%%G - %GLight green background\r\n`));
+        user.send(world.colorize(`%%g - %gDark green background\r\n`));
+        user.send(world.colorize(`%%Y - %YLight yellow background\r\n`));
+        user.send(world.colorize(`%%y - %yDark yellow background\r\n`));
+        user.send(world.colorize(`%%P - %PLight purple background\r\n`));
+        user.send(world.colorize(`%%p - %pDark purple background\r\n`));
+        user.send(world.colorize(`%%C - %CLight cyan background\r\n`));
+        user.send(world.colorize(`%%c - %cDark cyan background\r\n`));
+      }
+    }),
+    new world.Command({
       name: `quit`,
       execute: async (world, user, buffer) => {
         world.log().info(`User ${user.name()} has quit.`);
@@ -33,6 +71,14 @@ module.exports.createCommands = (world) => {
         world.log().silly(`${user.name()} saved.`);
         
         user.send(`Saved.\r\n`);
+      }
+    }),
+    new world.Command({
+      name: `title`,
+      execute: async (world, user, buffer) => {
+        user.title(buffer);
+        
+        await world.commands().find(x => x.name() == 'save').execute()(world, user, '');
       }
     })
   ];

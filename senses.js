@@ -133,7 +133,7 @@ module.exports.createCommands = (world) => {
       execute: async (world, user, buffer) => {
         world.sendUserEquipment(user, user);
       },
-      priority: 999
+      priority: 998
     }),
     new world.Command({
       name: `inventory`,
@@ -161,6 +161,43 @@ module.exports.createCommands = (world) => {
           user.send(`  nothing\r\n`);
       },
       priority: 999
+    }),
+    new world.Command({
+      name: `who`,
+      execute: async (world, user, buffer) => {
+        user.send(world.colorize(`#b~~~~~~~~~~~~~~~~~~~~~~ #KThose known to be walking among us #b~~~~~~~~~~~~~~~~~~~~~~\r\n\r\n`));
+        
+        let count = 0;
+        
+        /** Send any visible, online characters */
+        world.users().forEach((other) => {
+          if ( other.affects().includes(world.constants().AFFECT_CLOAKED) )
+            return;
+          
+          /** Pad to 80 chars + ANSI color characters */
+          if ( other.name().toLowerCase() == 'xodin' )
+            user.send(world.colorize(`#y[The Designer ] #W${other.name()} #w${other.title()}`.padEnd(86) + `\r\n`));
+          else
+            user.send(world.colorize(`#y[Honored Guest] #W${other.name()} #w${other.title()}`.padEnd(86) + `\r\n`));
+          
+          count++;
+        });
+        
+        if ( count == 0 ) {
+          user.send(world.colorize(`#wThere are no visible users online.\r\n`));
+          user.send(world.colorize(`#b~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n`));
+        } else {
+          user.send(world.colorize(`\r\n#b~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n`));
+        
+          if ( count == 1 )
+            user.send(world.colorize(`#wThere is only 1 visible user online.\r\n`));
+          else
+            user.send(world.colorize(`#wThere are ${count} visible users online.\r\n`));
+
+          user.send(world.colorize(`#b~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n`));
+        }
+      },
+      priority: 0
     })
   ];
 };

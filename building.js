@@ -282,8 +282,12 @@ module.exports.createCommands = (world) => {
             user.send(`You do not know that method of connecting a new room to the world.\r\n`);
           }
         }
-      },
-      priority: 0
+      }
+    }),
+    new world.Command({
+      name: `edit`,
+      execute: async (world, user, buffer, args) => {
+      }
     })
   ];
 };

@@ -18,10 +18,6 @@ module.exports.configItemInstance = (world) => {
       { name: `room`, instanceOf: `Room`, store: false },
       { name: `container`, instanceOf: `ItemInstance`, store: false },
       { name: `contents`, type: `Array`, arrayOf: { instanceOf: `ItemInstance` } }
-    ],
-    indexes: [
-      { name: `type`, type: `BTREE`, columns: [ `type` ] },
-      { name: `slot`, type: `BTREE`, columns: [ `slot` ] }
     ]
   };
 };

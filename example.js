@@ -23,3 +23,6 @@ const world = new muddy.World({
 
 /** Bring the world to life */
 world.listen();
+
+/** Start up the web builder, if desired */
+muddy.webBuilder(world);

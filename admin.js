@@ -9,8 +9,7 @@ module.exports.createCommands = (world) => {
         
         if ( depth >= 0 )
           user.send(`${util.inspect(user.room().area(), { depth: depth })}\r\n`);
-      },
-      priority: 0
+      }
     }),
     new world.Command({
       name: `goto`,
@@ -29,8 +28,7 @@ module.exports.createCommands = (world) => {
         } else {
           user.send(`That room does not exist.\r\n`);
         }
-      },
-      priority: 0
+      }
     }),
     new world.Command({
       name: `istat`,
@@ -46,17 +44,16 @@ module.exports.createCommands = (world) => {
         if ( depth >= 0 ) {
           let items = [];
 
-          items = items.concat(items, user.equipment().filter(x => x.names().some(y => y.toLowerCase().startsWith(name.toLowerCase()))));
-          items = items.concat(items, user.inventory().filter(x => x.names().some(y => y.toLowerCase().startsWith(name.toLowerCase()))));
-          items = items.concat(items, user.room().items().filter(x => x.names().some(y => y.toLowerCase().startsWith(name.toLowerCase()))));
+          items = items.concat(user.equipment().filter(x => x.names().some(y => y.toLowerCase().startsWith(name.toLowerCase()))));
+          items = items.concat(user.inventory().filter(x => x.names().some(y => y.toLowerCase().startsWith(name.toLowerCase()))));
+          items = items.concat(user.room().items().filter(x => x.names().some(y => y.toLowerCase().startsWith(name.toLowerCase()))));
 
           if ( items.length < count )
             user.send(`You can't find that item anywhere.\r\n`);
           else
             user.send(`${util.inspect(items[count - 1], { depth: depth })}\r\n`);
         }
-      },
-      priority: 0
+      }
     }),
     new world.Command({
       name: `mstat`,
@@ -77,8 +74,7 @@ module.exports.createCommands = (world) => {
           else
             user.send(`${util.inspect(mobiles[count - 1], { depth: depth })}\r\n`);
         }
-      },
-      priority: 0
+      }
     }),
     new world.Command({
       name: `rstat`,
@@ -87,8 +83,7 @@ module.exports.createCommands = (world) => {
         
         if ( depth >= 0 )
           user.send(`${util.inspect(user.room(), { depth: depth })}\r\n`);
-      },
-      priority: 0
+      }
     }),
     new world.Command({
       name: `shutdown`,
@@ -108,8 +103,7 @@ module.exports.createCommands = (world) => {
         }
         
         process.exit(0);
-      },
-      priority: 0
+      }
     }),
     new world.Command({
       name: `ustat`,
@@ -130,8 +124,7 @@ module.exports.createCommands = (world) => {
           else
             user.send(`${util.inspect(users[count - 1], { depth: depth })}\r\n`);
         }
-      },
-      priority: 0
+      }
     }),
   ];
 };

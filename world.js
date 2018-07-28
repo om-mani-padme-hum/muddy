@@ -1,5 +1,4 @@
 /** Require external modules */
-const crypto = require(`crypto`);
 const ezobjects = require(`ezobjects-mysql`);
 const net = require(`net`);
 const winston = require(`winston`);
@@ -34,7 +33,9 @@ const configWorld = {
     { name: `commands`, type: `Array`, arrayOf: { instanceOf: `Command` } },
     { name: `constants`, type: `Object`, default: constants },
     { name: `database`, type: `MySQLConnection` },
+    { name: `itemPrototypes`, type: `Array`, arrayOf: { instanceOf: `Item` } },
     { name: `log`, instanceOf: `Object` },
+    { name: `mobilePrototypes`, type: `Array`, arrayOf: { instanceOf: `Mobile` } },
     { name: `motd`, type: `text`, default: constants.DEFAULT_MOTD },
     { name: `mysqlConfig`, type: `Object` },
     { name: `port`, type: `int`, default: 7000 },
@@ -108,6 +109,12 @@ World.prototype.loadAreas = async function () {
         exit.room(area.rooms()[i]);
       });    
     }
+    
+    for ( let j = 0, j_max = area.mobilePrototypes().length; j < j_max; j++ )
+      this.mobilePrototypes().push(area.mobilePrototypes()[j]);
+    
+    for ( let j = 0, j_max = area.itemPrototypes().length; j < j_max; j++ )
+      this.itemPrototypes().push(area.itemPrototypes()[j]);
   }
   
   /** Connect exits */
@@ -328,54 +335,30 @@ World.prototype.terminalWrap = function (text) {
 };
 
 World.prototype.colorize = function (text) {
-  text = text.replace(/##/g, `@&#$!*;`);
-  text = text.replace(/%%/g, `*!$#&@;`);
+  text = text.replace(/##/g, `@&#$!*;`).replace(/%%/g, `*!$#&@;`);
   
-  text = text.replace(/#k/g, `\u001b[30m`);
-  text = text.replace(/#r/g, `\u001b[31m`);
-  text = text.replace(/#g/g, `\u001b[32m`);
-  text = text.replace(/#y/g, `\u001b[33m`);
-  text = text.replace(/#b/g, `\u001b[34m`);
-  text = text.replace(/#p/g, `\u001b[35m`);
-  text = text.replace(/#c/g, `\u001b[36m`);
-  text = text.replace(/#w/g, `\u001b[37m`);
+  text = text.replace(/#k/g, `\u001b[30m`).replace(/#r/g, `\u001b[31m`).replace(/#g/g, `\u001b[32m`);
+  text = text.replace(/#y/g, `\u001b[33m`).replace(/#b/g, `\u001b[34m`).replace(/#p/g, `\u001b[35m`);
+  text = text.replace(/#c/g, `\u001b[36m`).replace(/#w/g, `\u001b[37m`);
 
-  text = text.replace(/#K/g, `\u001b[30;1m`);
-  text = text.replace(/#R/g, `\u001b[31;1m`);
-  text = text.replace(/#G/g, `\u001b[32;1m`);
-  text = text.replace(/#Y/g, `\u001b[33;1m`);
-  text = text.replace(/#B/g, `\u001b[34;1m`);
-  text = text.replace(/#P/g, `\u001b[35;1m`);
-  text = text.replace(/#C/g, `\u001b[36;1m`);
-  text = text.replace(/#W/g, `\u001b[37;1m`);
-  text = text.replace(/#g/g, `\u001b[32;1m`);
+  text = text.replace(/#K/g, `\u001b[90m`).replace(/#R/g, `\u001b[91m`).replace(/#G/g, `\u001b[92m`);
+  text = text.replace(/#Y/g, `\u001b[93m`).replace(/#B/g, `\u001b[94m`).replace(/#P/g, `\u001b[95m`);
+  text = text.replace(/#C/g, `\u001b[96m`).replace(/#W/g, `\u001b[97m`);
   
-  text = text.replace(/%k/g, `\u001b[40m`);
-  text = text.replace(/%r/g, `\u001b[41m`);
-  text = text.replace(/%g/g, `\u001b[42m`);
-  text = text.replace(/%y/g, `\u001b[43m`);
-  text = text.replace(/%b/g, `\u001b[44m`);
-  text = text.replace(/%p/g, `\u001b[45m`);
-  text = text.replace(/%c/g, `\u001b[46m`);
-  text = text.replace(/%w/g, `\u001b[47m`);
+  text = text.replace(/%k/g, `\u001b[40m`).replace(/%r/g, `\u001b[41m`).replace(/%g/g, `\u001b[42m`);
+  text = text.replace(/%y/g, `\u001b[43m`).replace(/%b/g, `\u001b[44m`).replace(/%p/g, `\u001b[45m`);
+  text = text.replace(/%c/g, `\u001b[46m`).replace(/%w/g, `\u001b[47m`);
 
-  text = text.replace(/%K/g, `\u001b[40;1m`);
-  text = text.replace(/%R/g, `\u001b[41;1m`);
-  text = text.replace(/%G/g, `\u001b[42;1m`);
-  text = text.replace(/%Y/g, `\u001b[43;1m`);
-  text = text.replace(/%B/g, `\u001b[44;1m`);
-  text = text.replace(/%P/g, `\u001b[45;1m`);
-  text = text.replace(/%C/g, `\u001b[46;1m`);
-  text = text.replace(/%W/g, `\u001b[47;1m`);
-  text = text.replace(/%g/g, `\u001b[42;1m`);
+  text = text.replace(/%K/g, `\u001b[100m`).replace(/%R/g, `\u001b[101m`).replace(/%G/g, `\u001b[102m`);
+  text = text.replace(/%Y/g, `\u001b[103m`).replace(/%B/g, `\u001b[104m`).replace(/%P/g, `\u001b[105m`);
+  text = text.replace(/%C/g, `\u001b[106m`).replace(/%W/g, `\u001b[107m`);
 
-  text = text.replace(/#n/g, `\u001b[0m`);
-  text = text.replace(/%n/g, `\u001b[0m`);
+  text = text.replace(/#n/g, `\u001b[0m`).replace(/%n/g, `\u001b[0m`);
+
+  text = text.replace(/@&#\$!\*;/g, `#`).replace(/\*!\$#&@;/g, `%`);
+  text = text.replace(/\r\n/, `\u001b[0m\r\n`);
   
-  text = text.replace(/@&#\$!\*;/g, `#`);
-  text = text.replace(/\*!\$#&@;/g, `%`);
-  
-  return `${text}\u001b[0m`;
+  return text;
 };
 
 /**
@@ -456,7 +439,7 @@ World.prototype.listen = async function () {
     const manaRatio = this.mana() / this.maxMana();
     const energyRatio = this.energy() / this.maxEnergy();
     
-    let health;
+    let health, mana, energy;
     
     if ( healthRatio < 0.2 )
       health = `#R${this.health()}#n`;
@@ -470,9 +453,7 @@ World.prototype.listen = async function () {
       health = `#G${this.health()}#n`;
     else
       health = `#C${this.health()}#n`;
-    
-    let mana;
-    
+        
     if ( manaRatio < 0.2 )
       mana = `#R${this.mana()}#n`;
     else if ( manaRatio < 0.4 )
@@ -485,9 +466,7 @@ World.prototype.listen = async function () {
       mana = `#G${this.mana()}#n`;
     else
       mana = `#C${this.mana()}#n`;
-    
-    let energy;
-    
+        
     if ( energyRatio < 0.2 )
       energy = `#R${this.energy()}#n`;
     else if ( energyRatio < 0.4 )
@@ -544,7 +523,7 @@ World.prototype.listen = async function () {
   /** Create server -- net.createServer argument is the new connection handler */
   const server = net.createServer((socket) => {
     this.log().info(`New socket from ${socket.address().address}.`);
-
+    
     /** Create a new user */
     const user = new this.User({
       socket: socket

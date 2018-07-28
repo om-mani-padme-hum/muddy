@@ -13,6 +13,7 @@ module.exports.configUser = (world, ext, extConfig) => {
       { name: `experience`, type: `int` },
       { name: `promptFormat`, type: `varchar`, length: 64, default: `\r\n[$xpxp] <$hphp $mm $ee> ` },
       { name: `fightPromptFormat`, type: `varchar`, length: 64, default: `\r\n[$xpxp] <$hphp $mm $ee> ` },
+      { name: `title`, type: `varchar`, length: 32 },
       { name: `socket`, instanceOf: `Socket`, store: false },
       { name: `state`, type: `int`, default: world.constants().STATE_NAME, store: false },
       { name: `room`, instanceOf: `Room`, loadTransform: x => new world.Room({ id: x }) },

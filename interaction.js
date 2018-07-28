@@ -18,8 +18,7 @@ module.exports.createCommands = (world) => {
           await world.itemToRoom(items[count - 1], user.room());
           user.send(`You drop ${items[count - 1].name()}.\r\n`);
         }
-      },
-      priority: 0
+      }
     }),
     new world.Command({
       name: `get`,
@@ -44,8 +43,7 @@ module.exports.createCommands = (world) => {
           await world.itemToInventory(items[count - 1], user);
           user.send(`You pick up ${items[count - 1].name()}.\r\n`);
         }
-      },
-      priority: 0
+      }
     }),
     new world.Command({
       name: `remove`,
@@ -69,8 +67,7 @@ module.exports.createCommands = (world) => {
           else
             user.send(`You remove ${items[count - 1].name()}.\r\n`);
         }
-      },
-      priority: 0
+      }
     }),
     new world.Command({
       name: `say`,
@@ -124,8 +121,7 @@ module.exports.createCommands = (world) => {
             user.send(`You need to 'wield' weapons and held items, not 'wear' them.\r\n`);
           }
         }
-      },
-      priority: 0
+      }
     }),
     new world.Command({
       name: `wield`,
@@ -163,8 +159,7 @@ module.exports.createCommands = (world) => {
             user.send(`You need to 'wear' armor, not 'wield' it.\r\n`);
           }
         }
-      },
-      priority: 0
+      }
     })
   ];
 };
