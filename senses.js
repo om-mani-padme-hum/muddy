@@ -9,36 +9,37 @@ module.exports.createCommands = (world) => {
               user.send(`Look in what?\r\n`);
               return;
             } else {
-              const [name, count] = world.parseName(user, args, 1);
+              const [containerName, containerCount] = world.parseName(user, args, 1);
               
-              const inventory = user.inventory().filter(x => x.names().some(y => y.toLowerCase().startsWith(name.toLowerCase())));
-              const items = user.room().items().filter(x => x.names().some(y => y.toLowerCase().startsWith(name.toLowerCase())));
-              
-              const results = inventory.concat(items);
-              
-              if ( results.length < count ) {
+              let containers = user.inventory().filter(x => x.names().some(y => y.toLowerCase().startsWith(containerName.toLowerCase())));
+              containers = containers.concat(user.room().items().filter(x => x.names().some(y => y.toLowerCase().startsWith(containerName.toLowerCase()))));
+                            
+              if ( containers.length < containerCount ) {
                 user.send(`You can't find that item anywhere.\r\n`);
-              } else if ( !results[count - 1].flags().includes(world.constants().ITEM_CONTAINER) ) {
+              } else if ( !containers[containerCount - 1].flags().includes(world.constants().ITEM_CONTAINER) ) {
                 user.send(`That item is not a container.\r\n`);
               } else {
-                user.send(`Contents of ${results[count - 1].name()}:\r\n`);
+                user.send(`Contents of ${containers[containerCount - 1].name()}:\r\n`);
                 
                 const itemsIncluded = [];
 
                 /** Send any objects in the inventory */
-                results[count - 1].contents().forEach((item) => {
-                  if ( itemsIncluded.includes(item.name()) )
+                containers[containerCount - 1].contents().forEach((content) => {
+                  if ( itemsIncluded.includes(content.name()) )
                     return;
 
-                  const count = user.room().items().filter(x => x.name() == item.name()).length;
+                  const count = containers[containerCount - 1].contents().filter(x => x.name() == content.name()).length;
 
                   if ( count > 1 )
-                    user.send(`  (${count}) ${item.name()}\r\n`);
+                    user.send(`  (${count}) ${content.name()}\r\n`);
                   else
-                    user.send(`  ${item.name()}\r\n`);
+                    user.send(`  ${content.name()}\r\n`);
 
-                  itemsIncluded.push(item.name());
+                  itemsIncluded.push(content.name());
                 });
+                
+                if ( containers[containerCount - 1].contents().length == 0 )
+                  user.send(`  None\r\n`);
               }
             }
           } else {
@@ -95,7 +96,7 @@ module.exports.createCommands = (world) => {
           user.send(world.colorize(exits));
 
           /** Send room description */
-          user.send(world.colorize(`#w${world.terminalWrap(user.room().description())}\r\n`));
+          user.send(world.terminalWrap(world.colorize(`#w${user.room().description()}\r\n`)));
 
           /** Send any mobiles in the room */
           user.room().mobiles().forEach((mobile) => {
@@ -165,37 +166,34 @@ module.exports.createCommands = (world) => {
     new world.Command({
       name: `who`,
       execute: async (world, user, buffer) => {
-        user.send(world.colorize(`#b~~~~~~~~~~~~~~~~~~~~~~ #KThose known to be walking among us #b~~~~~~~~~~~~~~~~~~~~~~\r\n\r\n`));
+        user.send(world.colorize(`#r~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\n`));
         
         let count = 0;
         
         /** Send any visible, online characters */
         world.users().forEach((other) => {
-          if ( other.affects().includes(world.constants().AFFECT_CLOAKED) )
+          if ( other != user && other.affects().includes(world.constants().AFFECT_CLOAKED))
             return;
           
           /** Pad to 80 chars + ANSI color characters */
           if ( other.name().toLowerCase() == `xodin` )
-            user.send(world.colorize(`#y[The Designer ] #W${other.name()} #w${other.title()}`.padEnd(86) + `\r\n`));
+            user.send(world.colorize(` #y[The Designer ] #W${other.name()} #w${other.title()}`.padEnd(86) + `\r\n`));
           else
-            user.send(world.colorize(`#y[Honored Guest] #W${other.name()} #w${other.title()}`.padEnd(86) + `\r\n`));
+            user.send(world.colorize(` #y[Honored Guest] #W${other.name()} #w${other.title()}`.padEnd(86) + `\r\n`));
           
           count++;
         });
         
-        if ( count == 0 ) {
-          user.send(world.colorize(`#wThere are no visible users online.\r\n`));
-          user.send(world.colorize(`#b~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n`));
-        } else {
-          user.send(world.colorize(`\r\n#b~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n`));
-        
-          if ( count == 1 )
-            user.send(world.colorize(`#wThere is only 1 visible user online.\r\n`));
-          else
-            user.send(world.colorize(`#wThere are ${count} visible users online.\r\n`));
+        user.send(world.colorize(`\r\n#r~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n`));
 
-          user.send(world.colorize(`#b~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n`));
-        }
+        if ( count == 1 )
+          user.send(world.colorize(`#wYou are the only Avatar that you can sense in this world.\r\n`));
+        else if ( count == 2 )
+          user.send(world.colorize(`#wYou can sense one other Avatar in this world.\r\n`));
+        else
+          user.send(world.colorize(`#wYou can sense ${count - 1} other Avatars in this world.\r\n`));
+        
+        user.send(world.colorize(`#r~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n`));
       },
       priority: 0
     })

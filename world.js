@@ -55,11 +55,12 @@ ezobjects.createClass(configWorld);
 World.prototype.loadAreas = async function () {
   /** Define recursive helper function for adding any item contents to world and setting container of each */
   const recursiveItemContents = (item) => {
+    /** Set prototype of item */
+    item.prototype(this.itemPrototypes().find(x => x.id() == item.prototype().id()));
+
     item.contents().forEach((content) => {
       content.container(item);
-      
-      this.items().push(content);
-      
+            
       recursiveItemContents(content);
     });
   };
@@ -74,6 +75,12 @@ World.prototype.loadAreas = async function () {
     /** Add area to world */
     this.areas().push(area);
   
+    for ( let j = 0, j_max = area.mobilePrototypes().length; j < j_max; j++ )
+      this.mobilePrototypes().push(area.mobilePrototypes()[j]);
+    
+    for ( let j = 0, j_max = area.itemPrototypes().length; j < j_max; j++ )
+      this.itemPrototypes().push(area.itemPrototypes()[j]);
+    
     /** Loop through area rooms */
     for ( let i = 0, i_max = area.rooms().length; i < i_max; i++ ) {
       /** Set area of room */
@@ -86,9 +93,6 @@ World.prototype.loadAreas = async function () {
       area.rooms()[i].items().forEach((item) => {
         /** Set room of item */
         item.room(area.rooms()[i]);
-        
-        /** Set prototype of item */
-        item.prototype(area.rooms()[i].itemPrototypes().find(x => x.id() == item.prototype().id()));
         
         /** Recursively add any item contents to world and set container of each */
         recursiveItemContents(item);
@@ -109,12 +113,6 @@ World.prototype.loadAreas = async function () {
         exit.room(area.rooms()[i]);
       });    
     }
-    
-    for ( let j = 0, j_max = area.mobilePrototypes().length; j < j_max; j++ )
-      this.mobilePrototypes().push(area.mobilePrototypes()[j]);
-    
-    for ( let j = 0, j_max = area.itemPrototypes().length; j < j_max; j++ )
-      this.itemPrototypes().push(area.itemPrototypes()[j]);
   }
   
   /** Connect exits */
@@ -260,6 +258,28 @@ World.prototype.itemToContainer = async function (item, container) {
   await container.update(this.database());
 };
 
+World.prototype.itemInstanceFromPrototype = async function (prototype) {
+  const item = new this.ItemInstance({
+    prototype: prototype,
+    name: prototype.name(),
+    names: prototype.names(),
+    description: prototype.description(),
+    roomDescription: prototype.roomDescription(),
+    details: prototype.details(),
+    type: prototype.type(),
+    slot: prototype.slot(),
+    flags: prototype.flags()
+  });
+  
+  for ( let i = 0, i_max = prototype.contents().length; i < i_max; i++ ) {
+    item.contents().push(await this.itemInstanceFromPrototype(prototype.contents()[i]));
+  }
+  
+  await item.insert(this.database());
+  
+  return item;
+};
+
 World.prototype.sendUserEquipment = function (user, other) {
   user.send(`Equipment:\r\n`);
 
@@ -325,7 +345,7 @@ World.prototype.terminalWrap = function (text) {
   const words = text.split(` `);
   
   return words.reduce((accumulator, val) => {
-    if ( accumulator.length > 0 && val.length + accumulator[accumulator.length - 1].length + 1 <= 80 )
+    if ( accumulator.length > 0 && val.replace(/\u001b\[[0-9]+m/g, ``).length + accumulator[accumulator.length - 1].replace(/\u001b\[[0-9]+m/g, ``).length + 1 <= 80 )
       accumulator[accumulator.length - 1] += ` ${val}`;
     else
       accumulator.push(val);

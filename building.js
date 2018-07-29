@@ -17,14 +17,8 @@ module.exports.createCommands = (world) => {
               user.send(`Create an instance of what item prototype ID?\r\n`);
             } else {
               const prototypes = [];
-              
-              world.areas().forEach((area) => {
-                area.itemPrototypes().forEach((prototype) => {
-                  prototypes.push(prototype);
-                });
-              });
-              
-              const prototype = prototypes.find(x => parseInt(args[2]));
+
+              const prototype = world.itemPrototypes().find(x => x.id() == parseInt(args[2]));
               
               if ( !prototype ) {
                 user.send(`There is not an item prototype with that ID.\r\n`);
@@ -33,15 +27,7 @@ module.exports.createCommands = (world) => {
                 
               const roomItem = typeof args[3] == `string` && `room`.startsWith(args[3]);
 
-              const itemInstance = new world.ItemInstance({
-                prototype: prototype,
-                name: prototype.name(),
-                names: prototype.names(),
-                description: prototype.description(),
-                roomDescription: prototype.roomDescription(),
-              });
-
-              await itemInstance.insert(world.database());
+              const itemInstance = await world.itemInstanceFromPrototype(prototype);
 
               if ( roomItem ) {
                 world.itemToRoom(itemInstance, user.room());
@@ -51,7 +37,7 @@ module.exports.createCommands = (world) => {
                 await user.update(world.database());
               }
               
-              user.send(`You draw in energy from the space around and materialize it into a tiny sphere.\r\n`);
+              user.send(`You draw in energy from the space around and materialize it into ${prototype.name()}.\r\n`);
             }          
           } else if ( `mobile`.startsWith(args[1]) ) {
             if ( typeof args[2] != `string` ) {
@@ -281,6 +267,8 @@ module.exports.createCommands = (world) => {
           } else {
             user.send(`You do not know that method of connecting a new room to the world.\r\n`);
           }
+        } else {
+          user.send(`You don't know how to create that.\r\n`);
         }
       }
     }),

@@ -65,11 +65,12 @@ async function processStateName(world, user, buffer) {
 async function processStateOldPassword(world, user, buffer) {
   /** Define recursive helper function for adding any item contents to world and setting container of each */
   const recursiveItemContents = (item) => {
+    /** Set prototype of item */
+    item.prototype(world.itemPrototypes().find(x => x.id() == item.prototype().id()));
+
     item.contents().forEach((content) => {
       content.container(item);
-      
-      this.items().push(content);
-      
+            
       recursiveItemContents(content);
     });
   };

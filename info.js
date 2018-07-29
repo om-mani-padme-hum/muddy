@@ -8,14 +8,15 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `commands`,
-      execute: async (world, user, buffer, args) => {
-        let text = ``;
-        
-        world.commands().forEach((command) => {
-          text += `${command.name()} `;
+      execute: async (world, user, buffer, args) => {        
+        world.commands().forEach((command, index) => {
+          if ( index != 0 && index % 4 == 0 )
+            user.send(`\r\n`);
+          
+          user.send(`${command.name().padEnd(16)} `);
         });
         
-        user.send(world.terminalWrap(`${text}\r\n`));
+        user.send(`\r\n`);
       },
       priority: 0
     })
