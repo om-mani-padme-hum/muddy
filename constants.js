@@ -56,44 +56,63 @@ module.exports = {
   /** Define user flags */
   AFFECT_CLOAKED: 1,
   
-  /** Define paths */
-  PATH_ADVENTURER: 1,
-  PATH_ARCANIST: 2,
-  PATH_ARSONIST: 3,
-  PATH_ASCENDED: 4,
-  PATH_ASSASSIN: 5,
-  PATH_CHEMIST: 6,
-  PATH_DRAGONKIN: 7,
-  PATH_DRUID: 8,
-  PATH_ENGINEER: 9,
-  PATH_FARMER: 10,
-  PATH_GARDENER: 11,
-  PATH_GEOLOGIST: 12,
-  PATH_GLADIATOR: 13,
-  PATH_HUNTER: 14,
-  PATH_MAGE: 15,
-  PATH_MEDIC: 16,
-  PATH_MONK: 17,
-  PATH_NECROMANCER: 18,
-  PATH_NINJA: 19,
-  PATH_PEACEMAKER: 20,
-  PATH_PHEONIX: 21,
-  PATH_PRIEST: 22,
-  PATH_RANGER: 23,
-  PATH_SCIENTIST: 24,
-  PATH_SEER: 26,
-  PATH_SHAMAN: 27,
-  PATH_SORCERER: 28,
-  PATH_PSYCHIC: 29,
-  PATH_SUMMONER: 30,
-  PATH_THIEF: 31,
-  PATH_TORTURER: 32,
-  PATH_TRAVELER: 33,
-  PATH_WARLOCK: 34,
-  PATH_WARRIOR: 35,
-  PATH_WITCH_DOCTOR: 36,
-  PATH_WIZARD: 37,
+  /** Define element flags */
+  ELEMENT_AIR: 0,
+  ELEMENT_EARTH: 1,
+  ELEMENT_ELECTROMAGNETISM: 2,
+  ELEMENT_FIRE: 3,
+  ELEMENT_LIFE: 4,
+  ELEMENT_METAL: 5,
+  ELEMENT_SPACE: 6,
+  ELEMENT_TIME: 7,
+  ELEMENT_WATER: 8,
   
+  /** Define paths */
+  PATH_ARCANIST: 0,
+  PATH_ARSONIST: 1,
+  PATH_ASCENDED: 2,
+  PATH_ASSASSIN: 3,
+  PATH_CHEMIST: 4,
+  PATH_DRAGONSLAYER: 5,
+  PATH_DRUID: 6,
+  PATH_ENGINEER: 7,
+  PATH_EXPLORER: 8,
+  PATH_FARMER: 9,
+  PATH_GARDENER: 10,
+  PATH_GEOLOGIST: 11,
+  PATH_GLADIATOR: 12,
+  PATH_HUNTER: 13,
+  PATH_MAGE: 14,
+  PATH_MEDIC: 15,
+  PATH_MONK: 16,
+  PATH_NECROMANCER: 17,
+  PATH_NINJA: 18,
+  PATH_PEACEMAKER: 19,
+  PATH_PHEONIX: 20,
+  PATH_PRIEST: 21,
+  PATH_RANGER: 22,
+  PATH_SCIENTIST: 23,
+  PATH_SEER: 24,
+  PATH_SHAMAN: 25,
+  PATH_SORCERER: 26,
+  PATH_PSYCHIC: 27,
+  PATH_SABOTEUR: 28,
+  PATH_SUMMONER: 29,
+  PATH_THIEF: 30,
+  PATH_TRAVELER: 31,
+  PATH_WARLOCK: 32,
+  PATH_WARRIOR: 33,
+  PATH_WITCH_DOCTOR: 34,
+  PATH_WIZARD: 35,
+  
+  /** Define pair of elemental specializations by path flag */
+  pathElements: [
+    [2, 8], [0, 3], [2, 6], [5, 6], [5, 8], [0, 6], [1, 8], [2, 5], [6, 8], 
+    [4, 7], [4, 6], [1, 7], [3, 5], [1, 6], [0, 2], [4, 5], [0, 4], [3, 4], 
+    [0, 7], [3, 8], [2, 3], [4, 8], [2, 4], [0, 1], [5, 7], [2, 7], [7, 8], 
+    [1, 4], [3, 6], [1, 2], [0, 5], [6, 7], [3, 7], [1, 5], [1, 3], [0, 8]
+  ],
+
   /** Define direction flags */
   DIR_NORTH: 0,                    /** n */
   DIR_NORTHEAST: 1,                /** ne */
@@ -106,6 +125,7 @@ module.exports = {
   DIR_UP: 8,                       /** u */
   DIR_DOWN: 9,                     /** d */
   
+  /** Define direction flag lookup by name */
   directions: {
     north: 0,
     northeast: 1,
@@ -123,10 +143,14 @@ module.exports = {
     nw: 7
   },
   
+  /** Define direction name lookup by direction flag */
   directionNames: [`north`, `northeast`, `east`, `southeast`, `south`,
                    `southwest`, `west`, `northwest`, `up`, `down`],
   
+  /** Define direction short name lookup by direction flag */
   directionShortNames: [`n`, `ne`, `e`, `se`, `s`, `sw`, `w`, `nw`, `u`, `d`],
+  
+  /** Define direction opposites by direction flag */
   directionOpposites: [4, 5, 6, 7, 0, 1, 2, 3, 9, 8],
   
   /** Define start room */

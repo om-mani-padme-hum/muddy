@@ -314,9 +314,17 @@ async function processStateConnected(world, user, buffer) {
   /** Find the first matching command, if one exists */
   const command = world.commands().filter(x => x.name().startsWith(matches[1].toLowerCase())).sort(sortCommands)[0];
 
+  let args;
+  
+  try {
+    args = parseValues(matches[2]).map(x => x.toLowerCase());
+  } catch ( err ) {
+    args = [];
+  }
+  
   /** If it exists, execute it for this user, otherwise send error */
   if ( command )
-    await command.execute()(world, user, matches[2], parseValues(matches[2]).map(x => x.toLowerCase()));
+    await command.execute()(world, user, matches[2], args);
   else
     user.send(`That action does not exist in this world.\r\n`);
 

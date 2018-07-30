@@ -13,6 +13,7 @@
   },
   "rules": {
     "indent": "off",
+    "no-control-regex": "off",
     "linebreak-style": [
       "error",
       "unix"

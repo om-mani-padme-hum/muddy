@@ -9,7 +9,7 @@ module.exports.createCommands = (world) => {
         } 
         
         /** Drop all */
-        else if ( args[0] == 'all' ) {
+        else if ( args[0] == `all` ) {
           const items = user.inventory();
 
           /** Verify there's at least one item to drop */
@@ -78,7 +78,7 @@ module.exports.createCommands = (world) => {
         }
         
         /** Get all */
-        else if ( args[0] == 'all' ) {
+        else if ( args[0] == `all` ) {
           /** Get all (container) - use container's contents, get all - use room items */
           if ( containers.length > 0 )
             items = containers[containerCount - 1].contents();
@@ -169,7 +169,7 @@ module.exports.createCommands = (world) => {
           } 
 
           /** Put all (container) */
-          else if ( args[0] == 'all' ) {
+          else if ( args[0] == `all` ) {
             /** Compile list of inventory items (excluding the desired container */
             const items = user.inventory().filter(x => x != containers[containerCount - 1]);
 
@@ -218,7 +218,7 @@ module.exports.createCommands = (world) => {
         }
         
         /** Remove all */
-        else if ( args[0] == 'all' ) {
+        else if ( args[0] == `all` ) {
           /** Compile list of equipment items */
           const items = user.equipment();
           
@@ -269,7 +269,7 @@ module.exports.createCommands = (world) => {
       name: `say`,
       execute: async (world, user, buffer, args) => {
         /** Verify at least one argument exists */
-        if ( typeof args[0] != `string` ) {
+        if ( buffer.trim().length == 0 ) {
           user.send(`Say what?\r\n`);
         }
         
@@ -281,9 +281,9 @@ module.exports.createCommands = (world) => {
           /** Loop through users in room and send text */
           user.room().users().forEach((otherUser) => {
             if ( user != otherUser )
-              user.send(`${user.name} says '${text}'.\r\n`);
+              otherUser.send(`${user.name()} says \`${text}\`.\r\n`);
             else
-              user.send(`You say '${text}'.\r\n`);
+              otherUser.send(`You say \`${text}\`.\r\n`);
           });
         }
       }
@@ -297,7 +297,7 @@ module.exports.createCommands = (world) => {
         }
         
         /** Wear all */
-        else if ( args[0] == 'all' ) {
+        else if ( args[0] == `all` ) {
           /** Compile list of items in inventory that are equippable and don't need to be wielded */
           const items = user.inventory().filter(x => x.flags().includes(world.constants().ITEM_EQUIPPABLE) && x.slot() != world.constants().SLOT_WIELD);
           
@@ -371,7 +371,7 @@ module.exports.createCommands = (world) => {
         }
         
         /** Wield all */
-        else if ( args[0] == 'all' ) {
+        else if ( args[0] == `all` ) {
           /** Compile list of items in inventory that are equippable and wieldable */
           const items = user.inventory().filter(x => x.flags().includes(world.constants().ITEM_EQUIPPABLE) && x.slot() == world.constants().SLOT_WIELD);
           
