@@ -231,9 +231,9 @@ module.exports.createCommands = (world) => {
           else {
             for ( let i = items.length - 1; i >= 0; i-- ) {
               if ( items[i].slot() == world.constants().SLOT_WIELD )
-                user.send(`You return ${items.name()} to your inventory.\r\n`);
+                user.send(`You return ${items[i].name()} to your inventory.\r\n`);
               else
-                user.send(`You remove ${items.name()}.\r\n`);
+                user.send(`You remove ${items[i].name()}.\r\n`);
               
               await world.itemToInventory(items[i], user);
             }
