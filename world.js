@@ -378,7 +378,7 @@ World.prototype.colorize = function (text) {
   text = text.replace(/@&#\$!\*;/g, `#`).replace(/\*!\$#&@;/g, `%`);
   text = text.replace(/\r\n/, `\u001b[0m\r\n`);
   
-  return text;
+  return `${text}\u001b[0m`;
 };
 
 /**
