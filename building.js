@@ -99,7 +99,7 @@ module.exports.createCommands = (world) => {
             user.room().area().itemPrototypes().push(item);
             await user.room().area().update(world.database());
             
-            user.send(`You create an item from nothing, then spatially compress and store it as ID ${mobile.id()}.\r\n`);
+            user.send(`You create an item from nothing, then spatially compress and store it as ID ${item.id()}.\r\n`);
           } 
           
           /** Create prototype mobile */

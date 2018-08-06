@@ -276,7 +276,7 @@ module.exports.createCommands = (world) => {
         /** Color and send the text to all users in the room */
         else {
           /** Colorize the string if it has any color code sequences */
-          const text = world.colorize(buffer.toString().trim());
+          const text = world.colorize(buffer.toString().trim() + `#n`);
 
           /** Loop through users in room and send text */
           user.room().users().forEach((otherUser) => {
