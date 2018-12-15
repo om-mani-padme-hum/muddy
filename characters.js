@@ -14,6 +14,8 @@ module.exports.configCharacter = (world) => {
       { name: `maxHealth`, type: `int`, default: 100 },
       { name: `maxMana`, type: `int`, default: 100 },
       { name: `maxEnergy`, type: `int`, default: 100 },
+      { name: `dodge`, type: `double`, default: 10 },
+      { name: `fighting`, instanceOf: `Character`, store: false },
       { name: `affects`, type: `Array`, arrayOf: { type: `int` } }
     ]
   };

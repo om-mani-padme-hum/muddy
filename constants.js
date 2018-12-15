@@ -12,7 +12,7 @@ module.exports = {
   /** Define VT100 terminal modifiers */
   VT100_CLEAR: `\x1b[0m`,
   VT100_HIDE_TEXT: `\x1b[8m`,
-    
+  
   /** Define item flags */
   ITEM_EQUIPPABLE: 1,
   ITEM_CONTAINER: 2,
@@ -55,6 +55,7 @@ module.exports = {
   
   /** Define user flags */
   AFFECT_CLOAKED: 1,
+  AFFECT_SAFE: 2,
   
   /** Define element flags */
   ELEMENT_AIR: 0,

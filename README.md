@@ -2,7 +2,7 @@
 A Node.js Multi-User Dungeon (MUD) Framework
 
 ## Current Status:
-A good amount of basic functionality in place, but under development.  Builder features for creating rooms in-world partially in place.  Fighting not yet programmed.  Equipment stats coming very soon.
+A good amount of basic functionality in place, but under development.  Builder features for creating rooms in-world partially in place.  Basic fighting has now been added!  Equipment stats coming very soon.
 
 ## Planned Track:
 * Web-based user interface that can be enabled/disabled for area development and mobile scripting.
@@ -26,6 +26,7 @@ A good amount of basic functionality in place, but under development.  Builder f
 * look
 * inventory
 * istat
+* kill
 * mstat
 * north
 * northeast (ne)

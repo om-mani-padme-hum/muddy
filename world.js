@@ -23,6 +23,7 @@ const movement = require(`./movement`);
 const rooms = require(`./rooms`);
 const senses = require(`./senses`);
 const system = require(`./system`);
+const update = require(`./update`);
 const users = require(`./users`);
 
 /** Configure world object */
@@ -510,10 +511,32 @@ World.prototype.listen = async function () {
     this.send(world.colorize(prompt));
   };
   
-  /** Create send function */
+  /** Create send to area function */
+  Area.prototype.send = function (text, exclude) {
+    this.rooms().forEach((room) => {
+      room.users().forEach((user) => {
+        if ( !exclude.includes(user) )
+          user.send(text);
+      });
+    });
+  };
+  
+  /** Ignore anything sent to mobile instances */
+  MobileInstance.prototype.send = function (text, exclude) {
+    return;
+  };
+  
+  /** Create send to room function */
+  Room.prototype.send = function (text, exclude = []) {
+    this.users().forEach((user) => {
+      if ( !exclude.includes(user) )
+        user.send(text);
+    });
+  };
+  
+  /** Create send to user function */
   User.prototype.send = function (text) {
-    if ( this.state() != constants.STATE_DISCONNECTED && this.socket() )
-      this.socket().write(text);
+    this.outBuffer(this.outBuffer() + text);
   };
   
   this.Area = Area;
@@ -592,6 +615,9 @@ World.prototype.listen = async function () {
   /** Time to get started */
   server.listen(this.port(), () => {
     this.log().info(`Muddy is up and running on port ${this.port()}!`);
+    
+    /** Update fights every 2 seconds */
+    setTimeout(update, 250, this);
   });
 };
 

@@ -278,9 +278,6 @@ async function processStateMOTD(world, user, buffer) {
   /** Find and execute the look command for this user */
   await world.commands().find(x => x.name() == `look`).execute()(world, user, ``, []);
 
-  /** Send prompt */
-  user.prompt(world);
-
   /** Move on and put user in game */
   user.state(world.constants().STATE_CONNECTED);
 }
@@ -296,8 +293,8 @@ async function processStateConnected(world, user, buffer) {
   const matches = buffer.toString().trim().match(/^\s*([^\s]+)\s*(.*)/);
 
   if ( !matches ) {
-    /** Just send prompt */
-    user.prompt(world);
+    /** Just send blank line */
+    user.send(`\r\n`);
     return;
   }
 
@@ -327,9 +324,6 @@ async function processStateConnected(world, user, buffer) {
     await command.execute()(world, user, matches[2], args);
   else
     user.send(`That action does not exist in this world.\r\n`);
-
-  /** Send prompt */
-  user.prompt(world);
 }
 
 /**
