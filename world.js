@@ -281,6 +281,20 @@ World.prototype.itemInstanceFromPrototype = async function (prototype) {
   return item;
 };
 
+World.prototype.send = function (text, exclude = []) {
+  /** Loop through each area in the world */
+  this.areas().forEach((area) => {
+    /** Loop through each room in the area */
+    area.rooms().forEach((room) => {
+      /** Loop through each user in room who is not excluded */
+      room.users().filter(x => !exclude.includes(x)).forEach((user) => {
+        /** Send text to user */
+        user.send(text);
+      });
+    });
+  });
+};
+
 World.prototype.sendUserEquipment = function (user, other) {
   user.send(`Equipment:\r\n`);
 
@@ -512,7 +526,7 @@ World.prototype.listen = async function () {
   };
   
   /** Create send to area function */
-  Area.prototype.send = function (text, exclude) {
+  Area.prototype.send = function (text, exclude = []) {
     this.rooms().forEach((room) => {
       room.users().forEach((user) => {
         if ( !exclude.includes(user) )
@@ -522,7 +536,7 @@ World.prototype.listen = async function () {
   };
   
   /** Ignore anything sent to mobile instances */
-  MobileInstance.prototype.send = function (text, exclude) {
+  MobileInstance.prototype.send = function (text, exclude = []) {
     return;
   };
   

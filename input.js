@@ -27,6 +27,9 @@ async function processStateName(world, user, buffer) {
     /** Attempt to load (which initializes user first) */
     let existingUser = await user.load(name, world.database());
     
+    /** Toggle user's command boolean */
+    user.command(true);
+    
     /** Restore user socket */
     user.socket(socket);
 
@@ -277,6 +280,8 @@ async function processStateMOTD(world, user, buffer) {
 
   /** Find and execute the look command for this user */
   await world.commands().find(x => x.name() == `look`).execute()(world, user, ``, []);
+  
+  world.send(world.colorize(`#YInfo -> ${user.name()} has come online.#n\r\n`));
 
   /** Move on and put user in game */
   user.state(world.constants().STATE_CONNECTED);
@@ -293,8 +298,8 @@ async function processStateConnected(world, user, buffer) {
   const matches = buffer.toString().trim().match(/^\s*([^\s]+)\s*(.*)/);
 
   if ( !matches ) {
-    /** Just send blank line */
-    user.send(`\r\n`);
+    /** Just send a space */
+    user.send(` `);
     return;
   }
 
@@ -332,6 +337,9 @@ async function processStateConnected(world, user, buffer) {
  * @param buffer Input buffer
  */
 module.exports.process = async function (world, user, buffer) {
+  /** Toggle user's command boolean */
+  user.command(true);
+  
   /** User is at the name state, first input of the game */
   if ( user.state() == world.constants().STATE_NAME )
     await processStateName(world, user, buffer);

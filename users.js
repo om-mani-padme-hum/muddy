@@ -8,6 +8,7 @@ module.exports.configUser = (world, ext, extConfig) => {
     otherSearchField: `name`,
     properties: [
       { name: `addresses`, type: `array`, arrayOf: { type: `varchar`, length: 32 } },
+      { name: `command`, type: `boolean`, store: false },
       { name: `equipment`, type: `Array`, arrayOf: { instanceOf: `ItemInstance` } },
       { name: `experience`, type: `int` },
       { name: `fightPromptFormat`, type: `varchar`, length: 64, default: `\r\n[$xpxp] <$hphp $mm $ee> ` },

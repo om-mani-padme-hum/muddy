@@ -13,8 +13,15 @@ module.exports = (world) => {
       /** Loop through each character in room who is fighting */
       characters.forEach((character) => {
         /** On every fouorth tick, update fighting for character */
-        if ( tick % 4 == 0 )
+        if ( tick % 4 == 0 ) {
+          /** Update any fighting the character is engaged in */
           fighting.updateFighting(world, character);
+          
+          /** Update health, mana, and energy */
+          character.health(Math.min(character.maxHealth(), character.health() + 1));
+          character.mana(Math.min(character.maxMana(), character.mana() + 1));
+          character.energy(Math.min(character.maxEnergy(), character.energy() + 1));
+        }
       });
     });
   });
@@ -27,11 +34,17 @@ module.exports = (world) => {
       if ( user.state() == world.constants().STATE_CONNECTED )
         user.prompt(world);
       
+      if ( !user.command() )
+        user.socket().write(`\r\n`);
+      
       /** Send output buffer */
       user.socket().write(user.outBuffer());
 
       /** Clear output buffer */
       user.outBuffer(``);
+      
+      /** Unset user's command boolean */
+      user.command(false);
     }
   });
   

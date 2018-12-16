@@ -20,7 +20,7 @@ module.exports.createCommands = (world) => {
           } else {
             user.send(`You attack ${target.name()}!\r\n`);
             target.send(`You are being attacked by ${user.name()}!\r\n`);
-            user.room().send(`${user.name} starts attacking ${target.name()}!\r\n`, [user, target]);
+            user.room().send(`${user.name()} starts attacking ${target.name()}!\r\n`, [user, target]);
             
             user.fighting(target);
             target.fighting(user);
