@@ -20,22 +20,20 @@ module.exports = {
   
   /** Define item types */
   ITEM_OTHER: 0,
-  ITEM_HEAD: 1,
-  ITEM_FACE: 2,
-  ITEM_NECK: 3,
-  ITEM_SHOULDERS: 4,
-  ITEM_CHEST: 5,
-  ITEM_BACK: 6,
-  ITEM_ARMS: 7,
-  ITEM_WRISTS: 8,
-  ITEM_GLOVES: 9,
-  ITEM_WAIST: 10,
-  ITEM_LEGS: 11,
-  ITEM_FEET: 12,
-  ITEM_1H_WEAPON: 13,
-  ITEM_2H_WEAPON: 14,
-  ITEM_HELD: 15,
-  ITEM_SHIELD: 16,
+  ITEM_ARMOR: 1,
+  ITEM_1H_WEAPON: 2,
+  ITEM_2H_WEAPON: 3,
+  ITEM_HELD: 4,
+  ITEM_SHIELD: 5,
+  
+  itemNames: [
+    `Other`,
+    `Armor`,
+    `1H Weapon`,
+    `2H Weapon`,
+    `Held Item`,
+    `Shield`
+  ],
   
   /** Define slot flags */
   SLOT_NONE: 0,
@@ -53,9 +51,31 @@ module.exports = {
   SLOT_FEET: 12,
   SLOT_WIELD: 13,
   
-  /** Define user flags */
-  AFFECT_CLOAKED: 1,
-  AFFECT_SAFE: 2,
+  slotNames: [
+    `None`,
+    `Head`,
+    `Face`,
+    `Neck`,
+    `Shoulders`,
+    `Chest`,
+    `Back`,
+    `Arms`,
+    `Wrists`,
+    `Gloves`,
+    `Waist`,
+    `Legs`,
+    `Feet`,
+    `Wield`
+  ],
+  
+  /** Define affect flags */
+  AFFECT_CLOAKED: 0,
+  AFFECT_SAFE: 1,
+  
+  affectNames: [
+    `Cloaked`,
+    `Safe`
+  ],
   
   /** Define element flags */
   ELEMENT_AIR: 0,
@@ -69,49 +89,16 @@ module.exports = {
   ELEMENT_WATER: 8,
   
   /** Define paths */
-  PATH_ARCANIST: 0,
-  PATH_ARSONIST: 1,
-  PATH_ASCENDED: 2,
-  PATH_ASSASSIN: 3,
-  PATH_CHEMIST: 4,
-  PATH_DRAGONSLAYER: 5,
-  PATH_DRUID: 6,
-  PATH_ENGINEER: 7,
-  PATH_EXPLORER: 8,
-  PATH_FARMER: 9,
-  PATH_GARDENER: 10,
-  PATH_GEOLOGIST: 11,
-  PATH_GLADIATOR: 12,
-  PATH_HUNTER: 13,
-  PATH_MAGE: 14,
-  PATH_MEDIC: 15,
-  PATH_MONK: 16,
-  PATH_NECROMANCER: 17,
-  PATH_NINJA: 18,
-  PATH_PEACEMAKER: 19,
-  PATH_PHEONIX: 20,
-  PATH_PRIEST: 21,
-  PATH_RANGER: 22,
-  PATH_SCIENTIST: 23,
-  PATH_SEER: 24,
-  PATH_SHAMAN: 25,
-  PATH_SORCERER: 26,
-  PATH_PSYCHIC: 27,
-  PATH_SABOTEUR: 28,
-  PATH_SUMMONER: 29,
-  PATH_THIEF: 30,
-  PATH_TRAVELER: 31,
-  PATH_WARLOCK: 32,
-  PATH_WARRIOR: 33,
-  PATH_WITCH_DOCTOR: 34,
-  PATH_WIZARD: 35,
+  PATH_MAGE: 0,      /** Black Magic */
+  PATH_WARRIOR: 1,   /** Melee */
+  PATH_SHAMAN: 2,    /** Red Magic */
+  PATH_HEALER: 3,    /** White Magic */
   
-  /** Define pair of elemental specializations by path flag */
-  pathElements: [
-    [2, 8], [0, 3], [2, 6], [5, 6], [5, 8], [0, 6], [1, 8], [2, 5], [6, 8], 
-    [4, 7], [4, 6], [1, 7], [3, 5], [1, 6], [0, 2], [4, 5], [0, 4], [3, 4], 
-    [0, 7], [3, 8], [2, 3], [4, 8], [2, 4], [0, 1], [5, 7], [2, 7], [7, 8], 
-    [1, 4], [3, 6], [1, 2], [0, 5], [6, 7], [3, 7], [1, 5], [1, 3], [0, 8]
+  pathNames: [
+    `Mage`,
+    `Warrior`,
+    `Shaman`,
+    `Healer`
   ],
 
   /** Define direction flags */

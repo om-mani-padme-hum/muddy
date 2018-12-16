@@ -569,6 +569,8 @@ module.exports.webBuilder = (world, port = 7001) => {
     p.form().method(`post`).action(`/mobiles/:id`);
     p.input().cols(8).type(`text`).name(`name`).label(`Name:`).value(mobile.name());
     p.row(`form`);
+    p.input().cols(12).type(`text`).name(`roomDescription`).label(`Room Description:`).value(mobile.roomDescription());
+    p.row(`form`);
     p.textarea().label(`Description:`).rows(3).name(`description`).cols(12).text(mobile.description());
     
     p.row();
@@ -590,6 +592,8 @@ module.exports.webBuilder = (world, port = 7001) => {
     p.col().size(7);
     p.form().method(`post`).action(`/items/:id`);
     p.input().cols(8).type(`text`).name(`name`).label(`Name:`).value(item.name());
+    p.row(`form`);
+    p.input().cols(12).type(`text`).name(`roomDescription`).label(`Room Description:`).value(item.roomDescription());
     p.row(`form`);
     p.textarea().label(`Description:`).rows(3).name(`description`).cols(12).text(item.description());
     
