@@ -16,9 +16,9 @@ const info = require(`./info`);
 const input = require(`./input`);
 const interaction = require(`./interaction`);
 const itemInstances = require(`./item-instances`);
-const items = require(`./items`);
+const itemPrototypes = require(`./item-prototypes`);
 const mobileInstances = require(`./mobile-instances`);
-const mobiles = require(`./mobiles`);
+const mobilePrototypes = require(`./mobile-prototypes`);
 const movement = require(`./movement`);
 const rooms = require(`./rooms`);
 const senses = require(`./senses`);
@@ -34,9 +34,9 @@ const configWorld = {
     { name: `commands`, type: `Array`, arrayOf: { instanceOf: `Command` } },
     { name: `constants`, type: `Object`, default: constants },
     { name: `database`, type: `MySQLConnection` },
-    { name: `itemPrototypes`, type: `Array`, arrayOf: { instanceOf: `Item` } },
+    { name: `itemPrototypes`, type: `Array`, arrayOf: { instanceOf: `ItemPrototype` } },
     { name: `log`, instanceOf: `Object` },
-    { name: `mobilePrototypes`, type: `Array`, arrayOf: { instanceOf: `Mobile` } },
+    { name: `mobilePrototypes`, type: `Array`, arrayOf: { instanceOf: `MobilePrototype` } },
     { name: `motd`, type: `text`, default: constants.DEFAULT_MOTD },
     { name: `mysqlConfig`, type: `Object` },
     { name: `port`, type: `int`, default: 7000 },
@@ -105,7 +105,7 @@ World.prototype.loadAreas = async function () {
         mobile.room(area.rooms()[i]);
         
         /** Set prototype of mobile */
-        mobile.prototype(area.rooms()[i].mobilePrototypes().find(x => x.id() == mobile.prototype().id()));
+        mobile.prototype(this.mobilePrototypes().find(x => x.id() == mobile.prototype().id()));
       });
       
       /** Loop through exits in room */
@@ -126,7 +126,7 @@ World.prototype.loadAreas = async function () {
   });
 };
 
-World.prototype.characterFromAnywhere = function (character) {  
+World.prototype.characterFromAnywhere = async function (character) {  
   /** If character's room exists */
   if ( character.room() ) {
     /** If character is a User, remove from room's and area's users lists */
@@ -138,24 +138,34 @@ World.prototype.characterFromAnywhere = function (character) {
       character.room().mobiles().splice(character.room().mobiles().indexOf(character), 1);
   }
   
+  /** Update character in database */
+  if ( character instanceof this.MobileInstance )
+    await character.room().update(this.database());
+  
   /** Null out character's room */
   character.room(null);
 };
 
-World.prototype.characterToRoom = function (character, room) {
+World.prototype.characterToRoom = async function (character, room) {
   /** Remove character from any old room */
-  this.characterFromAnywhere(character);
+  await this.characterFromAnywhere(character);
   
   /** Set chracter's room */
   character.room(room);
 
   /** If character is a User, add to room's and area's users lists */
-  if ( character instanceof this.User )
+  if ( character instanceof this.User ) {
     room.users().push(character);
+    
+    await character.update(this.database());
+  }
   
   /** If character is a MobileInstance, add to room's and area's mobiles lists */
-  else if ( character instanceof this.MobileInstance )
+  else if ( character instanceof this.MobileInstance ) {
     room.mobiles().push(character);
+    
+    await room.update(this.database());
+  }
 };
 
 World.prototype.itemFromAnywhere = async function (item) {
@@ -437,12 +447,12 @@ World.prototype.listen = async function () {
   const configCharacter = characters.configCharacter(this);
   const configCommand = commands.configCommand(this);
   const configExit = exits.configExit(this);
-  const configItem = items.configItem(this);
+  const configItemPrototype = itemPrototypes.configItemPrototype(this);
   const configRoom = rooms.configRoom(this);
 
   await ezobjects.createTable(configArea, this.database());
   await ezobjects.createTable(configExit, this.database());
-  await ezobjects.createTable(configItem, this.database());
+  await ezobjects.createTable(configItemPrototype, this.database());
   await ezobjects.createTable(configRoom, this.database());
   
   /** Create objects */
@@ -450,21 +460,21 @@ World.prototype.listen = async function () {
   ezobjects.createClass(configCharacter);
   ezobjects.createClass(configCommand);
   ezobjects.createClass(configExit);
-  ezobjects.createClass(configItem);
+  ezobjects.createClass(configItemPrototype);
   ezobjects.createClass(configRoom);
   
-  const configItemInstance = itemInstances.configItemInstance(this, Item, configItem);
-  const configMobile = mobiles.configMobile(this, Character, configCharacter);
+  const configItemInstance = itemInstances.configItemInstance(this, ItemPrototype, configItemPrototype);
+  const configMobilePrototype = mobilePrototypes.configMobilePrototype(this, Character, configCharacter);
   const configMobileInstance = mobileInstances.configMobileInstance(this, Character, configCharacter);
   const configUser = users.configUser(this, Character, configCharacter);
 
   await ezobjects.createTable(configItemInstance, this.database());
-  await ezobjects.createTable(configMobile, this.database());
+  await ezobjects.createTable(configMobilePrototype, this.database());
   await ezobjects.createTable(configMobileInstance, this.database());
   await ezobjects.createTable(configUser, this.database());
   
   ezobjects.createClass(configItemInstance);
-  ezobjects.createClass(configMobile);
+  ezobjects.createClass(configMobilePrototype);
   ezobjects.createClass(configMobileInstance);
   ezobjects.createClass(configUser);
 
@@ -557,9 +567,9 @@ World.prototype.listen = async function () {
   this.Character = Character;
   this.Command = Command;
   this.Exit = Exit;
-  this.Item = Item;
+  this.ItemPrototype = ItemPrototype;
   this.ItemInstance = ItemInstance;
-  this.Mobile = Mobile;
+  this.MobilePrototype = MobilePrototype;
   this.MobileInstance = MobileInstance;
   this.Room = Room;
   this.User = User;

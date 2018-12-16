@@ -299,7 +299,7 @@ module.exports.createCommands = (world) => {
         /** Wear all */
         else if ( args[0] == `all` ) {
           /** Compile list of items in inventory that are equippable and don't need to be wielded */
-          const items = user.inventory().filter(x => x.flags().includes(world.constants().ITEM_EQUIPPABLE) && x.slot() != world.constants().SLOT_WIELD);
+          const items = user.inventory().filter(x => x.slot() != world.constants().SLOT_NONE && x.slot() != world.constants().SLOT_WIELD);
           
           /** Verify there is at least one item in inventory to wear */
           if ( items.length == 0 ) {
@@ -340,7 +340,7 @@ module.exports.createCommands = (world) => {
           } 
           
           /** Verify item is equippable */
-          else if ( !items[count - 1].flags().includes(world.constants().ITEM_EQUIPPABLE) ) {
+          else if ( items[count - 1].slot() == world.constants().SLOT_NONE ) {
             user.send(`That item is not equippable.\r\n`);
           }
 
@@ -373,7 +373,7 @@ module.exports.createCommands = (world) => {
         /** Wield all */
         else if ( args[0] == `all` ) {
           /** Compile list of items in inventory that are equippable and wieldable */
-          const items = user.inventory().filter(x => x.flags().includes(world.constants().ITEM_EQUIPPABLE) && x.slot() == world.constants().SLOT_WIELD);
+          const items = user.inventory().filter(x => x.slot() != world.constants().SLOT_NONE && x.slot() == world.constants().SLOT_WIELD);
           
           /** Verify there is at least one item in inventory to wield */
           if ( items.length == 0 ) {
@@ -416,7 +416,7 @@ module.exports.createCommands = (world) => {
           } 
           
           /** Verify item is equippable */
-          else if ( !items[count - 1].flags().includes(world.constants().ITEM_EQUIPPABLE) ) {
+          else if ( items[count - 1].slot() == world.constants().SLOT_NONE ) {
             user.send(`That item is not equippable.\r\n`);
             return;
           }

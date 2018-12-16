@@ -3,8 +3,8 @@ module.exports.configCommand = (world) => {
   return {
     className: `Command`,
     properties: [
-      { name: `name`, type: `varchar`, length: 16 },
       { name: `execute`, type: `function` },
+      { name: `name`, type: `varchar`, length: 16 },
       { name: `priority`, type: `int` }
     ]
   };

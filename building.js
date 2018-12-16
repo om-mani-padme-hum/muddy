@@ -69,9 +69,7 @@ module.exports.createCommands = (world) => {
 
               await mobileInstance.insert(world.database());
 
-              world.characterToRoom(mobileInstance, user.room());
-              
-              await user.room().update(world.database());
+              await world.characterToRoom(mobileInstance, user.room());
               
               user.send(`You draw in energy from the space around and materialize it into a living being.\r\n`);
             }
@@ -84,8 +82,8 @@ module.exports.createCommands = (world) => {
           
           /** Create prototype item */
           else if ( `item`.startsWith(args[1]) ) {
-            /** Create new Item object with boring properties */
-            const item = new world.Item({
+            /** Create new ItemPrototype object with boring properties */
+            const itemPrototype = new world.ItemPrototype({
               name: `a translucent sphere of energy`,
               names: [`ball`, `energy`],
               description: `It looks like a wieghtless and translucent spherical form of bound energy.`,
@@ -93,19 +91,21 @@ module.exports.createCommands = (world) => {
             });
 
             /** Insert it into the database */
-            await item.insert(world.database());
+            await itemPrototype.insert(world.database());
 
-            /** Add it as a prototype of the area and save */
-            user.room().area().itemPrototypes().push(item);
+            /** Add it as a prototype of the area */
+            user.room().area().itemPrototypes().push(itemPrototype);
+            
+            /** Save area */
             await user.room().area().update(world.database());
             
-            user.send(`You create an item from nothing, then spatially compress and store it as ID ${item.id()}.\r\n`);
+            user.send(`You create an item from nothing, then spatially compress and store it as ID ${itemPrototype.id()}.\r\n`);
           } 
           
           /** Create prototype mobile */
           else if ( `mobile`.startsWith(args[1]) ) {
-            /** Create new Mobile object with boring properties */
-            const mobile = new world.Mobile({
+            /** Create new MobilePrototype object with boring properties */
+            const mobilePrototype = new world.MobilePrototype({
               name: `a boring person`,
               names: [`person`],
               description: `They look like the most boring person you could possibly imagine.`,
@@ -113,13 +113,15 @@ module.exports.createCommands = (world) => {
             });
 
             /** Insert it into the database */
-            await mobile.insert(world.database());
+            await mobilePrototype.insert(world.database());
             
-            /** Add it as a prototype of the area and save */
-            user.room().area().mobilePrototypes().push(mobile);
+            /** Add it as a prototype of the area */
+            user.room().area().mobilePrototypes().push(mobilePrototype);
+            
+            /** Save area */
             await user.room().area().update(world.database());
 
-            user.send(`You create a mobile from nothing, then spatially compress and store it as ID ${mobile.id()}.\r\n`);
+            user.send(`You create a mobile from nothing, then spatially compress and store it as ID ${mobilePrototype.id()}.\r\n`);
           } 
           
           /** Send error if not a valid prototype */
@@ -155,8 +157,7 @@ module.exports.createCommands = (world) => {
 
             user.send(`You create an isolated area and transport yourself to its lone room.\r\n`);
 
-            world.characterToRoom(user, room);
-            await user.update(world.database());
+            await world.characterToRoom(user, room);
           } else if ( world.constants().directionShortNames.includes(args[1]) ) {
             if ( user.room().exits().find(x => x.direction() == world.constants().directionShortNames.indexOf(args[1])) ) {
               user.send(`There is already a room in that direction.\r\n`);
@@ -220,9 +221,7 @@ module.exports.createCommands = (world) => {
 
             user.send(`You create an isolated room in the area and transport yourself to it.\r\n`);
 
-            world.characterToRoom(user, room);
-            
-            await user.update(world.database());
+            await world.characterToRoom(user, room);
           } else if ( world.constants().directionShortNames.includes(args[1]) ) {
             if ( user.room().exits().find(x => x.direction() == world.constants().directionShortNames.indexOf(args[1])) ) {
               user.send(`There is already a room in that direction.\r\n`);

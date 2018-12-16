@@ -23,7 +23,9 @@ module.exports.createCommands = (world) => {
         
         if ( room ) {
           user.send(`Your body evaporates away only to coalesce elsewhere.\r\n`);
-          world.characterToRoom(user, room);
+          
+          await world.characterToRoom(user, room);
+          
           world.commands().find(x => x.name() == `look`).execute()(world, user, ``, []);
         } else {
           user.send(`That room does not exist.\r\n`);

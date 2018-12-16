@@ -4,14 +4,14 @@ module.exports.configArea = (world) => {
     tableName: `areas`,
     className: `Area`,
     properties: [
-      { name: `id`, type: `int` },
-      { name: `name`, type: `varchar`, length: 32 },
       { name: `author`, type: `varchar`, length: 32 },
+      { name: `created`, type: `datetime` },
       { name: `description`, type: `varchar`, length: 512 },
       { name: `flags`, type: `Array`, arrayOf: { type: `int` } },
-      { name: `created`, type: `datetime` },
-      { name: `itemPrototypes`, type: `array`, arrayOf: { instanceOf: `Item` } },
-      { name: `mobilePrototypes`, type: `array`, arrayOf: { instanceOf: `Mobile` } },
+      { name: `id`, type: `int` },
+      { name: `itemPrototypes`, type: `array`, arrayOf: { instanceOf: `ItemPrototype` } },
+      { name: `mobilePrototypes`, type: `array`, arrayOf: { instanceOf: `MobilePrototype` } },
+      { name: `name`, type: `varchar`, length: 32 },
       { name: `rooms`, type: `Array`, arrayOf: { instanceOf: `Room` } }
     ]
   };

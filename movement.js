@@ -9,7 +9,7 @@ module.exports.createCommands = (world) => {
 
         if ( exit ) {
           /** If room exists, move user to room and look */
-          world.characterToRoom(user, exit.target());
+          await world.characterToRoom(user, exit.target());
 
           /** Find the look command and execute it for this user */
           world.commands().find(x => x.name() == `look`).execute()(world, user, ``, []);

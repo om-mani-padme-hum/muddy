@@ -129,7 +129,7 @@ async function processStateOldPassword(world, user, buffer) {
     });
         
     /** Move the user to the last room */
-    world.characterToRoom(user, room);
+    await world.characterToRoom(user, room);
     
     /** Move on and pause until they're done reading the message of the day */
     user.state(world.constants().STATE_MOTD);
@@ -226,7 +226,7 @@ async function processStateConfirmPassword(world, user, buffer) {
     }
     
     /** Move the user to the start room */
-    world.characterToRoom(user, room);
+    await world.characterToRoom(user, room);
 
     /** Move on and pause until they're done reading the message of the day */
     user.state(world.constants().STATE_MOTD);

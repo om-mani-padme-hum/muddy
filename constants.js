@@ -14,7 +14,7 @@ module.exports = {
   VT100_HIDE_TEXT: `\x1b[8m`,
   
   /** Define item flags */
-  ITEM_EQUIPPABLE: 1,
+  ITEM_PLACEHOLDER: 1,
   ITEM_CONTAINER: 2,
   ITEM_FIXED: 3,
   
