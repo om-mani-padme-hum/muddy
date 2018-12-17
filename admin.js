@@ -352,7 +352,7 @@ module.exports.createCommands = (world) => {
         /* Otherwise, if the argument is 'instances'... */
         else if ( `instances`.startsWith(args[0]) ) {
           /** Create array of areas with mobile instances */
-          const areas = world.areas().filter(x => x.rooms().some(x => x.mobiles().length > 0))
+          const areas = world.areas().filter(x => x.rooms().some(x => x.mobiles().length > 0));
           
           /** Loop through each area in the world... */
           areas.forEach((area, index) => {
