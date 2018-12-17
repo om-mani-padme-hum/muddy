@@ -3,6 +3,22 @@ const util = require(`util`);
 module.exports.createCommands = (world) => {
   return [
     new world.Command({
+      name: `alist`,
+      execute: async (world, user, buffer, args) => {
+        /** Determine length of longest area id number */
+        const idLength = Math.max(...world.areas().map(x => x.id())).toString().length;
+        
+        /** Send area id and name*/
+        user.send(`Areas:\r\n`);
+
+        /** Loop through each area in the world... */
+        world.areas().forEach((area) => {
+          /** Send area id and name*/
+          user.send(`  [${area.id().toString().padEnd(idLength)}] ${area.name()}\r\n`);
+        });
+      }
+    }),
+    new world.Command({
       name: `astat`,
       execute: async (world, user, buffer, args) => {
         /** Parse depth of argument for util inspect */
@@ -59,21 +75,15 @@ module.exports.createCommands = (world) => {
         
         /** Otherwise, if the argument is 'prototypes'... */
         else if ( `prototypes`.startsWith(args[0]) ) {
-          /** Keep track of whether a given area is first or not */
-          let firstArea = true;
+          
+          /** Create array of areas with item prototypes */
+          const areas = world.areas().filter(x => x.itemPrototypes().length > 0);
           
           /** Loop through each area in the world... */
-          world.areas().forEach((area) => {
-            /** If there are no item prototypes in the area, skip it */
-            if ( area.itemPrototypes().length == 0 )
-              return;
-            
+          areas.forEach((area, index) => {
             /** If this is not the first area, send new line */
-            if ( !firstArea )
+            if ( index > 0 )
               user.send(`\r\n`);
-            
-            /** Toggle first area boolean to false */
-            firstArea = false;
             
             /** Send area id and name*/
             user.send(`Area: [${area.id()}] ${area.name()}\r\n`);
@@ -88,6 +98,10 @@ module.exports.createCommands = (world) => {
               user.send(`  [${item.id().toString().padEnd(idLength)}] ${item.name()}\r\n`);
             });
           });
+          
+          /** If there were no areas with item prototypes, send error */
+          if ( areas.length == 0 )
+            user.send(`There are no item prototypes in this world.\r\n`);
         } 
         
         /* Otherwise, if the argument is 'instances'... */
@@ -220,6 +234,10 @@ module.exports.createCommands = (world) => {
               });
             });
           });
+          
+          /** If there were no areas with item instances, send error */
+          if ( firstArea )
+            user.send(`There are no item instances in this world.\r\n`);
         } 
         
         /** Otherwise, invalid argument, send error */
@@ -303,22 +321,15 @@ module.exports.createCommands = (world) => {
         
         /* Otherwise, if the argument is 'prototypes'... */
         else if ( `prototypes`.startsWith(args[0]) ) {
-          /** Keep track of whether a given area is first or not */
-          let firstArea = true;
+          /** Create array of areas with mobile prototypes */
+          const areas = world.areas().filter(x => x.mobilePrototypes().length > 0);
           
           /** Loop through each area in the world... */
-          world.areas().forEach((area) => {
-            /** If there are no mobiles in the area, skip it*/
-            if ( area.mobilePrototypes().length == 0 )
-              return;
-            
+          areas.forEach((area, index) => {
             /** If this is not the first area, send new line */
-            if ( !firstArea )
+            if ( index > 0 )
               user.send(`\r\n`);
-            
-            /** Toggle first area boolean to false */
-            firstArea = false;
-            
+
             /** Send area id and name */
             user.send(`Area: [${area.id()}] ${area.name()}\r\n`);
             user.send(`******` + `*`.repeat(area.id().toString().length + 3 + area.name().length) + `\r\n`);
@@ -332,36 +343,29 @@ module.exports.createCommands = (world) => {
               user.send(`  [${mobile.id().toString().padEnd(idLength)}] ${mobile.name()}\r\n`);
             });
           });
+          
+          /** If there were no areas with mobile prototypes, send error */
+          if ( areas.length == 0 )
+            user.send(`There are no mobile prototypes in this world.\r\n`);
         } 
         
         /* Otherwise, if the argument is 'instances'... */
         else if ( `instances`.startsWith(args[0]) ) {
-          /** Keep track of whether a given area is first or not */
-          let firstArea = true;
+          /** Create array of areas with mobile instances */
+          const areas = world.areas().filter(x => x.rooms().some(x => x.mobiles().length > 0))
           
           /** Loop through each area in the world... */
-          world.areas().forEach((area) => {
-            /** If there are no mobiles in the area, skip it */
-            if ( area.rooms().every(x => x.mobiles().length == 0) )
-              return;
-            
+          areas.forEach((area, index) => {
             /** If this is not the first area, send new line */
-            if ( !firstArea )
+            if ( index > 0 )
               user.send(`\r\n`);
-            
-            /** Toggle first area boolean to false */
-            firstArea = false;
             
             /** Send area id and name */
             user.send(`Area: [${area.id()}] ${area.name()}\r\n`);
             user.send(`******` + `*`.repeat(area.id().toString().length + 3 + area.name().length) + `\r\n`);
             
             /** Loop through each room in the area... */
-            area.rooms().forEach((room) => {
-              /** If there are no mobiles in the room, skip it */
-              if ( room.mobiles().length == 0 )
-                return;
-              
+            area.rooms().filter(x => x.mobiles().length > 0).forEach((room) => {
               /** Send room id and name */  
               user.send(`\r\n  Room: [${room.id()}] ${room.name()}\r\n`);
               user.send(`  ======` + `=`.repeat(room.id().toString().length + 3 + room.name().length) + `\r\n`);
@@ -376,12 +380,49 @@ module.exports.createCommands = (world) => {
               });
             });
           });
+          
+          /** If there were no areas with mobile instances, send error */
+          if ( areas.length == 0 )
+            user.send(`There are no mobile instances in this world.\r\n`);
         } 
         
         /** Otherwise, invalid argument, send error */
         else {
           user.send(`You don't know how to istat that.\r\n`);
         }
+      }
+    }),
+    new world.Command({
+      name: `rlist`,
+      execute: async (world, user, buffer, args) => {
+        /** Determine length of longest area id number */
+        const areaIdLength = Math.max(...world.areas().map(x => x.id())).toString().length;
+        
+        /** Create array of all areas in the world with rooms */
+        const areas = world.areas().filter(x => x.rooms().length > 0);
+        
+        /** Loop through each area... */
+        areas.forEach((area, index) => {
+          /** If this is not the first area, send new line */
+          if ( index > 0 )
+            user.send(`\r\n`);
+
+          /** Send area id and name */
+          user.send(`Area: [${area.id().toString().padEnd(areaIdLength)}] ${area.name()}\r\n`);
+          user.send(`******` + `*`.repeat(areaIdLength + 3 + area.name().length) + `\r\n`);
+          
+          /** Determine length of longest room id number */
+          const roomIdLength = Math.max(...area.rooms().map(x => x.id())).toString().length;
+
+          /** Loop through each room in the area... */
+          area.rooms().forEach((room) => {
+            user.send(`  [${room.id().toString().padEnd(roomIdLength)}] ${room.name()}\r\n`);
+          });
+        });
+        
+        /** If there were no areas with rooms, send error */
+        if ( areas.length == 0 )
+          user.send(`There are no rooms in this world.\r\n`);
       }
     }),
     new world.Command({

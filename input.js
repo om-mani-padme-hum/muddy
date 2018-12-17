@@ -96,7 +96,7 @@ async function processStateOldPassword(world, user, buffer) {
     await user.update(world.database());
     
     /** Password matches, display message of the day */
-    user.send(world.motd());
+    user.send(world.colorize(world.motd()));
 
     /** Get the last room */
     let room = world.rooms().find(x => x.id() == user.room().id());

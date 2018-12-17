@@ -44,19 +44,12 @@ module.exports.webBuilder = (world, port = 7001) => {
     /** If we're processing a new area... */
     if ( req.query.a == `add` ) {
       try {
-        /** Create new area */
-        const area = new world.Area();
-
-        area.name(req.body.name);
-        area.author(req.body.author);
-        area.description(req.body.description);
-        area.created(new Date());
-
-        /** Insert area in database */
-        await area.insert(world.database());
-        
-        /** Add area to world */
-        world.areas().push(area);
+        /** Create area */
+        await world.createArea({
+          name: req.body.name,
+          author: req.body.author,
+          description: req.body.description,
+        });
 
         /** Redirect to success message */
         res.redirect(`/?` + querystring.stringify({ success: 1, message: `New area '${req.body.name}' has been created with ID #${area.id()}!` }));
@@ -183,25 +176,10 @@ module.exports.webBuilder = (world, port = 7001) => {
     /** If we're processing a new room... */
     if ( req.query.a == `addRoom` ) {
       try {
-        /** Create new room */
-        const room = new world.Room();
-        
-        room.area(area);
-        room.created(new Date());
-        room.description(req.body.description);
-        room.name(req.body.name);
-
-        /** Insert room in database */
-        await room.insert(world.database());
-        
-        /** Add m room to area */
-        area.rooms().push(room);
-        
-        /** Update area */
-        await area.update(world.database());
-        
-        /** Add room to world */
-        world.rooms().push(room);
+        await world.createRoom(area, {
+          description: req.body.description,
+          name: req.body.name,
+        });
 
         /** Redirect to success message */
         res.redirect(`/areas/${req.params.id}/?` + querystring.stringify({ success: 1, message: `New room '${req.body.name}' has been created with ID #${room.id()}!` }));
@@ -278,24 +256,11 @@ module.exports.webBuilder = (world, port = 7001) => {
     else if ( req.query.a == `addMobile` ) {
       try {
         /** Create new mobile */
-        const mobilePrototype = new world.MobilePrototype();
-        
-        mobilePrototype.created(new Date());
-        mobilePrototype.description(req.body.description);
-        mobilePrototype.name(req.body.name);
-        mobilePrototype.roomDescription(req.body.roomDescription);
-
-        /** Insert mobile in database */
-        await mobilePrototype.insert(world.database());
-        
-        /** Add m mobile to area */
-        area.mobilePrototypes().push(mobilePrototype);
-        
-        /** Update area */
-        await area.update(world.database());
-        
-        /** Add m mobile to world */
-        world.mobilePrototypes().push(mobilePrototype);
+        await world.createMobilePrototype(area, {
+          description: req.body.description,
+          name: req.body.name,
+          roomDescription: req.body.roomDescription
+        });
 
         /** Redirect to success message */
         res.redirect(`/areas/${req.params.id}/?` + querystring.stringify({ success: 1, message: `New mobile '${req.body.name}' has been created with ID #${mobilePrototype.id()}!` }));
@@ -606,6 +571,6 @@ module.exports.webBuilder = (world, port = 7001) => {
   });
 
   app.listen(port, () => {
-    console.log(`Web building app up and runing on port ${port}.`);
+    world.log().info(`Web building app up and runing on port ${port}.`);
   });
 };

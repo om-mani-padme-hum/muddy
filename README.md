@@ -17,6 +17,7 @@ A Node.js Multi-User Dungeon (MUD) Framework
 * Paths and lineages, each with their unique benefits, deficiencies, and skillsets, again completely customizable
 
 ## Currently Implemented Commands:
+* alist
 * astat
 * colors
 * commands
@@ -28,15 +29,18 @@ A Node.js Multi-User Dungeon (MUD) Framework
 * get
 * goto
 * look
+* ilist
 * inventory
 * istat
 * kill
+* mlist
 * mstat
 * north
 * northeast (ne)
 * northwest (nw)
 * quit
 * remove
+* rlist
 * rstat
 * say
 * save

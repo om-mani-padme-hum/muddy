@@ -420,6 +420,146 @@ World.prototype.colorize = function (text) {
   return `${text}\u001b[0m`;
 };
 
+World.prototype.createArea = async function (params) {
+  /** Create new area */
+  const area = new this.Area(params);
+
+  /** Insert area into the database */
+  await area.insert(this.database());
+
+  /** Add area to world */
+  this.areas().push(area);
+  
+  /** Return area */
+  return area;
+};
+
+World.prototype.createExit = async function (params) {
+  /** Create new exit */
+  const exit = new this.Exit(params);
+
+  /** Insert exit into the database */
+  await exit.insert(this.database());
+  
+  /** Return room */
+  return exit;
+};
+
+World.prototype.createItemInstanceInContainer = async function (container, prototype) {
+  /** Create new item instance */
+  const itemInstance = await this.itemInstanceFromPrototype(prototype);
+
+  /** Add item instance to container */
+  this.itemToContainer(container, itemInstance);
+  
+  /** Return item instance */
+  return itemInstance;
+};
+
+World.prototype.createItemInstanceInEquipment = async function (user, prototype) {
+  /** Create new item instance */
+  const itemInstance = await this.itemInstanceFromPrototype(prototype);
+
+  /** Add item instance to user's inventory */
+  this.itemToEquipment(user, itemInstance);
+  
+  /** Return item instance */
+  return itemInstance;
+};
+
+World.prototype.createItemInstanceInInventory = async function (user, prototype) {
+  /** Create new item instance */
+  const itemInstance = await this.itemInstanceFromPrototype(prototype);
+
+  /** Add item instance to user's inventory */
+  this.itemToInventory(user, itemInstance);
+  
+  /** Return item instance */
+  return itemInstance;
+};
+
+World.prototype.createItemInstanceInRoom = async function (room, prototype) {
+  /** Create new item instance */
+  const itemInstance = await this.itemInstanceFromPrototype(prototype);
+
+  /** Add item instance to room */
+  this.itemToRoom(room, itemInstance);
+  
+  /** Return item instance */
+  return itemInstance;
+};
+
+World.prototype.createItemPrototype = async function (area, params) {
+  /** Create new item prototype */
+  const itemPrototype = new this.ItemPrototype(params);
+  
+  /** Insert item prototype into the database */
+  await itemPrototype.insert(this.database());
+
+  /** Add item prototype to world */
+  this.itemPrototypes().push(itemPrototype);
+
+  /** Add item prototype to area */
+  area.itemPrototypes().push(itemPrototype);
+
+  /** Save area */
+  await area.update(this.database());
+  
+  /** Return item prototype */
+  return itemPrototype;
+};
+
+World.prototype.createMobileInstance = async function (room, prototype) {
+  /** Create new mobile instance */
+  const mobileInstance = await this.mobileInstanceFromPrototype(prototype);
+
+  /** Add item instance to room */
+  this.characterToRoom(room, mobileInstance);
+  
+  /** Return mobile instance */
+  return mobileInstance;
+};
+
+World.prototype.createMobilePrototype = async function (area, params) {
+  /** Create new mobile prototype */
+  const mobilePrototype = new world.MobilePrototype(params);
+
+  /** Insert mobile prototype into the database */
+  await mobilePrototype.insert(this.database());
+
+  /** Add mobile prototype to world */
+  this.mobilePrototypes().push(mobilePrototype);
+
+  /** Add mobile prototype to area */
+  area.mobilePrototypes().push(mobilePrototype);
+
+  /** Save area */
+  await area.update(this.database());
+  
+  /** Return mobile prototype */
+  return mobilePrototype;
+};
+
+World.prototype.createRoom = async function (area, params) {
+  /** Create new room */
+  const room = new this.Room(params);
+
+  /** Insert room into the database */
+  await room.insert(this.database());
+
+  /** Add room to world */
+  this.rooms().push(room);
+  
+  /** Add room to area */
+  area.rooms().push(room);
+  
+  /** Save area */
+  await area.update(this.database());
+  
+  /** Return room */
+  return room;
+};
+
 /**
  * @signature world.listen()
  * @description Start the server listening on the configured port!
@@ -642,7 +782,7 @@ World.prototype.listen = async function () {
     });
 
     /** Display welcome message */
-    user.socket().write(this.welcome());
+    user.socket().write(this.colorize(this.welcome()));
   });
 
   /** Re-throw errors for now */

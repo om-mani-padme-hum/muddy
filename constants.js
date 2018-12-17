@@ -90,15 +90,17 @@ module.exports = {
   
   /** Define paths */
   PATH_MAGE: 0,      /** Black Magic */
-  PATH_WARRIOR: 1,   /** Melee */
+  PATH_WARRIOR: 1,   /** Heavy/Tank Melee */
   PATH_SHAMAN: 2,    /** Red Magic */
-  PATH_HEALER: 3,    /** White Magic */
-  
+  PATH_CELESTIAL: 3, /** White Magic */
+  PATH_RANGER: 4,    /** Light/Ranged Melee */
+
   pathNames: [
     `Mage`,
     `Warrior`,
     `Shaman`,
-    `Healer`
+    `Celestial`,
+    `Ranger`
   ],
 
   /** Define direction flags */
@@ -168,12 +170,15 @@ module.exports = {
                  `--------------------------------------------------------------------------------\r\n`,
                  `Message of the day:\r\n`,
                  `\r\n`,
-                 `New features:\r\n`,
-                 `  * Basic object interaction, except 'put' which is coming soon\r\n`,
-                 `  * All directions implemented\r\n`,
-                 `  * Admin commands for goto, rstat, istat, mstat, ustat, astat\r\n`,
+                 `Current features:\r\n`,
+                 `  * #CC#Bo#Pl#Ro#Yr#Gs#W!#n\r\n`,
+                 `  * Movement in all directions\r\n`,
+                 `  * Full get/drop/put/wear/remove/wield object interaction\r\n`,
+                 `  * Looking at rooms, items, mobiles, users, in containers\r\n`,
+                 `  * Admin commands for goto, alist, astat, rlist, rstat, ilist, istat, mlist, \r\n`,
+                 `    mstat, and ustat\r\n`,
                  `  * Create command can so far create areas/rooms/prototypes/instances\r\n`,
-                 `  * Ability to look at rooms, or at item/user/mobile/detail descriptions\r\n`,
+                 `  * Ability to look at rooms, or at item/user/mobile descriptions\r\n`,
                  `  * Saving of users, new and existing, taking over body\r\n`,
                  `\r\n`,
                  `--------------------------------------------------------------------------------\r\n`,

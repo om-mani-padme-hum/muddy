@@ -15,7 +15,7 @@ module.exports.configCharacter = (world) => {
       { name: `maxEnergy`, type: `int`, default: 100 },
       { name: `maxHealth`, type: `int`, default: 100 },
       { name: `maxMana`, type: `int`, default: 100 },
-      { name: `name`, type: `varchar`, length: 32 },
+      { name: `name`, type: `varchar`, length: 32, default: `a boring person` },
       { name: `path`, type: `int` }
     ]
   };

@@ -40,26 +40,13 @@ module.exports.createCommands = (world) => {
             /** If there is a fourth argument called 'room', set room item boolean to true */
             const roomItem = typeof args[3] == `string` && `room`.startsWith(args[3]);
 
-            /** Create item instance from item prototype */
-            const itemInstance = await world.itemInstanceFromPrototype(prototype);
+            /** If this is a room item, create item instance in room from prototype */
+            if ( roomItem )
+              await world.createItemInstanceInRoom(user.room(), prototype);        
 
-            /** If this is a room item... */
-            if ( roomItem ) {
-              /** Move item to user's room */
-              world.itemToRoom(itemInstance, user.room());
-
-              /** Save room */
-              await user.room().update(world.database());            
-            } 
-
-            /** Otherwise... */
-            else {
-              /** Move item to user's inventory */
-              world.itemToInventory(itemInstance, user);
-
-              /** Save user */
-              await user.update(world.database());
-            }
+            /** Otherwise, create item instance in user's inventory from prototype */
+            else
+              await world.createItemInstanceInInventory(user, prototype);
 
             /** Send action to user */
             user.send(`You draw in energy from the space around and materialize it into ${prototype.name()}.\r\n`);
@@ -86,10 +73,7 @@ module.exports.createCommands = (world) => {
             }
 
             /** Create mobile instance from mobile prototype */
-            const mobileInstance = await world.mobileInstanceFromPrototype(prototype);
-
-            /** Move mobile to user's room */
-            await world.characterToRoom(mobileInstance, user.room());
+            await world.createMobileInstance(user.room(), prototype);
 
             /** Send action to user */
             user.send(`You draw in energy from the space around and materialize it into ${prototype.name()}.\r\n`);
@@ -108,50 +92,20 @@ module.exports.createCommands = (world) => {
           
           /** Create prototype item */
           else if ( `item`.startsWith(args[1]) ) {
-            /** Create new ItemPrototype object with boring properties */
-            const itemPrototype = new world.ItemPrototype({
-              name: `a translucent sphere of energy`,
-              names: [`sphere`, `energy`],
-              description: `It looks like a wieghtless and translucent spherical form of bound energy.`,
-              roomDescription: `a translucent sphere of energy`
+            /** Create item prototype */
+            await world.createItemPrototype(user.room().area(), {
+              author: user.name()
             });
-
-            /** Insert it into the database */
-            await itemPrototype.insert(world.database());
-
-            /** Add item prototype to area */
-            user.room().area().itemPrototypes().push(itemPrototype);
-            
-            /** Add item prototype to world */
-            world.itemPrototypes().push(itemPrototype);
-            
-            /** Save area */
-            await user.room().area().update(world.database());
             
             user.send(`You create an item from nothing, then spatially compress and store it as ID ${itemPrototype.id()}.\r\n`);
           } 
           
           /** Create prototype mobile */
           else if ( `mobile`.startsWith(args[1]) ) {
-            /** Create new MobilePrototype object with boring properties */
-            const mobilePrototype = new world.MobilePrototype({
-              name: `a boring person`,
-              names: [`person`],
-              description: `They look like the most boring person you could possibly imagine.`,
-              roomDescription: `a boring person stands here`
+            /** Create mobile prototype */
+            await world.createMobilePrototype(user.room().area(), {
+              author: user.name()
             });
-
-            /** Insert it into the database */
-            await mobilePrototype.insert(world.database());
-            
-            /** Add mobile prototype to area */
-            user.room().area().mobilePrototypes().push(mobilePrototype);
-            
-            /** Add mobile prototype to world */
-            world.mobilePrototypes().push(mobilePrototype);
-            
-            /** Save area */
-            await user.room().area().update(world.database());
 
             /** Send action to user */
             user.send(`You create a mobile from nothing, then spatially compress and store it as ID ${mobilePrototype.id()}.\r\n`);
@@ -173,37 +127,14 @@ module.exports.createCommands = (world) => {
           /** Otherwise, if the second argument is 'isolated'... */
           else if (  `isolated`.startsWith(args[1]) ) {
             /** Create area */
-            const area = new world.Area({
-              name: `A boring area`,
-              description: `This area is totally boring, who would visit here?`,
-              author: user.name(),
-              created: new Date()
+            const area = await world.createArea({
+              author: user.name()
             });
-
-            /** Insert area into the database */
-            await area.insert(world.database());
-
-            /** Add area to world */
-            world.areas().push(area);
             
             /** Create room */
-            const room = new world.Room({
-              name: `A boring room`,
-              description: `This room looks quite boring, just plain everything.`,
-              area: area
+            const room = await world.createRoom(area, {
+              author: user.name()
             });
-
-            /** Insert room into the database */
-            await room.insert(world.database());
-
-            /** Add room to area */
-            area.rooms().push(room);
-            
-            /** Add room to world */
-            world.rooms().push(room);
-            
-            /** Save area */
-            await area.update(world.database());
 
             /** Send action to user */
             user.send(`You create an isolated area and transport yourself to its lone room.\r\n`);
@@ -221,60 +152,40 @@ module.exports.createCommands = (world) => {
             }
 
             /** Create area */
-            const area = new world.Area({
-              name: `A boring area`,
-              description: `This area is totally boring, who would visit here?`,
-              author: user.name(),
-              created: new Date()
+            const area = await world.createArea({
+              author: user.name()
             });
-
-            /** Insert area into the database */
-            await area.insert(world.database());
-
-            /** Add area to world */
-            world.areas().push(area);
+            
+            /** Create room */
+            const room = await world.createRoom(area, {
+              author: user.name()
+            });
             
             /** Create outgoing exit */
-            const exit1 = new world.Exit({
+            const exit1 = await world.createExit({
               direction: world.constants().directionShortNames.indexOf(args[1]),
               room: user.room(),
+              target: room
             });
 
             /** Create incoming exit */
-            const exit2 = new world.Exit({
+            const exit2 = await world.creatExit({
               direction: world.constants().directionOpposites[world.constants().directionShortNames.indexOf(args[1])],
+              room: room,
               target: user.room()
             });
-
-            /** Create room */
-            const room = new world.Room({
-              name: `An empty room`,
-              description: `This room looks quite boring, just plain everything.`,
-              area: area,
-              exits: [exit2]
-            });
-
-            /** Insert room into the database */
-            await room.insert(world.database());
-
-            /** Set new room as taret of outgoing exit */
-            exit1.target(room);
             
-            /** Set new room as source of incoming exit */
-            exit2.room(room);
-
-            /** Insert both exits into the database */
-            await exit1.insert(world.database());
-            await exit2.insert(world.database());
-            
-            /** Save room */
-            await room.update(world.database());
-            
-            /** Add outgoing exit to room */
+            /** Add outgoing exit to user's room */
             user.room().exits().push(exit1);
+            
+            /** Add incoming exit to new room */
+            room.exits().push(exit2);
 
             /** Save user's room */
             await user.room().update(world.database());
+
+            /** Save new room */
+            await room.update(world.database());
 
             /** Add room to world */
             world.rooms().push(room);
@@ -308,23 +219,9 @@ module.exports.createCommands = (world) => {
           /** Otherwise, if the second argument is 'isolated'... */
           else if (  `isolated`.startsWith(args[1]) ) {
             /** Create room */
-            const room = new world.Room({
-              name: `An empty room`,
-              description: `This room looks quite boring, just plain everything.`,
-              area: user.room().area()
+            const room = await world.createRoom(user.room().area(), {
+              author: user.name()
             });
-            
-            /** Insert room into the database */
-            await room.insert(world.database());
-
-            /** Add room to world */
-            world.rooms().push(room);
-            
-            /** Add room to area */
-            user.room().area().rooms().push(room);
-            
-            /** Save area */
-            await user.room().area().update(world.database());
 
             /** Send action to user */
             user.send(`You create an isolated room in the area and transport yourself to it.\r\n`);
@@ -341,47 +238,36 @@ module.exports.createCommands = (world) => {
               return;
             }
 
+            /** Create room */
+            const room = await world.createRoom(user.room().area(), {
+              author: user.name()
+            });
+            
             /** Create outgoing exit */
-            const exit1 = new world.Exit({
+            const exit1 = await world.createExit({
               direction: world.constants().directionShortNames.indexOf(args[1]),
               room: user.room(),
+              target: room
             });
 
             /** Create incoming exit */
-            const exit2 = new world.Exit({
+            const exit2 = await world.creatExit({
               direction: world.constants().directionOpposites[world.constants().directionShortNames.indexOf(args[1])],
-              target: user.room(),
+              room: room,
+              target: user.room()
             });
-
-            /** Create room */
-            const room = new world.Room({
-              name: `An empty room`,
-              description: `This room looks quite boring, just plain everything.`,
-              area: user.room().area(),
-              exits: [exit2]
-            });
-
-            /** Insert room into the database */
-            await room.insert(world.database());
-
-            /** Set new room as taret of outgoing exit */
-            exit1.target(room);
             
-            /** Set new room as source of incoming exit */
-            exit2.room(room);
-
-            /** Insert both exits into the database */
-            await exit1.insert(world.database());
-            await exit2.insert(world.database());
-            
-            /** Save room */
-            await room.update(world.database());
-            
-            /** Add outgoing exit to room */
+            /** Add outgoing exit to user's room */
             user.room().exits().push(exit1);
+            
+            /** Add incoming exit to new room */
+            room.exits().push(exit2);
 
             /** Save user's room */
             await user.room().update(world.database());
+
+            /** Save new room */
+            await room.update(world.database());
 
             /** Add room to world */
             world.rooms().push(room);
