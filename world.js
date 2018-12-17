@@ -270,7 +270,7 @@ World.prototype.itemToContainer = async function (item, container) {
 };
 
 World.prototype.itemInstanceFromPrototype = async function (prototype) {
-  const item = new this.ItemInstance({
+  const itemInstance = new this.ItemInstance({
     prototype: prototype,
     name: prototype.name(),
     names: prototype.names(),
@@ -282,13 +282,27 @@ World.prototype.itemInstanceFromPrototype = async function (prototype) {
     flags: prototype.flags()
   });
   
-  for ( let i = 0, i_max = prototype.contents().length; i < i_max; i++ ) {
-    item.contents().push(await this.itemInstanceFromPrototype(prototype.contents()[i]));
-  }
+  for ( let i = 0, i_max = prototype.contents().length; i < i_max; i++ )
+    itemInstance.contents().push(await this.itemInstanceFromPrototype(prototype.contents()[i]));
   
-  await item.insert(this.database());
+  await itemInstance.insert(this.database());
   
-  return item;
+  return itemInstance;
+};
+
+World.prototype.mobileInstanceFromPrototype = async function (prototype) {
+  /** @todo inventory and equipment deployments */
+  const mobileInstance = new this.MobileInstance({
+    prototype: prototype,
+    name: prototype.name(),
+    names: prototype.names(),
+    description: prototype.description(),
+    roomDescription: prototype.roomDescription()
+  });
+
+  await mobileInstance.insert(this.database());
+  
+  return mobileInstance;
 };
 
 World.prototype.send = function (text, exclude = []) {
