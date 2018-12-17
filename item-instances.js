@@ -13,7 +13,7 @@ module.exports.configItemInstance = (world) => {
       { name: `id`, type: `int` },
       { name: `name`, type: `varchar`, length: 32 },
       { name: `names`, type: `Array`, arrayOf: { type: `varchar`, length: 32 } },
-      { name: `prototype`, instanceOf: `ItemPrototype`, loadTransform: x => new world.Item({ id: x }) },
+      { name: `prototype`, instanceOf: `ItemPrototype`, loadTransform: x => new world.ItemPrototype({ id: x }) },
       { name: `room`, instanceOf: `Room`, store: false },
       { name: `roomDescription`, type: `varchar`, length: 80 },
       { name: `slot`, type: `int` },

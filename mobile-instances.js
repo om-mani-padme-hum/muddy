@@ -10,7 +10,7 @@ module.exports.configMobileInstance = (world, ext, extConfig) => {
       { name: `equipment`, type: `Array`, arrayOf: { instanceOf: `ItemInstance` } },
       { name: `inventory`, type: `Array`, arrayOf: { instanceOf: `ItemInstance` } },
       { name: `names`, type: `Array`, arrayOf: { type: `varchar`, length: 32 } },
-      { name: `prototype`, instanceOf: `MobilePrototype`, loadTransform: x => new world.Mobile({ id: x }) },
+      { name: `prototype`, instanceOf: `MobilePrototype`, loadTransform: x => new world.MobilePrototype({ id: x }) },
       { name: `room`, instanceOf: `Room`, store: false },
       { name: `roomDescription`, type: `varchar`, length: 80 }
     ]

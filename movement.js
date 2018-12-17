@@ -4,17 +4,20 @@ module.exports.createCommands = (world) => {
     return new world.Command({
       name: direction,
       execute: async (world, user, buffer) => {
-        /** Look for an exit in that direction */
+        /** Find exit in the direction specified, if one exists */
         const exit = user.room().exits().find(x => x.direction() == world.constants().directions[direction]);
 
+        /** If the exit exists... */
         if ( exit ) {
-          /** If room exists, move user to room and look */
+          /** Move character to exit target room */
           await world.characterToRoom(user, exit.target());
 
           /** Find the look command and execute it for this user */
           world.commands().find(x => x.name() == `look`).execute()(world, user, ``, []);
-        } else {
-          /** If it doesn`t exist, send error message */
+        } 
+        
+        /** Otherwise, send error */
+        else {
           user.send(`You cannot go that way.\r\n`);
         }
       },

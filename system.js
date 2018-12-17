@@ -3,6 +3,7 @@ module.exports.createCommands = (world) => {
     new world.Command({
       name: `colors`,
       execute: async (world, user, buffer) => {
+        /** Send colors */
         user.send(world.colorize(`##W - #WWhite\r\n`));
         user.send(world.colorize(`##w - #wLight gray\r\n`));
         user.send(world.colorize(`##K - #KDark gray\r\n`));
@@ -41,6 +42,7 @@ module.exports.createCommands = (world) => {
     new world.Command({
       name: `quit`,
       execute: async (world, user, buffer) => {
+        /** Log user quit */
         world.log().info(`User ${user.name()} has quit.`);
 
         /** Save user */
@@ -53,31 +55,35 @@ module.exports.createCommands = (world) => {
         if ( world.users().indexOf(user) !== -1 )
           world.users().splice(world.users().indexOf(user), 1);
 
-        /** Goodbye */
+        /** Close socket with final output of goodbye  */
         user.socket().end(`Goodbye!\r\n`);
 
-        /** Null out socket */
+        /** Null out user's socket */
         user.socket(null);
       }
     }),
     new world.Command({
       name: `save`,
       execute: async (world, user, buffer) => {
+        /** If user id is equal to zero, insert user into the database */
         if ( user.id() == 0 )
           await user.insert(world.database());
+        
+        /** Otherwise, save user */
         else
           await user.update(world.database());
-
-        world.log().silly(`${user.name()} saved.`);
         
+        /** Send confirmation to user */
         user.send(`Saved.\r\n`);
       }
     }),
     new world.Command({
       name: `title`,
       execute: async (world, user, buffer) => {
+        /** Set user's title */
         user.title(buffer);
         
+        /** Execute save command on user */
         await world.commands().find(x => x.name() == `save`).execute()(world, user, ``);
       }
     })
