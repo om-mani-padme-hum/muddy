@@ -1,6 +1,6 @@
 {
   "name": "muddy",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "description": "A Node.js Multi-User Dungeon (MUD) Framework",
   "main": "index.js",
   "scripts": {
