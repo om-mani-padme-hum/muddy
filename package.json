@@ -28,8 +28,7 @@
   },
   "homepage": "https://github.com/om-mani-padme-hum/muddy#readme",
   "devDependencies": {
-    "docket-parser": "^0.7.0",
-    "eslint": "^4.19.1"
+    "docket-parser": "^0.7.1"
   },
   "jshintConfig": {
     "esversion": 6,
@@ -38,10 +37,10 @@
   "dependencies": {
     "body-parser": "^1.18.3",
     "express": "^4.16.4",
-    "ezobjects-mysql": "^6.1.8",
-    "moment": "^2.23.0",
+    "ezobjects-mysql": "^6.1.16",
+    "moment": "^2.24.0",
     "parse-values": "^1.1.0",
-    "strapped": "^0.5.12",
+    "strapped": "^0.6.4",
     "winston": "^2.4.4"
   }
 }

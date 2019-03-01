@@ -15,6 +15,7 @@ module.exports.configItemPrototype = (world) => {
       { name: `names`, type: `Array`, arrayOf: { type: `varchar`, length: 32 }, default: [`sphere`, `energy`] },
       { name: `roomDescription`, type: `varchar`, length: 80, default: `a translucent sphere of energy` },
       { name: `slot`, type: `int`, default: world.constants().SLOT_NONE },
+      { name: `stats`, type: `Object` },
       { name: `type`, type: `int`, default: world.constants().ITEM_OTHER }
     ]
   };

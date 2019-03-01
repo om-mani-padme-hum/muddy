@@ -17,6 +17,7 @@ module.exports.configItemInstance = (world) => {
       { name: `room`, instanceOf: `Room`, store: false },
       { name: `roomDescription`, type: `varchar`, length: 80, default: `a translucent sphere of energy` },
       { name: `slot`, type: `int`, default: world.constants().SLOT_NONE },
+      { name: `stats`, type: `Object` },
       { name: `type`, type: `int`, default: world.constants().ITEM_OTHER }
     ]
   };
