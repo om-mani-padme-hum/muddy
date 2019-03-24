@@ -1,11 +1,11 @@
-# Muddy v0.8.4 [![HitCount](http://hits.dwyl.com/om-mani-padme-hum/muddy.svg)](http://hits.dwyl.com/om-mani-padme-hum/muddy)
+# Muddy v0.9.0 [![HitCount](http://hits.dwyl.com/om-mani-padme-hum/muddy.svg)](http://hits.dwyl.com/om-mani-padme-hum/muddy)
 A Node.js Multi-User Dungeon (MUD) Framework
 
 ## Current Status:
 * A good amount of basic functionality in place, but still under development.  
-* Ability to build onto world while in game partially in place.  
-* Web-based builder interface partially in place.
-* Basic fighting has now been added!
+* Ability to build onto world while in game partially in place, now can edit rooms and areas.  
+* Web-based builder interface partially in place, not very useful just yet but some editing is possible.
+* Basic fighting has now been added, including incapacitated state and natural healing over time!
 * Equipment stats coming very soon.
 
 ## Planned Track:
@@ -25,6 +25,7 @@ A Node.js Multi-User Dungeon (MUD) Framework
 * down
 * drop
 * east
+* edit (partly functional)
 * equipment
 * get
 * goto

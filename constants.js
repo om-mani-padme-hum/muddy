@@ -1,5 +1,24 @@
 /** Export our constants as a plain object */
 module.exports = {
+  /** Deployment types */
+  DEPLOY_ITEMS_TO_ROOM: 0,
+  DEPLOY_MOBILES_TO_ROOM: 1,
+  DEPLOY_ITEMS_TO_AREA: 1,
+  DEPLOY_MOBILES_TO_AREA: 2,
+  DEPLOY_ITEMS_TO_EQUIPMENT: 2,
+  DEPLOY_ITEMS_TO_INVENTORY: 3,
+  DEPLOY_ITEMS_TO_ITEM: 4,
+  
+  deploymentNames: [
+    `Items To Room`,
+    `Mobiles To Room`,
+    `Items To Area`,
+    `Mobiles To Area`,
+    `Items To Equipment`,
+    `Items To Inventory`,
+    `Items To Item`
+  ],
+  
   /** Socket states */
   STATE_NAME: 0,
   STATE_OLD_PASSWORD: 1,
@@ -8,6 +27,15 @@ module.exports = {
   STATE_MOTD: 4,
   STATE_CONNECTED: 5,
   STATE_DISCONNECTED: 6,
+  
+  /** Positions */
+  POSITION_DEAD: -5,
+  POSITION_INCAPACITATED: -4,
+  POSITION_LYING_DOWN: -3,
+  POSITION_KNEELING: -2,
+  POSITION_SITTING: -1,
+  POSITION_STANDING: 0,
+  POSITION_FIGHTING: 1,
     
   /** Define VT100 terminal modifiers */
   VT100_CLEAR: `\x1b[0m`,
@@ -80,27 +108,33 @@ module.exports = {
   /** Define element flags */
   ELEMENT_AIR: 0,
   ELEMENT_EARTH: 1,
-  ELEMENT_ELECTROMAGNETISM: 2,
-  ELEMENT_FIRE: 3,
-  ELEMENT_LIFE: 4,
-  ELEMENT_METAL: 5,
-  ELEMENT_SPACE: 6,
-  ELEMENT_TIME: 7,
-  ELEMENT_WATER: 8,
+  ELEMENT_FIRE: 2,
+  ELEMENT_LIFE: 3,
+  ELEMENT_WATER: 4,
   
   /** Define paths */
-  PATH_MAGE: 0,      /** Black Magic */
-  PATH_WARRIOR: 1,   /** Heavy/Tank Melee */
-  PATH_SHAMAN: 2,    /** Red Magic */
-  PATH_CELESTIAL: 3, /** White Magic */
-  PATH_RANGER: 4,    /** Light/Ranged Melee */
-
+  PATH_DRUID: 0,       /** Air,   Earth, & Water */
+  PATH_MAGE: 1,        /** Air,   Fire,  & Water */
+  PATH_NECROMANCER: 2, /** Air,   Fire,  & Life */
+  PATH_PRIEST: 3,      /** Air,   Life,  & Water */
+  PATH_RANGER: 4,      /** Air,   Earth, & Life */
+  PATH_SHAMAN: 5,      /** Earth, Fire,  & Life */
+  PATH_SORCERER: 6,    /** Earth, Fire,  & Water */
+  PATH_THIEF: 7,       /** Fire,  Life,  & Water */
+  PATH_WARRIOR: 8,     /** Air,   Earth, & Fire */
+  PATH_WIZARD: 9,      /** Earth, Life,  & Water */
+  
   pathNames: [
+    `Druid`,
     `Mage`,
-    `Warrior`,
+    `Necromancer`,
+    `Priest`,
+    `Ranger`,
     `Shaman`,
-    `Celestial`,
-    `Ranger`
+    `Sorcerer`,
+    `Thief`,
+    `Warrior`,
+    `Wizard`
   ],
 
   /** Define direction flags */

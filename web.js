@@ -45,7 +45,7 @@ module.exports.webBuilder = (world, port = 7001) => {
     if ( req.query.a == `add` ) {
       try {
         /** Create area */
-        await world.createArea({
+        const area = await world.createArea({
           name: req.body.name,
           author: req.body.author,
           description: req.body.description,
@@ -176,7 +176,7 @@ module.exports.webBuilder = (world, port = 7001) => {
     /** If we're processing a new room... */
     if ( req.query.a == `addRoom` ) {
       try {
-        await world.createRoom(area, {
+        const room = await world.createRoom(area, {
           description: req.body.description,
           name: req.body.name,
         });
@@ -205,28 +205,47 @@ module.exports.webBuilder = (world, port = 7001) => {
         
         /** Loop through each user in the room... */
         for ( let i = room.users().length - 1; i >= 0; i-- ) {
-          /** Move any users from directory to limbo room */
-          await world.characterToRoom(room.users()[i], limbo);
+          const user = room.users()[i];
+          
+          /** Send disappearing action to user's old room */
+          room.send(`${user.name()} suddenly disappears into thin air!\r\n`, [user]);
+          
+          /** Move user to limbo */
+          await world.characterToRoom(user, limbo);
+
+          /** Send appearing action to user's new room */
+          user.room().send(`${user.name()} suddenly appears out of thin air!\r\n`, [user]);
+
+          /** Send action to user */
+          user.send(`You disappear suddenly and reappear floating in limbo!\r\n`);
         }
         
-        /** Loop through each item in the room... */
+        /** Loop through each item instance in the room... */
         for ( let i = room.items().length - 1; i >= 0; i-- ) {
-          /** Delete item prototype */
+          /** Delete item instance */
           await room.items()[i].delete(world.database());
         }
         
-        /** Loop through each mobile in the room... */
+        /** Loop through each mobile instance in the room... */
         for ( let i = room.mobiles().length - 1; i >= 0; i-- ) {
-          /** Delete mobile prototype */
+          /** Delete mobile instance */
           await room.mobiles()[i].delete(world.database());
         }
         
         /** Loop through each exit in the room... */
         for ( let i = room.exits().length - 1; i >= 0; i-- ) {
-          /** Delete exit from target room */
-          await room.exits()[i].target().exits().find(x => x.target().id() == room.id()).delete(world.database());
+          const targetExit = room.exits()[i].target().exits().find(x => x.target().id() == room.id());
           
-          /** Delete exit from room */
+          /** Remove exit from target room */
+          room.exits()[i].target().exits().splice(room.exits()[i].target().exits().indexOf(targetExit), 1);
+          
+          /** Update target room */
+          await room.exits()[i].target().update(world.database());
+          
+          /** Delete target's exit */
+          await targetExit.delete(world.database());
+          
+          /** Delete exit */
           await room.exits()[i].delete(world.database());
         }
         
@@ -252,11 +271,42 @@ module.exports.webBuilder = (world, port = 7001) => {
       return;
     }
     
+    /** Otherwise, if we're processing a new item... */
+    else if ( req.query.a == `addItem` ) {
+      try {
+        const details = {};
+        const stats = {};
+        
+        /** Create new item */
+        const itemPrototype = await world.createItemPrototype(area, {
+          author: `Xodin`,
+          created: new Date(),
+          description: req.body.description,
+          details: details,
+          flags: req.body.flags,
+          name: req.body.name,
+          names: req.body.names,
+          roomDescription: req.body.roomDescription,
+          slot: req.body.slot,
+          stats: stats,
+          type: req.body.type
+        });
+
+        /** Redirect to success message */
+        res.redirect(`/areas/${req.params.id}/?` + querystring.stringify({ success: 1, message: `New mobile '${req.body.name}' has been created with ID #${mobilePrototype.id()}!` }));
+      } catch ( err ) {
+        /** Redirect to error message */
+        res.redirect(`/areas/${req.params.id}/?` + querystring.stringify({ error: 1, message: err.message }));
+      }
+      
+      return;
+    }
+    
     /** Otherwise, if we're processing a new mobile... */
     else if ( req.query.a == `addMobile` ) {
       try {
         /** Create new mobile */
-        await world.createMobilePrototype(area, {
+        const mobilePrototype = await world.createMobilePrototype(area, {
           description: req.body.description,
           name: req.body.name,
           roomDescription: req.body.roomDescription
@@ -417,7 +467,7 @@ module.exports.webBuilder = (world, port = 7001) => {
     p.lastParent(`row`).append(new strapped.Col().size(4));
     p.modal().id(`addMobileModal`).middle(true);
     p.modalHeader();
-    p.h5(`modalHeader`).addClass(`modal-title`).text(`Add New Mobile`);
+    p.h5(`modalHeader`).addClass(`modal-title`).text(`Add New Mobile Prototype`);
     p.button(`modalHeader`).addClass(`close`).attr(`data-dismiss`, `modal`).text(`&times;`);
     p.modalBody();
     p.form(`modalBody`).method(`POST`).action(`/areas/${req.params.id}?a=addMobile`);
@@ -431,12 +481,35 @@ module.exports.webBuilder = (world, port = 7001) => {
     p.lastParent(`row`).append(new strapped.Col().size(4));
     p.modal().id(`addItemModal`).middle(true);
     p.modalHeader();
-    p.h5(`modalHeader`).addClass(`modal-title`).text(`Add New Item`);
+    p.h5(`modalHeader`).addClass(`modal-title`).text(`Add New Item Prototype`);
     p.button(`modalHeader`).addClass(`close`).attr(`data-dismiss`, `modal`).text(`&times;`);
     p.modalBody();
     p.form(`modalBody`).method(`POST`).action(`/areas/${req.params.id}?a=addItem`);
-    p.input().cols(8).id(`name`).name(`name`).type(`text`).label(`Name:`);
-    p.textarea().cols(12).id(`description`).name(`description`).label(`Description:`).rows(3);
+    p.row(`form`);
+    p.input(`row`).cols(8).id(`name`).name(`name`).type(`text`).label(`Name:`);
+    p.col().size(4);
+    p.row(`form`);
+    p.input(`row`).cols(8).id(`names`).name(`names`).type(`text`).label(`Keywords (separated by spaces):`);
+    p.col().size(4);
+    p.row(`form`);
+    p.input(`row`).cols(12).id(`roomDescription`).name(`roomDescription`).label(`Room Description:`);
+    p.row(`form`);
+    p.textarea(`row`).cols(12).id(`description`).name(`description`).label(`Look Description:`).rows(3);
+    p.row(`form`);
+    p.select(`row`).cols(6).name(`type`).label(`Type:`);
+    p.option().value(``).text(`Choose Type`);
+    
+    world.constants().itemNames.forEach((name, value) => {
+      p.option().value(value).text(name);
+    });
+    
+    p.select(`row`).cols(6).name(`slot`).label(`Slot:`);
+    p.option().value(``).text(`Choose Slot`);
+    
+    world.constants().slotNames.forEach((name, value) => {
+      p.option().value(value).text(name);
+    });
+    
     p.row(`form`);
     p.col().center(true);
     p.button().color(`secondary`).addClass(`mx-2`).attr(`data-dismiss`, `modal`).text(`Close`);

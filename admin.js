@@ -70,38 +70,7 @@ module.exports.createCommands = (world) => {
       execute: async (world, user, buffer, args) => {
         /** If no argument was provided, send error */
         if ( typeof args[0] != `string` ) {
-          user.send(`Ilist what? [prototypes|instances]\r\n`);
-        } 
-        
-        /** Otherwise, if the argument is 'prototypes'... */
-        else if ( `prototypes`.startsWith(args[0]) ) {
-          
-          /** Create array of areas with item prototypes */
-          const areas = world.areas().filter(x => x.itemPrototypes().length > 0);
-          
-          /** Loop through each area in the world... */
-          areas.forEach((area, index) => {
-            /** If this is not the first area, send new line */
-            if ( index > 0 )
-              user.send(`\r\n`);
-            
-            /** Send area id and name*/
-            user.send(`Area: [${area.id()}] ${area.name()}\r\n`);
-            user.send(`******` + `*`.repeat(area.id().toString().length + 3 + area.name().length) + `\r\n`);
-            
-            /** Determine length of longest item prototype id number */
-            const idLength = Math.max(...area.itemPrototypes().map(x => x.id())).toString().length;
-
-            /** Loop through each item prototype in the area... */
-            area.itemPrototypes().forEach((item) => {
-              /** Send item prototype id and name */
-              user.send(`  [${item.id().toString().padEnd(idLength)}] ${item.name()}\r\n`);
-            });
-          });
-          
-          /** If there were no areas with item prototypes, send error */
-          if ( areas.length == 0 )
-            user.send(`There are no item prototypes in this world.\r\n`);
+          user.send(`Ilist what? [instances|prototypes]\r\n`);
         } 
         
         /* Otherwise, if the argument is 'instances'... */
@@ -240,6 +209,37 @@ module.exports.createCommands = (world) => {
             user.send(`There are no item instances in this world.\r\n`);
         } 
         
+        /** Otherwise, if the argument is 'prototypes'... */
+        else if ( `prototypes`.startsWith(args[0]) ) {
+          
+          /** Create array of areas with item prototypes */
+          const areas = world.areas().filter(x => x.itemPrototypes().length > 0);
+          
+          /** Loop through each area in the world... */
+          areas.forEach((area, index) => {
+            /** If this is not the first area, send new line */
+            if ( index > 0 )
+              user.send(`\r\n`);
+            
+            /** Send area id and name*/
+            user.send(`Area: [${area.id()}] ${area.name()}\r\n`);
+            user.send(`******` + `*`.repeat(area.id().toString().length + 3 + area.name().length) + `\r\n`);
+            
+            /** Determine length of longest item prototype id number */
+            const idLength = Math.max(...area.itemPrototypes().map(x => x.id())).toString().length;
+
+            /** Loop through each item prototype in the area... */
+            area.itemPrototypes().forEach((item) => {
+              /** Send item prototype id and name */
+              user.send(`  [${item.id().toString().padEnd(idLength)}] ${item.name()}\r\n`);
+            });
+          });
+          
+          /** If there were no areas with item prototypes, send error */
+          if ( areas.length == 0 )
+            user.send(`There are no item prototypes in this world.\r\n`);
+        } 
+        
         /** Otherwise, invalid argument, send error */
         else {
           user.send(`You don't know how to istat that.\r\n`);
@@ -316,37 +316,7 @@ module.exports.createCommands = (world) => {
       execute: async (world, user, buffer, args) => {
         /** If no argument was provided, send error */
         if ( typeof args[0] != `string` ) {
-          user.send(`Mlist what? [prototypes|instances]\r\n`);
-        } 
-        
-        /* Otherwise, if the argument is 'prototypes'... */
-        else if ( `prototypes`.startsWith(args[0]) ) {
-          /** Create array of areas with mobile prototypes */
-          const areas = world.areas().filter(x => x.mobilePrototypes().length > 0);
-          
-          /** Loop through each area in the world... */
-          areas.forEach((area, index) => {
-            /** If this is not the first area, send new line */
-            if ( index > 0 )
-              user.send(`\r\n`);
-
-            /** Send area id and name */
-            user.send(`Area: [${area.id()}] ${area.name()}\r\n`);
-            user.send(`******` + `*`.repeat(area.id().toString().length + 3 + area.name().length) + `\r\n`);
-            
-            /** Determine length of longest mobile prototype id number */
-            const idLength = Math.max(...area.mobilePrototypes().map(x => x.id())).toString().length;
-
-            /** Loop through each mobile prototype in the area... */
-            area.mobilePrototypes().forEach((mobile) => {
-              /** Send mobile prototype id and name */
-              user.send(`  [${mobile.id().toString().padEnd(idLength)}] ${mobile.name()}\r\n`);
-            });
-          });
-          
-          /** If there were no areas with mobile prototypes, send error */
-          if ( areas.length == 0 )
-            user.send(`There are no mobile prototypes in this world.\r\n`);
+          user.send(`Mlist what? [instances|prototypes]\r\n`);
         } 
         
         /* Otherwise, if the argument is 'instances'... */
@@ -384,6 +354,36 @@ module.exports.createCommands = (world) => {
           /** If there were no areas with mobile instances, send error */
           if ( areas.length == 0 )
             user.send(`There are no mobile instances in this world.\r\n`);
+        } 
+        
+        /* Otherwise, if the argument is 'prototypes'... */
+        else if ( `prototypes`.startsWith(args[0]) ) {
+          /** Create array of areas with mobile prototypes */
+          const areas = world.areas().filter(x => x.mobilePrototypes().length > 0);
+          
+          /** Loop through each area in the world... */
+          areas.forEach((area, index) => {
+            /** If this is not the first area, send new line */
+            if ( index > 0 )
+              user.send(`\r\n`);
+
+            /** Send area id and name */
+            user.send(`Area: [${area.id()}] ${area.name()}\r\n`);
+            user.send(`******` + `*`.repeat(area.id().toString().length + 3 + area.name().length) + `\r\n`);
+            
+            /** Determine length of longest mobile prototype id number */
+            const idLength = Math.max(...area.mobilePrototypes().map(x => x.id())).toString().length;
+
+            /** Loop through each mobile prototype in the area... */
+            area.mobilePrototypes().forEach((mobile) => {
+              /** Send mobile prototype id and name */
+              user.send(`  [${mobile.id().toString().padEnd(idLength)}] ${mobile.name()}\r\n`);
+            });
+          });
+          
+          /** If there were no areas with mobile prototypes, send error */
+          if ( areas.length == 0 )
+            user.send(`There are no mobile prototypes in this world.\r\n`);
         } 
         
         /** Otherwise, invalid argument, send error */

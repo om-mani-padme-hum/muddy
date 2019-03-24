@@ -39,7 +39,6 @@
     "express": "^4.16.4",
     "ezobjects-mysql": "^6.1.16",
     "moment": "^2.24.0",
-    "parse-values": "^1.1.0",
     "strapped": "^0.6.4",
     "winston": "^2.4.4"
   }

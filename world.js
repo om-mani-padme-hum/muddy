@@ -136,11 +136,11 @@ World.prototype.characterFromAnywhere = async function (character) {
     /** If character is a MobileInstance, remove from room's and area's mobiles lists */
     else if ( character instanceof this.MobileInstance && character.room().mobiles().indexOf(character) !== -1 )
       character.room().mobiles().splice(character.room().mobiles().indexOf(character), 1);
-  }
   
-  /** Update character in database */
-  if ( character instanceof this.MobileInstance )
-    await character.room().update(this.database());
+    /** If character is a MobileInstance, update character's old room in database */
+    if ( character instanceof this.MobileInstance )
+      await character.room().update(this.database());
+  }
   
   /** Null out character's room */
   character.room(null);
@@ -450,7 +450,7 @@ World.prototype.createItemInstanceInContainer = async function (container, proto
   const itemInstance = await this.itemInstanceFromPrototype(prototype);
 
   /** Add item instance to container */
-  this.itemToContainer(container, itemInstance);
+  this.itemToContainer(itemInstance, container);
   
   /** Return item instance */
   return itemInstance;
@@ -461,7 +461,7 @@ World.prototype.createItemInstanceInEquipment = async function (user, prototype)
   const itemInstance = await this.itemInstanceFromPrototype(prototype);
 
   /** Add item instance to user's inventory */
-  this.itemToEquipment(user, itemInstance);
+  this.itemToEquipment(itemInstance, user);
   
   /** Return item instance */
   return itemInstance;
@@ -472,7 +472,7 @@ World.prototype.createItemInstanceInInventory = async function (user, prototype)
   const itemInstance = await this.itemInstanceFromPrototype(prototype);
 
   /** Add item instance to user's inventory */
-  this.itemToInventory(user, itemInstance);
+  this.itemToInventory(itemInstance, user);
   
   /** Return item instance */
   return itemInstance;
@@ -483,7 +483,7 @@ World.prototype.createItemInstanceInRoom = async function (room, prototype) {
   const itemInstance = await this.itemInstanceFromPrototype(prototype);
 
   /** Add item instance to room */
-  this.itemToRoom(room, itemInstance);
+  this.itemToRoom(itemInstance, room);
   
   /** Return item instance */
   return itemInstance;
@@ -514,7 +514,7 @@ World.prototype.createMobileInstance = async function (room, prototype) {
   const mobileInstance = await this.mobileInstanceFromPrototype(prototype);
 
   /** Add item instance to room */
-  this.characterToRoom(room, mobileInstance);
+  this.characterToRoom(mobileInstance, room);
   
   /** Return mobile instance */
   return mobileInstance;
@@ -679,7 +679,7 @@ World.prototype.listen = async function () {
     else
       energy = `#C${this.energy()}#n`;
 
-    let prompt = this.promptFormat();
+    let prompt = `\r\n` + this.promptFormat();
     
     prompt = prompt.replace(/\$xp/g, `#c${this.experience()}#n`);
     prompt = prompt.replace(/\$hp/g, health);
@@ -740,6 +740,19 @@ World.prototype.listen = async function () {
   this.commands(this.commands().concat(movement.createCommands(this)));
   this.commands(this.commands().concat(senses.createCommands(this)));
   this.commands(this.commands().concat(system.createCommands(this)));
+  
+  /** Create a sort function for prioritizing commands */
+  const sortCommands = (a, b) => {
+    if ( a.priority() > b.priority() )
+      return -1;
+    else if ( a.priority() < b.priority() )
+      return 1;
+    
+    return 0;
+  };
+  
+  /** Sort commands */
+  this.commands().sort(sortCommands);
   
   /** Create server -- net.createServer argument is the new connection handler */
   const server = net.createServer((socket) => {

@@ -5,6 +5,7 @@ module.exports.configCommand = (world) => {
     properties: [
       { name: `execute`, type: `function` },
       { name: `name`, type: `varchar`, length: 16 },
+      { name: `positions`, type: `Array`, arrayOf: { type: `int` } },
       { name: `priority`, type: `int` }
     ]
   };

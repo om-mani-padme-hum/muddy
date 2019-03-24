@@ -1,6 +1,8 @@
 /** Require external modules */
 const crypto = require(`crypto`);
-const parseValues = require(`parse-values`).default;
+
+/** Require local modules */
+const constants = require(`./constants`);
 
 /**
  * Process input from a user at the name state.
@@ -139,9 +141,9 @@ async function processStateOldPassword(world, user, buffer) {
     /** Password incorrect, remove user from world and terminate socket */
     if ( world.users().indexOf(user) !== -1 )
       world.users().splice(world.users().indexOf(user), 1);
-
+    
     /** Terminate socket */
-    user.socket().end(`Incorrect password, goodbye!\r\n`);
+    user.socket().end(world.constants().VT100_CLEAR + `Incorrect password, goodbye!\r\n`);
 
     world.log().info(`Failed login by ${user.name()}.`);
   }
@@ -294,39 +296,67 @@ async function processStateMOTD(world, user, buffer) {
  * @param user User item
  */
 async function processStateConnected(world, user, buffer) {
-  /** @todo Process user commands */
-  const matches = buffer.toString().trim().match(/^\s*([^\s]+)\s*(.*)/);
+  /** Extract command from input buffer */
+  const matches = buffer.toString().trim().match(/^\s*([^\s]+)\s*(.*)$/);
 
-  if ( !matches ) {
-    /** Just send a space */
-    user.send(` `);
-    return;
-  }
+  /** If there was no command sent, just send a space to force flush of output buffer */
+  if ( !matches )    
+    return user.send(` `);
 
-  /** Create a sort function for prioritizing commands */
-  const sortCommands = (a, b) => {
-    if ( a.priority() > b.priority() )
-      return -1;
-    else if ( a.priority() < b.priority() )
-      return 1;
-    
-    return 0;
-  };
-  
   /** Find the first matching command, if one exists */
-  const command = world.commands().filter(x => x.name().startsWith(matches[1].toLowerCase())).sort(sortCommands)[0];
+  const command = world.commands().filter(x => x.name().startsWith(matches[1].toLowerCase()))[0];
 
-  let args;
+  /** Parse arguments */
+  const args = [];
   
-  try {
-    args = parseValues(matches[2]).map(x => x.toLowerCase());
-  } catch ( err ) {
-    args = [];
+  /** Convert buffer to lowercase string, trim spaces, except add one space at end to terminate final arg */
+  const argsBuffer = buffer.toString().toLowerCase().trim() + ` `;
+  
+  /** Keep track of whether we're inside quotes, what the quote character is, and the arg we're working on */
+  let insideQuotes = false;
+  let quote = ``;
+  let arg = ``;
+  
+  /** Loop through buffer and group arguments that are quoted as args are added to list */
+  for ( let i = 0; i < argsBuffer.length; i++ ) {
+    const c = argsBuffer[i];
+    
+    if ( insideQuotes && c == quote ) {
+      args.push(arg);
+      arg = ``;
+      insideQuotes = false;
+    } else if ( !insideQuotes && [`'`, `"`, `\``].includes(c) ) {
+      quote = c;
+    } else if ( !insideQuotes && c == ` ` ) {
+      if ( arg.length > 0 ) {
+        args.push(arg);
+        arg = ``;
+      }
+    } else {
+      arg += c;
+    }
   }
+  
+  /** Allowable positions are configured positions or all by default */
+  const allowablePositions = command && command.positions().length > 0 ? command.positions() : [...Array(7).keys()].map(x => x - 5);
   
   /** If it exists, execute it for this user, otherwise send error */
-  if ( command )
-    await command.execute()(world, user, matches[2], args);
+  if ( command && allowablePositions.includes(user.position()) )
+    await command.execute()(world, user, matches[2], args.slice(1));
+  else if ( command && user.position() == constants.POSITION_DEAD )
+    user.send(`You can't do that... you are DEAD!\r\n`);
+  else if ( command && user.position() == constants.POSITION_INCAPACITATED )
+    user.send(`You can't do that while incapacitated!\r\n`);
+  else if ( command && user.position() == constants.POSITION_LYING_DOWN )
+    user.send(`You can't do that while lying down.\r\n`);
+  else if ( command && user.position() == constants.POSITION_KNEELING )
+    user.send(`You can't do that while kneeling.\r\n`);
+  else if ( command && user.position() == constants.POSITION_SITTING )
+    user.send(`You can't do that while sitting.\r\n`);
+  else if ( command && user.position() == constants.POSITION_STANDING )
+    user.send(`You can't do that while standing.\r\n`);
+  else if ( command && user.position() == constants.POSITION_FIGHTING )
+    user.send(`You can't do that while fighting!\r\n`);
   else
     user.send(`That action does not exist in this world.\r\n`);
 }

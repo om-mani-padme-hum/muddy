@@ -1,8 +1,12 @@
+/** Require local modules */
+const constants = require(`./constants`);
+
 /** Create template for all directionection commands */
 module.exports.createCommands = (world) => {
   const directionCommand = (direction) => {
     return new world.Command({
       name: direction,
+      positions: [constants.POSITION_STANDING],
       execute: async (world, user, buffer) => {
         /** Find exit in the direction specified, if one exists */
         const exit = user.room().exits().find(x => x.direction() == world.constants().directions[direction]);
