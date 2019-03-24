@@ -2,6 +2,7 @@ module.exports.createCommands = (world) => {
   return [
     new world.Command({
       name: `create`,
+      positions: constants.POSITIONS_AWAKE_AND_SAFE,
       execute: async (world, user, buffer, args) => {
         /** If no first argument was provided, send error */
         if ( typeof args[0] != `string` ) {
@@ -290,6 +291,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `edit`,
+      positions: constants.POSITIONS_AWAKE_AND_SAFE,
       execute: async (world, user, buffer, args) => {
         /** If no first argument was provided, send error */
         if ( typeof args[0] != `string` ) {

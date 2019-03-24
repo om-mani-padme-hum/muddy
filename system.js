@@ -41,6 +41,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `quit`,
+      positions: constants.POSITIONS_SAFE,
       execute: async (world, user, buffer) => {
         /** Log user quit */
         world.log().info(`User ${user.name()} has quit.`);
@@ -64,6 +65,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `save`,
+      positions: constants.POSITIONS_SAFE,
       execute: async (world, user, buffer) => {
         /** If user id is equal to zero, insert user into the database */
         if ( user.id() == 0 )

@@ -2,6 +2,7 @@ module.exports.createCommands = (world) => {
   return [
     new world.Command({
       name: `drop`,
+      positions: constants.POSITIONS_MOBILE,
       execute: async (world, user, buffer, args) => {
         /** Verify item argument exists */
         if ( typeof args[0] != `string` ) {
@@ -49,6 +50,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `get`,
+      positions: constants.POSITIONS_MOBILE,
       execute: async (world, user, buffer, args) => {
         let containerName, containerCount, containers = [], items = [];
 
@@ -143,6 +145,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `put`,
+      positions: constants.POSITIONS_MOBILE,
       execute: async (world, user, buffer, args) => {
         /** Verify item argument exists */
         if ( typeof args[0] != `string` ) {
@@ -211,6 +214,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `remove`,
+      positions: constants.POSITIONS_MOBILE,
       execute: async (world, user, buffer, args) => {
         /** Verify item argument exists */
         if ( typeof args[0] != `string` ) {
@@ -267,6 +271,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `say`,
+      positions: constants.POSITIONS_AWAKE,
       execute: async (world, user, buffer, args) => {
         /** Verify at least one argument exists */
         if ( buffer.trim().length == 0 ) {
@@ -290,6 +295,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `wear`,
+      positions: constants.POSITIONS_MOBILE,
       execute: async (world, user, buffer, args) => {
         /** Verify item argument exists */
         if ( typeof args[0] != `string` ) {
@@ -364,6 +370,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `wield`,
+      positions: constants.POSITIONS_MOBILE,
       execute: async (world, user, buffer, args) => {
         /** Verify item argument exists */
         if ( typeof args[0] != `string` ) {

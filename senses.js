@@ -2,6 +2,7 @@ module.exports.createCommands = (world) => {
   return [
     new world.Command({
       name: `look`,
+      positions: constants.POSITIONS_AWAKE,
       execute: async (world, user, buffer, args) => {
         if ( typeof args[0] == `string` ) {
           /** If the first argument is 'in'... */
@@ -185,6 +186,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `equipment`,
+      positions: constants.POSITIONS_AWAKE,
       execute: async (world, user, buffer) => {
         /** Send user's equipment */
         world.sendUserEquipment(user, user);
@@ -193,6 +195,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `inventory`,
+      positions: constants.POSITIONS_AWAKE,
       execute: async (world, user, buffer) => {
         /** Send inventory header */
         user.send(`Inventory:\r\n`);

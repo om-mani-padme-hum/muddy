@@ -296,21 +296,11 @@ async function processStateMOTD(world, user, buffer) {
  * @param user User item
  */
 async function processStateConnected(world, user, buffer) {
-  /** Extract command from input buffer */
-  const matches = buffer.toString().trim().match(/^\s*([^\s]+)\s*(.*)$/);
-
-  /** If there was no command sent, just send a space to force flush of output buffer */
-  if ( !matches )    
-    return user.send(` `);
-
-  /** Find the first matching command, if one exists */
-  const command = world.commands().filter(x => x.name().startsWith(matches[1].toLowerCase()))[0];
-
   /** Parse arguments */
   const args = [];
   
   /** Convert buffer to lowercase string, trim spaces, except add one space at end to terminate final arg */
-  const argsBuffer = buffer.toString().toLowerCase().trim() + ` `;
+  const argsBuffer = buffer.toString().trim() + ` `;
   
   /** Keep track of whether we're inside quotes, what the quote character is, and the arg we're working on */
   let insideQuotes = false;
@@ -327,6 +317,7 @@ async function processStateConnected(world, user, buffer) {
       insideQuotes = false;
     } else if ( !insideQuotes && [`'`, `"`, `\``].includes(c) ) {
       quote = c;
+      insideQuotes = true;
     } else if ( !insideQuotes && c == ` ` ) {
       if ( arg.length > 0 ) {
         args.push(arg);
@@ -337,12 +328,21 @@ async function processStateConnected(world, user, buffer) {
     }
   }
   
+  /** If there was no command sent, just send a space to force flush of output buffer */
+  if ( args.length == 0 )
+    return user.send(` `);
+  
+  /** Find the first matching command, if one exists */
+  const commandName = args[0].toLowerCase();
+  
+  const command = world.commands().filter(x => x.name().startsWith(commandName))[0];
+  
   /** Allowable positions are configured positions or all by default */
-  const allowablePositions = command && command.positions().length > 0 ? command.positions() : [...Array(7).keys()].map(x => x - 5);
+  const allowablePositions = command && command.positions().length > 0 ? command.positions() : [...Array(8).keys()].map(x => x - 6);
   
   /** If it exists, execute it for this user, otherwise send error */
   if ( command && allowablePositions.includes(user.position()) )
-    await command.execute()(world, user, matches[2], args.slice(1));
+    await command.execute()(world, user, args.slice(1).join(` `), args.slice(1).map(x => x.toLowerCase()));
   else if ( command && user.position() == constants.POSITION_DEAD )
     user.send(`You can't do that... you are DEAD!\r\n`);
   else if ( command && user.position() == constants.POSITION_INCAPACITATED )
