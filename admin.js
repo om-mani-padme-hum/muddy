@@ -1,9 +1,6 @@
 /** Require external modules */
 const util = require(`util`);
 
-/** Require local modules */
-const constants = require(`./constants`);
-
 module.exports.createCommands = (world) => {
   return [
     new world.Command({
@@ -37,10 +34,8 @@ module.exports.createCommands = (world) => {
       name: `goto`,
       execute: async (world, user, buffer, args) => {
         /** If no argument was provided, send error and return */
-        if ( typeof args[0] != `string` ) {
-          user.send(`Goto where?\r\n`);
-          return;
-        }
+        if ( typeof args[0] != `string` )
+          return user.send(`Goto where?\r\n`);
         
         /** Find target room in world by id argument if it exists */
         const room = world.rooms().find(x => x.id() == args[0]);
@@ -73,12 +68,11 @@ module.exports.createCommands = (world) => {
       name: `ilist`,
       execute: async (world, user, buffer, args) => {
         /** If no argument was provided, send error */
-        if ( typeof args[0] != `string` ) {
-          user.send(`Ilist what? [instances|prototypes]\r\n`);
-        } 
+        if ( typeof args[0] != `string` )
+          return user.send(`Ilist what? [instances|prototypes]\r\n`);
         
-        /* Otherwise, if the argument is 'instances'... */
-        else if ( `instances`.startsWith(args[0]) ) {
+        /* If the argument is 'instances'... */
+        if ( `instances`.startsWith(args[0]) ) {
           /** Create helper function for recursion of item contents */
           const recursiveItemContents = (item, depth) => {
             /** Determine length of longest item id number */
@@ -254,10 +248,8 @@ module.exports.createCommands = (world) => {
       name: `istat`,
       execute: async (world, user, buffer, args) => {
         /** If no argument was provided, send error and return */
-        if ( typeof args[0] != `string` ) {
-          user.send(`Istat what?\r\n`);
-          return;
-        }
+        if ( typeof args[0] != `string` )
+          return user.send(`Istat what?\r\n`);
         
         /** Parse name and count of first argument */
         const [name, count] = world.parseName(user, args, 0);
@@ -271,9 +263,9 @@ module.exports.createCommands = (world) => {
           let items = [];
 
           /** Add user equipment, inventory, and room items with names matching the argument to array */
-          items = items.concat(user.equipment().filter(x => x.names().some(y => y.toLowerCase().startsWith(name.toLowerCase()))));
-          items = items.concat(user.inventory().filter(x => x.names().some(y => y.toLowerCase().startsWith(name.toLowerCase()))));
-          items = items.concat(user.room().items().filter(x => x.names().some(y => y.toLowerCase().startsWith(name.toLowerCase()))));
+          items = items.concat(user.equipment().filter(x => x.names().some(y => y.toLowerCase().startsWith(name))));
+          items = items.concat(user.inventory().filter(x => x.names().some(y => y.toLowerCase().startsWith(name))));
+          items = items.concat(user.room().items().filter(x => x.names().some(y => y.toLowerCase().startsWith(name))));
 
           /** If the number of items is less than the count, send error */
           if ( items.length < count )
@@ -289,10 +281,8 @@ module.exports.createCommands = (world) => {
       name: `mstat`,
       execute: async (world, user, buffer, args) => {
         /** If no argument was provided, send error and return */
-        if ( typeof args[0] != `string` ) {
-          user.send(`Mstat who?\r\n`);
-          return;
-        }
+        if ( typeof args[0] != `string` )
+          return user.send(`Mstat who?\r\n`);
 
         /** Parse name and count of first argument */
         const [name, count] = world.parseName(user, args, 0);
@@ -303,7 +293,7 @@ module.exports.createCommands = (world) => {
         /** If depth was parsed successfully... */
         if ( depth >= 0 ) {
           /** Create array of mobiles with name matching the argument */
-          const mobiles = user.room().mobiles().filter(x => x.names().some(y => y.toLowerCase().startsWith(name.toLowerCase())));
+          const mobiles = user.room().mobiles().filter(x => x.names().some(y => y.toLowerCase().startsWith(name)));
 
           /** If the number of mobiles is less than the count, send error */
           if ( mobiles.length < count )
@@ -319,12 +309,11 @@ module.exports.createCommands = (world) => {
       name: `mlist`,
       execute: async (world, user, buffer, args) => {
         /** If no argument was provided, send error */
-        if ( typeof args[0] != `string` ) {
-          user.send(`Mlist what? [instances|prototypes]\r\n`);
-        } 
+        if ( typeof args[0] != `string` )
+          return user.send(`Mlist what? [instances|prototypes]\r\n`);
         
-        /* Otherwise, if the argument is 'instances'... */
-        else if ( `instances`.startsWith(args[0]) ) {
+        /* If the argument is 'instances'... */
+        if ( `instances`.startsWith(args[0]) ) {
           /** Create array of areas with mobile instances */
           const areas = world.areas().filter(x => x.rooms().some(x => x.mobiles().length > 0));
           
@@ -466,10 +455,8 @@ module.exports.createCommands = (world) => {
       name: `ustat`,
       execute: async (world, user, buffer, args) => {
         /** If no argument was provided, send error and return */
-        if ( typeof args[0] != `string` ) {
-          user.send(`Ustat who?\r\n`);
-          return;
-        }
+        if ( typeof args[0] != `string` )
+          return user.send(`Ustat who?\r\n`);
 
         /** Parse name and count of first argument */
         const [name, count] = world.parseName(user, args, 0);
@@ -480,7 +467,7 @@ module.exports.createCommands = (world) => {
         /** If depth was parsed successfully... */
         if ( depth >= 0 ) {
           /** Create array of users with name matching the argument */
-          const users = user.room().users().filter(x => x.name().toLowerCase().startsWith(name.toLowerCase()));
+          const users = user.room().users().filter(x => x.name().toLowerCase().startsWith(name) || ( name == `self` && x == user ) );
 
           /** If the number of users is less than the count, send error */
           if ( users.length < count )

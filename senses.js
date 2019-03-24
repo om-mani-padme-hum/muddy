@@ -1,11 +1,8 @@
-/** Require local modules */
-const constants = require(`./constants`);
-
 module.exports.createCommands = (world) => {
   return [
     new world.Command({
       name: `look`,
-      positions: constants.POSITIONS_AWAKE,
+      positions: world.constants().POSITIONS_AWAKE,
       execute: async (world, user, buffer, args) => {
         if ( typeof args[0] == `string` ) {
           /** If the first argument is 'in'... */
@@ -20,10 +17,10 @@ module.exports.createCommands = (world) => {
             const [name, count] = world.parseName(user, args, 1);
 
             /** Create array of all items in user's inventory with name matching second argument */
-            let items = user.inventory().filter(x => x.names().some(y => y.toLowerCase().startsWith(name.toLowerCase())));
+            let items = user.inventory().filter(x => x.names().some(y => y.toLowerCase().startsWith(name)));
             
             /** Concatenate with all items in user's equipment with name matching second argument  */
-            items = items.concat(user.room().items().filter(x => x.names().some(y => y.toLowerCase().startsWith(name.toLowerCase()))));
+            items = items.concat(user.room().items().filter(x => x.names().some(y => y.toLowerCase().startsWith(name))));
 
             /** If number of items is less than count, send error */
             if ( items.length < count ) {
@@ -76,28 +73,26 @@ module.exports.createCommands = (world) => {
             const [name, count] = world.parseName(user, args, 0);
 
             /** Create array of users with name matching the arugment */
-            const users = user.room().users().filter(x => x.name().toLowerCase().startsWith(name.toLowerCase()));
+            const users = user.room().users().filter(x => x.name().toLowerCase().startsWith(name) || ( name == `self` && x == user ) );
             
             /** Create array of mobiles with name matching the arugment */
-            const mobiles = user.room().mobiles().filter(x => x.names().some(y => y.toLowerCase().startsWith(name.toLowerCase())));
+            const mobiles = user.room().mobiles().filter(x => x.names().some(y => y.toLowerCase().startsWith(name)));
             
             /** Create array of items in user's inventory with name matching the arugment */
-            const inventory = user.inventory().filter(x => x.names().some(y => y.toLowerCase().startsWith(name.toLowerCase())));
+            const inventory = user.inventory().filter(x => x.names().some(y => y.toLowerCase().startsWith(name)));
             
             /** Create array of items in user's equipemnt with name matching the arugment */
-            const equipment = user.equipment().filter(x => x.names().some(y => y.toLowerCase().startsWith(name.toLowerCase())));
+            const equipment = user.equipment().filter(x => x.names().some(y => y.toLowerCase().startsWith(name)));
             
             /** Create array of items in user's room with name matching the arugment */
-            const items = user.room().items().filter(x => x.names().some(y => y.toLowerCase().startsWith(name.toLowerCase())));
+            const items = user.room().items().filter(x => x.names().some(y => y.toLowerCase().startsWith(name)));
 
             /** Create array of all characters and items with name matching the argument combined */
             const targets = users.concat(mobiles.concat(inventory.concat(equipment.concat(items))));
             
             /** If number of targets is less than count, send error and return */
-            if ( targets.length < count ) {
-              user.send(`You can't find that anywhere.\r\n`);
-              return;
-            } 
+            if ( targets.length < count )
+              return user.send(`You can't find that anywhere.\r\n`);
             
             /** If the target is a user... */
             if ( targets[count - 1] instanceof world.User ) {
@@ -105,21 +100,51 @@ module.exports.createCommands = (world) => {
               user.send(`${targets[count - 1].name()} is standing here.\r\n\r\n`);
               
               /** Send target user's equipment */
-              world.sendUserEquipment(user, results[count - 1]);
+              world.sendUserEquipment(user, targets[count - 1]);
             } 
             
             /** Otherwise, if target is a mobile... */
             else if ( targets[count - 1] instanceof world.MobileInstance ) {
               /** Send target mobile's description */
-              user.send(`${targets[count - 1].description()}\r\n\r\n`);
+              user.send(`${world.terminalWrap(world.colorize(targets[count - 1].description()))}\r\n\r\n`);
               
               /** Send target mobile's equipment */
-              world.sendUserEquipment(user, results[count - 1]);
+              world.sendUserEquipment(user, targets[count - 1]);
+            } 
+            
+            /** Otherwise, if there is a second argument */
+            else if ( typeof args[1] == `string` ) {
+              /** If the detail name is not valid, send error */
+              if ( !args[1].match(/^[a-z0-9]+$/i) )
+                return user.send(`You can't find that anywhere.\r\n`);
+              
+              const [detailName, detailCount] = world.parseName(user, args, 1);
+              
+              const detail = Object.keys(targets[count - 1].details()).filter(x => x.startsWith(detailName))[detailCount - 1];
+              
+              /** If detail doesn't exist, send error */
+              if ( !detail )
+                return user.send(`You can't find that anywhere.\r\n`);
+              
+              /** Send detail description */
+              user.send(`${world.terminalWrap(world.colorize(targets[count - 1].details()[detail]))}\r\n`);
             } 
             
             /** Otherwise, send target description */
             else {
-              user.send(`${targets[count - 1].description()}\r\n`);
+              user.send(`${world.terminalWrap(world.colorize(targets[count - 1].description()))}\r\n`);
+              
+              const keys = Object.keys(targets[count - 1].details());
+              
+              if ( keys.length > 0 )
+                user.send(`\r\nDetails: `);
+              
+              keys.forEach((key) => {
+                user.send(`${key} `);
+              });
+              
+              if ( keys.length > 0 )
+                user.send(`\r\n`);
             }
           }
         } else {
@@ -148,18 +173,6 @@ module.exports.createCommands = (world) => {
           /** Send room description */
           user.send(world.terminalWrap(world.colorize(`#w${user.room().description()}\r\n`)));
 
-          /** Loop through each mobile in user's room and send room description */
-          user.room().mobiles().forEach((mobile) => {
-            user.send(` ${mobile.roomDescription()}\r\n`);
-          });
-
-          /** Loop through each other user in the user's room... */
-          user.room().users().forEach((other) => {
-            /** If user in room is not the looking user, send user name */
-            if ( user != other )
-              user.send(` ${other.name()} is standing here.\r\n`);
-          });
-
           /** Keep track of items already included in item counts */
           const itemsIncluded = [];
 
@@ -174,14 +187,44 @@ module.exports.createCommands = (world) => {
 
             /** If the number of items is greater than, send quantity and room description */
             if ( count > 1 )
-              user.send(`  (${count}) ${item.roomDescription()}\r\n`);
+              user.send(`    (${count}) ${item.roomDescription()}\r\n`);
             
             /** Otherwise, just send room description */
             else
-              user.send(`  ${item.roomDescription()}\r\n`);
+              user.send(`    ${item.roomDescription()}\r\n`);
 
             /** Add item to items included */
             itemsIncluded.push(item.roomDescription());
+          });
+          
+          /** Loop through each mobile in user's room and send room description */
+          user.room().mobiles().forEach((mobile) => {
+            user.send(` ${mobile.roomDescription()}\r\n`);
+          });
+
+          /** Loop through each other user in the user's room... */
+          user.room().users().forEach((other) => {
+            /** If user in room is not the looking user, send user name */
+            if ( user != other ) {
+              if ( other.position() == world.constants().POSITION_INCAPACITATED )
+                user.send(` ${other.name()} is lying here incapacitated!\r\n`);
+              else if ( other.position() == world.constants().POSITION_SLEEPING )
+                user.send(` ${other.name()} is lying here sleeping\r\n`);
+              else if ( other.position() == world.constants().POSITION_MEDITATING )
+                user.send(` ${other.name()} is meditating here\r\n`);
+              else if ( other.position() == world.constants().POSITION_LYING_DOWN )
+                user.send(` ${other.name()} is lying down here\r\n`);
+              else if ( other.position() == world.constants().POSITION_KNEELING )
+                user.send(` ${other.name()} is kneeling here\r\n`);
+              else if ( other.position() == world.constants().POSITION_SITTING )
+                user.send(` ${other.name()} is sitting here\r\n`);
+              else if ( other.position() == world.constants().POSITION_FIGHTING && other.fighting() == user )
+                user.send(` ${other.name()} is here fighting YOU!\r\n`);
+              else if ( other.position() == world.constants().POSITION_FIGHTING && other.fighting() && other.fighting() != user )
+                user.send(` ${other.name()} is here fighting ${other.fighting().name()}!\r\n`);
+              else if ( other.position() == world.constants().POSITION_STANDING )
+                user.send(` ${other.name()} is standing here\r\n`);
+            }
           });
         }
       },
@@ -189,7 +232,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `equipment`,
-      positions: constants.POSITIONS_AWAKE,
+      positions: world.constants().POSITIONS_AWAKE,
       execute: async (world, user, buffer) => {
         /** Send user's equipment */
         world.sendUserEquipment(user, user);
@@ -198,7 +241,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `inventory`,
-      positions: constants.POSITIONS_AWAKE,
+      positions: world.constants().POSITIONS_AWAKE,
       execute: async (world, user, buffer) => {
         /** Send inventory header */
         user.send(`Inventory:\r\n`);

@@ -1,11 +1,8 @@
-/** Require local modules */
-const constants = require(`./constants`);
-
 module.exports.createCommands = (world) => {
   return [
     new world.Command({
       name: `create`,
-      positions: constants.POSITIONS_AWAKE_AND_SAFE,
+      positions: world.constants().POSITIONS_AWAKE_AND_SAFE,
       execute: async (world, user, buffer, args) => {
         /** If no first argument was provided, send error */
         if ( typeof args[0] != `string` ) {
@@ -294,7 +291,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `edit`,
-      positions: constants.POSITIONS_AWAKE_AND_SAFE,
+      positions: world.constants().POSITIONS_AWAKE_AND_SAFE,
       execute: async (world, user, buffer, args) => {
         /** If no first argument was provided, send error */
         if ( typeof args[0] != `string` ) {
@@ -305,7 +302,7 @@ module.exports.createCommands = (world) => {
         else if ( `area`.startsWith(args[0]) ) {
           /** If no second argument was provided, send error */
           if ( typeof args[1] != `string` )
-            return user.send(`Edit the area's what? [author, date, description, flags, name]\r\n`);
+            return user.send(`Edit what? [author|date|desc|flags|name]\r\n`);
           
           const area = user.room().area();
           
@@ -317,10 +314,11 @@ module.exports.createCommands = (world) => {
             
             const author = buffer.toString().split(` `).slice(2).join(` `);
             
-            /** If the third argument is invalid, send error */
+            /** If the author is invalid, send error */
             if ( !author.match(/^[\x20-\x7E]+$/) )
-              return user.send(`That is an invalid area author name, must consist of printable ASCII characters.\r\n`);
+              return user.send(`That is an invalid area author name, must consist of printable ASCII.\r\n`);
 
+            /** Set the area's author */
             area.author(author);
           }
           
@@ -339,10 +337,11 @@ module.exports.createCommands = (world) => {
             
             const description = buffer.toString().split(` `).slice(2).join(` `);
             
-            /** If the third argument is invalid, send error */
+            /** If the description is invalid, send error */
             if ( !description.match(/^[\x20-\x7E]+$/) )
-              return user.send(`That is an invalid area description, must consist of printable ASCII characters.\r\n`);
+              return user.send(`That is an invalid area description, must consist of printable ASCII.\r\n`);
 
+            /** Set the area's description */
             area.description(description);
           }
           
@@ -361,11 +360,17 @@ module.exports.createCommands = (world) => {
             
             const name = buffer.toString().split(` `).slice(2).join(` `);
             
-            /** If the third argument is invalid, send error */
+            /** If the name is invalid, send error */
             if ( !name.match(/^[\x20-\x7E]+$/) )
-              return user.send(`That is an invalid area name, must consist of printable ASCII characters.\r\n`);
+              return user.send(`That is an invalid area name, must consist of printable ASCII.\r\n`);
 
+            /** Set the area's name */
             area.name(name);
+          }
+          
+          /** Otherwise, send error */
+          else {
+            return user.send(`You do not know how to edit that.\r\n`);
           }
           
           world.log().verbose(`Saving Area ID #${area.id()} - ${area.name()}`);
@@ -376,11 +381,352 @@ module.exports.createCommands = (world) => {
           user.send(`Done.\r\n`);
         }
         
+        /** Otherwise, if the first argument is 'item'... */
+        else if ( `item`.startsWith(args[0]) ) {
+          /** If no second argument was provided, send error */
+          if ( typeof args[1] != `string` )
+            return user.send(`Edit what kind of item? [instance|prototype]\r\n`);
+          
+          /** Otherwise, if the second argument is 'instance'... */
+          else if ( `instance`.startsWith(args[1]) ) {
+            /** If no third argument was provided, send error */
+            if ( typeof args[2] != `string` )
+              return user.send(`Edit what item?\r\n`);
+            
+            /** Parse name and count of second argument */
+            const [name, count] = world.parseName(user, args, 2);
+
+            /** Create items array */
+            let items = [];
+
+            /** Add user equipment, inventory, and room items with names matching the argument to array */
+            items = items.concat(user.equipment().filter(x => x.names().some(y => y.toLowerCase().startsWith(name))));
+            items = items.concat(user.inventory().filter(x => x.names().some(y => y.toLowerCase().startsWith(name))));
+            items = items.concat(user.room().items().filter(x => x.names().some(y => y.toLowerCase().startsWith(name))));
+
+            /** If the number of items is less than the count, send error */
+            if ( items.length < count )
+              return user.send(`You can't find that item anywhere.\r\n`);
+
+            const item = items[count - 1];
+            
+            /** If no fourth argument was provided, send error */
+            if ( typeof args[3] != `string` )
+              return user.send(`Edit what? [desc|details|flags|name|names|roomdesc]\r\n`);
+
+            /** Otherwise, if the fourth argument is 'description'... */
+            else if ( `description`.startsWith(args[3]) ) {
+              /** If no fifth argument was provided, send error */
+              if ( typeof args[4] != `string` )
+                return user.send(`Change the item's description to what?\r\n`);
+
+              const description = buffer.toString().split(` `).slice(4).join(` `);
+
+              /** If the description is invalid, send error */
+              if ( !description.match(/^[\x20-\x7E]+$/) )
+                return user.send(`That is an invalid item description, must consist of printable ASCII.\r\n`);
+
+              /** Set the item's description */
+              item.description(description);
+            }
+            
+            /** Otherwise, if the fourth argument is 'details'... */
+            else if ( `details`.startsWith(args[3]) ) {
+              /** If no fifth argument was provided, send error */
+              if ( typeof args[4] != `string` )
+                return user.send(`Change the description of what detail?\r\n`);
+
+              const name = args[4];
+              
+              /** If the name is invalid, send error */
+              if ( !name.match(/^[\x20-\x7E]+$/) )
+                return user.send(`That is an invalid detail name, must consist of printable ASCII.\r\n`);
+              
+              if ( typeof args[5] != `string` )
+                return user.send(`Change the description of the detail to what? (use 'delete' to remove detail)`);
+              
+              const description = buffer.toString().split(` `).slice(5).join(` `);
+
+              /** If the description is invalid, send error */
+              if ( !description.match(/^[\x20-\x7E]+$/) )
+                return user.send(`That is an invalid detail description, must consist of printable ASCII.\r\n`);
+
+              /** Set the item's description */
+              if ( description == `delete` && item.details()[name] )
+                delete item.details()[name];
+              else
+                item.details()[name] = description;
+            }
+            
+            /** Otherwise, if the fourth argument is 'roomdescription'... */
+            else if ( `roomdescription`.startsWith(args[3]) ) {
+              /** If no fifth argument was provided, send error */
+              if ( typeof args[4] != `string` )
+                return user.send(`Change the item's room description to what?\r\n`);
+
+              const roomDescription = buffer.toString().split(` `).slice(4).join(` `);
+
+              /** If the room description is invalid, send error */
+              if ( !roomDescription.match(/^[\x20-\x7E]+$/) )
+                return user.send(`That is an invalid item room description, must consist of printable ASCII.\r\n`);
+
+              /** Set the item's room description */
+              item.roomDescription(roomDescription);
+            }
+
+            /** Otherwise, if the fourth argument is 'flags'... */
+            else if ( `flags`.startsWith(args[3]) ) {
+              /** If no third argument was provided, send error */
+              if ( typeof args[4] != `string` )
+                return user.send(`Change which item flag?\r\n`);
+            }
+
+            /** Otherwise, if the fourth argument is 'name'... */
+            else if ( `name`.startsWith(args[3]) ) {
+              /** If no third argument was provided, send error */
+              if ( typeof args[4] != `string` )
+                return user.send(`Change the item's name to what?\r\n`);
+
+              const name = buffer.toString().split(` `).slice(4).join(` `);
+
+              /** If the name is invalid, send error */
+              if ( !name.match(/^[\x20-\x7E]+$/) )
+                return user.send(`That is an invalid item name, must consist of printable ASCII.\r\n`);
+
+              /** Set the item's name */
+              item.name(name);
+            }
+            
+            /** Otherwise, if the fourth argument is 'names'... */
+            else if ( `names`.startsWith(args[3]) ) {
+              /** If no third argument was provided, send error */
+              if ( typeof args[4] != `string` )
+                return user.send(`Change the item's names to what?\r\n`);
+
+              const names = args.slice(4);
+
+              /** If the names are invalid, send error */
+              if ( !names.every(x => x.match(/^[\x20-\x7E]+$/)) )
+                return user.send(`That is an invalid item name, must consist of printable ASCII.\r\n`);
+
+              /** Set the item's names */
+              item.names(names);
+            }
+            
+            /** Otherwise, if the fourth argument is 'slot'... */
+            else if ( `slot`.startsWith(args[3]) ) {
+              /** If no third argument was provided, send error */
+              if ( typeof args[4] != `string` )
+                return user.send(`Change the item's slot to what?\r\n`);
+
+              /** Set the item's name */
+              item.slot(parseInt(args[4]));
+            }
+            
+            /** Otherwise, if the fourth argument is 'type'... */
+            else if ( `type`.startsWith(args[3]) ) {
+              /** If no third argument was provided, send error */
+              if ( typeof args[4] != `string` )
+                return user.send(`Change the item's slot to what?\r\n`);
+
+              /** Set the item's name */
+              item.type(parseInt(args[4]));
+            }
+            
+            /** Otherwise, send error */
+            else {
+              return user.send(`You do not know how to edit that.\r\n`);
+            }
+
+            world.log().verbose(`Saving Item Instance ID #${item.id()} - ${item.name()}`);
+
+            /** Update item in database */
+            await item.update(world.database());
+
+            user.send(`Done.\r\n`);
+          }
+          
+          /** Otherwise, if the second argument is 'prototype'... */
+          else if ( `prototype`.startsWith(args[1]) ) {
+            /** If no third argument was provided, send error */
+            if ( typeof args[2] != `string` )
+              return user.send(`Edit what item prototype ID #?\r\n`);
+            
+            /** Create a new item prototype */
+            const itemPrototype = new world.ItemPrototype();
+            
+            /** Attempt to load the item prototype */
+            const exists = await itemPrototype.load(parseInt(args[2]), world.database());
+            
+            /** If the item prototype doesn't exist, send error */
+            if ( !exists )
+              return user.send(`That item prototype does not exist.\r\n`);
+            
+            /** If no fourth argument was provided, send error */
+            if ( typeof args[3] != `string` )
+              return user.send(`Edit what? [author|date|desc|details|flags|name|names|roomdesc]\r\n`);
+
+            /** Otherwise, if the fourth argument is 'author'... */
+            else if ( `author`.startsWith(args[3]) ) {
+              /** If no fifth argument was provided, send error */
+              if ( typeof args[4] != `string` )
+                return user.send(`Change the item's author to whom?\r\n`);
+
+              const author = buffer.toString().split(` `).slice(4).join(` `);
+
+              /** If the author is invalid, send error */
+              if ( !author.match(/^[\x20-\x7E]+$/) )
+                return user.send(`That is an invalid item author name, must consist of printable ASCII.\r\n`);
+
+              /** Set the item prototype's author */
+              itemPrototype.author(author);
+            }
+
+            /** Otherwise, if the fourth argument is 'date'... */
+            else if ( `date`.startsWith(args[3]) ) {
+              /** If no fifth argument was provided, send error */
+              if ( typeof args[4] != `string` )
+                return user.send(`Change the item's creation date to when?\r\n`);
+            }
+
+            /** Otherwise, if the fourth argument is 'description'... */
+            else if ( `description`.startsWith(args[3]) ) {
+              /** If no fifth argument was provided, send error */
+              if ( typeof args[4] != `string` )
+                return user.send(`Change the item's description to what?\r\n`);
+
+              const description = buffer.toString().split(` `).slice(4).join(` `);
+
+              /** If the description is invalid, send error */
+              if ( !description.match(/^[\x20-\x7E]+$/) )
+                return user.send(`That is an invalid item description, must consist of printable ASCII.\r\n`);
+
+              /** Set the item prototype's description */
+              itemPrototype.description(description);
+            }
+            
+            /** Otherwise, if the fourth argument is 'details'... */
+            else if ( `details`.startsWith(args[3]) ) {
+              /** If no fifth argument was provided, send error */
+              if ( typeof args[4] != `string` )
+                return user.send(`Change the description of what detail?\r\n`);
+
+              const name = args[4];
+              
+              /** If the name is invalid, send error */
+              if ( !name.match(/^[\x20-\x7E]+$/) )
+                return user.send(`That is an invalid detail name, must consist of printable ASCII.\r\n`);
+              
+              if ( typeof args[5] != `string` )
+                return user.send(`Change the description of the detail to what? (use 'delete' to remove detail)\r\n`);
+              
+              const description = buffer.toString().split(` `).slice(5).join(` `);
+
+              /** If the description is invalid, send error */
+              if ( !description.match(/^[\x20-\x7E]+$/) )
+                return user.send(`That is an invalid detail description, must consist of printable ASCII.\r\n`);
+
+              /** Set the item prototype's description */
+              if ( description == `delete` && itemPrototype.details()[name] )
+                delete itemPrototype.details()[name];
+              else
+                itemPrototype.details()[name] = description;
+            }
+            
+            /** Otherwise, if the fourth argument is 'roomdescription'... */
+            else if ( `roomdescription`.startsWith(args[3]) ) {
+              /** If no fifth argument was provided, send error */
+              if ( typeof args[4] != `string` )
+                return user.send(`Change the item's room description to what?\r\n`);
+
+              const roomDescription = buffer.toString().split(` `).slice(4).join(` `);
+
+              /** If the room description is invalid, send error */
+              if ( !roomDescription.match(/^[\x20-\x7E]+$/) )
+                return user.send(`That is an invalid item room description, must consist of printable ASCII.\r\n`);
+
+              /** Set the item prototype's room description */
+              itemPrototype.roomDescription(roomDescription);
+            }
+
+            /** Otherwise, if the fourth argument is 'flags'... */
+            else if ( `flags`.startsWith(args[3]) ) {
+              /** If no third argument was provided, send error */
+              if ( typeof args[4] != `string` )
+                return user.send(`Change which item flag?\r\n`);
+            }
+
+            /** Otherwise, if the fourth argument is 'name'... */
+            else if ( `name`.startsWith(args[3]) ) {
+              /** If no third argument was provided, send error */
+              if ( typeof args[4] != `string` )
+                return user.send(`Change the item's name to what?\r\n`);
+
+              const name = buffer.toString().split(` `).slice(4).join(` `);
+
+              /** If the name is invalid, send error */
+              if ( !name.match(/^[\x20-\x7E]+$/) )
+                return user.send(`That is an invalid item name, must consist of printable ASCII.\r\n`);
+
+              /** Set the item prototype's name */
+              itemPrototype.name(name);
+            }
+            
+            /** Otherwise, if the fourth argument is 'names'... */
+            else if ( `names`.startsWith(args[3]) ) {
+              /** If no third argument was provided, send error */
+              if ( typeof args[4] != `string` )
+                return user.send(`Change the item's names to what?\r\n`);
+
+              const names = args.slice(4);
+
+              /** If the names are invalid, send error */
+              if ( !names.every(x => x.match(/^[\x20-\x7E]+$/)) )
+                return user.send(`That is an invalid item name, must consist of printable ASCII.\r\n`);
+
+              /** Set the item prototype's names */
+              itemPrototype.names(names);
+            }
+            
+            /** Otherwise, if the fourth argument is 'slot'... */
+            else if ( `slot`.startsWith(args[3]) ) {
+              /** If no third argument was provided, send error */
+              if ( typeof args[4] != `string` )
+                return user.send(`Change the item's slot to what?\r\n`);
+
+              /** Set the item prototype's name */
+              itemPrototype.slot(parseInt(args[4]));
+            }
+            
+            /** Otherwise, if the fourth argument is 'type'... */
+            else if ( `type`.startsWith(args[3]) ) {
+              /** If no third argument was provided, send error */
+              if ( typeof args[4] != `string` )
+                return user.send(`Change the item's slot to what?\r\n`);
+
+              /** Set the item prototype's name */
+              itemPrototype.type(parseInt(args[4]));
+            }
+            
+            /** Otherwise, send error */
+            else {
+              return user.send(`You do not know how to edit that.\r\n`);
+            }
+
+            world.log().verbose(`Saving Item Prototype ID #${itemPrototype.id()} - ${itemPrototype.name()}`);
+
+            /** Update item prototype in database */
+            await itemPrototype.update(world.database());
+
+            user.send(`Done.\r\n`);
+          }
+        }
+        
         /** Otherwise, if the first argument is 'room'... */
         else if ( `room`.startsWith(args[0]) ) {
           /** If no second argument was provided, send error */
           if ( typeof args[1] != `string` )
-            return user.send(`Edit the room's what? [author, date, description, flags, name]\r\n`);
+            return user.send(`Edit what? [author|date|desc|flags|name]\r\n`);
           
           const room = user.room();
           
@@ -392,10 +738,11 @@ module.exports.createCommands = (world) => {
             
             const author = buffer.toString().split(` `).slice(2).join(` `);
             
-            /** If the third argument is invalid, send error */
+            /** If the author is invalid, send error */
             if ( !author.match(/^[\x20-\x7E]+$/) )
-              return user.send(`That is an invalid room author name, must consist of printable ASCII characters.\r\n`);
+              return user.send(`That is an invalid room author name, must consist of printable ASCII.\r\n`);
 
+            /** Set the room's author */
             room.author(author);
           }
           
@@ -414,10 +761,11 @@ module.exports.createCommands = (world) => {
             
             const description = buffer.toString().split(` `).slice(2).join(` `);
             
-            /** If the third argument is invalid, send error */
+            /** If the description is invalid, send error */
             if ( !description.match(/^[\x20-\x7E]+$/) )
-              return user.send(`That is an invalid room description, must consist of printable ASCII characters.\r\n`);
+              return user.send(`That is an invalid room description, must consist of printable ASCII.\r\n`);
 
+            /** Set the room's description */
             room.description(description);
           }
           
@@ -436,11 +784,17 @@ module.exports.createCommands = (world) => {
             
             const name = buffer.toString().split(` `).slice(2).join(` `);
             
-            /** If the third argument is invalid, send error */
+            /** If the name is invalid, send error */
             if ( !name.match(/^[\x20-\x7E]+$/) )
-              return user.send(`That is an invalid room name, must consist of printable ASCII characters.\r\n`);
+              return user.send(`That is an invalid room name, must consist of printable ASCII.\r\n`);
 
+            /** Set the room's name */
             room.name(name);
+          }
+          
+          /** Otherwise, send error */
+          else {
+            return user.send(`You do not know how to edit that.\r\n`);
           }
           
           world.log().verbose(`Saving Room ID #${room.id()} - ${room.name()}`);

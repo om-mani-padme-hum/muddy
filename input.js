@@ -1,9 +1,6 @@
 /** Require external modules */
 const crypto = require(`crypto`);
 
-/** Require local modules */
-const constants = require(`./constants`);
-
 /**
  * Process input from a user at the name state.
  * @param socket User's socket item
@@ -297,7 +294,7 @@ async function processStateMOTD(world, user, buffer) {
  */
 async function processStateConnected(world, user, buffer) {
   /** Parse arguments */
-  const args = [];
+  let args = [];
   
   /** Convert buffer to lowercase string, trim spaces, except add one space at end to terminate final arg */
   const argsBuffer = buffer.toString().trim() + ` `;
@@ -311,11 +308,11 @@ async function processStateConnected(world, user, buffer) {
   for ( let i = 0; i < argsBuffer.length; i++ ) {
     const c = argsBuffer[i];
     
-    if ( insideQuotes && c == quote ) {
+    if ( insideQuotes && c == quote && argsBuffer[i + 1] && argsBuffer[i + 1] == ` ` ) {
       args.push(arg);
       arg = ``;
       insideQuotes = false;
-    } else if ( !insideQuotes && [`'`, `"`, `\``].includes(c) ) {
+    } else if ( arg.length == 0 && !insideQuotes && [`'`, `"`, `\``].includes(c) ) {
       quote = c;
       insideQuotes = true;
     } else if ( !insideQuotes && c == ` ` ) {
@@ -328,34 +325,44 @@ async function processStateConnected(world, user, buffer) {
     }
   }
   
+  if ( arg.length > 0 )
+    args.push(arg);
+  
+  args = args.filter(x => x != ``);
+  
   /** If there was no command sent, just send a space to force flush of output buffer */
   if ( args.length == 0 )
     return user.send(` `);
   
-  /** Find the first matching command, if one exists */
+  /** Convert command name to lowercase for lookup */
   const commandName = args[0].toLowerCase();
   
+  /** Find the first matching command, if one exists */  
   const command = world.commands().filter(x => x.name().startsWith(commandName))[0];
   
   /** Allowable positions are configured positions or all by default */
-  const allowablePositions = command && command.positions().length > 0 ? command.positions() : [...Array(8).keys()].map(x => x - 6);
+  const allowablePositions = command && command.positions().length > 0 ? command.positions() : world.constants().POSITIONS_ALL;
   
   /** If it exists, execute it for this user, otherwise send error */
   if ( command && allowablePositions.includes(user.position()) )
-    await command.execute()(world, user, args.slice(1).join(` `), args.slice(1).map(x => x.toLowerCase()));
-  else if ( command && user.position() == constants.POSITION_DEAD )
+    await command.execute()(world, user, buffer.toString().replace(new RegExp(`^\s*${args[0]}`), ``), args.slice(1).map(x => x.toLowerCase()));
+  else if ( command && user.position() == world.constants().POSITION_DEAD )
     user.send(`You can't do that... you are DEAD!\r\n`);
-  else if ( command && user.position() == constants.POSITION_INCAPACITATED )
+  else if ( command && user.position() == world.constants().POSITION_INCAPACITATED )
     user.send(`You can't do that while incapacitated!\r\n`);
-  else if ( command && user.position() == constants.POSITION_LYING_DOWN )
+  else if ( command && user.position() == world.constants().POSITION_SLEEPING )
+    user.send(`You can't do that while sleeping.\r\n`);
+  else if ( command && user.position() == world.constants().POSITION_MEDITATING )
+    user.send(`You can't do that while meditating.\r\n`);
+  else if ( command && user.position() == world.constants().POSITION_LYING_DOWN )
     user.send(`You can't do that while lying down.\r\n`);
-  else if ( command && user.position() == constants.POSITION_KNEELING )
+  else if ( command && user.position() == world.constants().POSITION_KNEELING )
     user.send(`You can't do that while kneeling.\r\n`);
-  else if ( command && user.position() == constants.POSITION_SITTING )
+  else if ( command && user.position() == world.constants().POSITION_SITTING )
     user.send(`You can't do that while sitting.\r\n`);
-  else if ( command && user.position() == constants.POSITION_STANDING )
+  else if ( command && user.position() == world.constants().POSITION_STANDING )
     user.send(`You can't do that while standing.\r\n`);
-  else if ( command && user.position() == constants.POSITION_FIGHTING )
+  else if ( command && user.position() == world.constants().POSITION_FIGHTING )
     user.send(`You can't do that while fighting!\r\n`);
   else
     user.send(`That action does not exist in this world.\r\n`);

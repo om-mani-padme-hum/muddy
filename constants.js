@@ -29,29 +29,50 @@ module.exports = {
   STATE_DISCONNECTED: 6,
   
   /** Positions */
-  POSITION_DEAD: -6,
-  POSITION_INCAPACITATED: -5,
-  POSITION_SLEEPING: -4,
+  POSITION_DEAD: -7,
+  POSITION_INCAPACITATED: -6,
+  POSITION_SLEEPING: -5,
+  POSITION_MEDITATING: -4,
   POSITION_LYING_DOWN: -3,
   POSITION_KNEELING: -2,
   POSITION_SITTING: -1,
   POSITION_STANDING: 0,
   POSITION_FIGHTING: 1,
     
+  POSITIONS_ALL: [-7, -6, -5, -4, -3, -2, -1, 0, 1],
   POSITIONS_AWAKE: [-3, -2, -1, 0, 1],
   POSITIONS_MOBILE: [-2, -1, 0, 1],
-  POSITIONS_SAFE: [-4, -3, -2, -1, 0],
+  POSITIONS_SAFE: [-5, -4, -3, -2, -1, 0],
   POSITIONS_AWAKE_AND_SAFE: [-3, -2, -1, 0],
+  
+  /** Sex */
+  SEX_MALE: 0,
+  SEX_FEMALE: 1,
   
   /** Define VT100 terminal modifiers */
   VT100_CLEAR: `\x1b[0m`,
   VT100_HIDE_TEXT: `\x1b[8m`,
   
-  /** Define item flags */
-  ITEM_PLACEHOLDER: 1,
-  ITEM_CONTAINER: 2,
-  ITEM_FIXED: 3,
+  /** Define item rarities */
+  RARITY_COMMON: 0,
+  RARITY_UNCOMMON: 1,
+  RARITY_RARE: 2,
+  RARITY_EPIC: 3,
+  RARITY_LEGENDARY: 4,
   
+  /** Define item flags */
+  ITEM_CONTAINER: 0,
+  ITEM_FIXED: 1,
+  ITEM_CLOSED: 2,
+  ITEM_LOCKED: 3,
+  ITEM_CAN_DRINK: 4,
+  ITEM_CAN_EAT: 5,
+  ITEM_CAN_LAY_DOWN: 6,
+  ITEM_CAN_KNEEL: 7,
+  ITEM_CAN_SIT: 8,
+  ITEM_CAN_OPEN_CLOSE: 9,
+  ITEM_CAN_LOCK: 10,
+
   /** Define item types */
   ITEM_OTHER: 0,
   ITEM_ARMOR: 1,
@@ -78,7 +99,7 @@ module.exports = {
   SLOT_CHEST: 5,
   SLOT_BACK: 6,
   SLOT_ARMS: 7,
-  SLOT_WRISTS: 8,
+  SLOT_FOREARMS: 8,
   SLOT_GLOVES: 9,
   SLOT_WAIST: 10,
   SLOT_LEGS: 11,
@@ -94,7 +115,7 @@ module.exports = {
     `Chest`,
     `Back`,
     `Arms`,
-    `Wrists`,
+    `Forearms`,
     `Gloves`,
     `Waist`,
     `Legs`,

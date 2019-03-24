@@ -1,11 +1,8 @@
-/** Require local modules */
-const constants = require(`./constants`);
-
 module.exports.createCommands = (world) => {
   return [
     new world.Command({
       name: `drop`,
-      positions: constants.POSITIONS_MOBILE,
+      positions: world.constants().POSITIONS_MOBILE,
       execute: async (world, user, buffer, args) => {
         /** Verify item argument exists */
         if ( typeof args[0] != `string` ) {
@@ -36,7 +33,7 @@ module.exports.createCommands = (world) => {
           const [name, count] = world.parseName(user, args, 0);
 
           /** Compile list of inventory items matching that item name */
-          const items = user.inventory().filter(x => x.names().some(y => y.toLowerCase().startsWith(name.toLowerCase())));
+          const items = user.inventory().filter(x => x.names().some(y => y.toLowerCase().startsWith(name)));
 
           /** Verify there is an item at desired count */
           if ( items.length < count ) {
@@ -53,7 +50,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `get`,
-      positions: constants.POSITIONS_MOBILE,
+      positions: world.constants().POSITIONS_MOBILE,
       execute: async (world, user, buffer, args) => {
         let containerName, containerCount, containers = [], items = [];
 
@@ -63,8 +60,8 @@ module.exports.createCommands = (world) => {
           [containerName, containerCount] = world.parseName(user, args, 1);
 
           /** Compile list of inventory and room items matching that container name */
-          containers = user.inventory().filter(x => x.names().some(y => y.toLowerCase().startsWith(containerName.toLowerCase())));
-          containers = containers.concat(user.room().items().filter(x => x.names().some(y => y.toLowerCase().startsWith(containerName.toLowerCase()))));
+          containers = user.inventory().filter(x => x.names().some(y => y.toLowerCase().startsWith(containerName)));
+          containers = containers.concat(user.room().items().filter(x => x.names().some(y => y.toLowerCase().startsWith(containerName))));
         }
         
         /** Verify item argument exists */
@@ -120,9 +117,9 @@ module.exports.createCommands = (world) => {
 
           /** Get (item) (container) - use container's contents, get (item) - use room items */
           if ( containers.length > 0 )
-            items = containers[containerCount - 1].contents().filter(x => x.names().some(y => y.toLowerCase().startsWith(itemName.toLowerCase())));
+            items = containers[containerCount - 1].contents().filter(x => x.names().some(y => y.toLowerCase().startsWith(itemName)));
           else
-            items = user.room().items().filter(x => x.names().some(y => y.toLowerCase().startsWith(itemName.toLowerCase())));
+            items = user.room().items().filter(x => x.names().some(y => y.toLowerCase().startsWith(itemName)));
           
           /** Verify there is an item at desired item count */
           if ( items.length < itemCount ) {
@@ -148,7 +145,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `put`,
-      positions: constants.POSITIONS_MOBILE,
+      positions: world.constants().POSITIONS_MOBILE,
       execute: async (world, user, buffer, args) => {
         /** Verify item argument exists */
         if ( typeof args[0] != `string` ) {
@@ -166,8 +163,8 @@ module.exports.createCommands = (world) => {
           const [containerName, containerCount] = world.parseName(user, args, 1);
 
           /** Compile list of inventory and room items matching that container name */
-          let containers = user.inventory().filter(x => x.names().some(y => y.toLowerCase().startsWith(containerName.toLowerCase())));
-          containers = containers.concat(user.room().items().filter(x => x.names().some(y => y.toLowerCase().startsWith(containerName.toLowerCase()))));
+          let containers = user.inventory().filter(x => x.names().some(y => y.toLowerCase().startsWith(containerName)));
+          containers = containers.concat(user.room().items().filter(x => x.names().some(y => y.toLowerCase().startsWith(containerName))));
 
           /** Verify there is an item at desired container count */
           if ( containers.length < containerCount ) {
@@ -199,7 +196,7 @@ module.exports.createCommands = (world) => {
             const [itemName, itemCount] = world.parseName(user, args, 0);
 
             /** Compile list of inventory items matching that item name */
-            const items = user.inventory().filter(x => x.names().some(y => y.toLowerCase().startsWith(itemName.toLowerCase())));
+            const items = user.inventory().filter(x => x.names().some(y => y.toLowerCase().startsWith(itemName)));
 
             /** Verify there is an item at desired item count */
             if ( items.length < itemCount ) {
@@ -217,7 +214,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `remove`,
-      positions: constants.POSITIONS_MOBILE,
+      positions: world.constants().POSITIONS_MOBILE,
       execute: async (world, user, buffer, args) => {
         /** Verify item argument exists */
         if ( typeof args[0] != `string` ) {
@@ -253,7 +250,7 @@ module.exports.createCommands = (world) => {
           const [name, count] = world.parseName(user, args, 0);
 
           /** Compile list of equipment items matching that item name */
-          const items = user.equipment().filter(x => x.names().some(y => y.toLowerCase().startsWith(name.toLowerCase())));
+          const items = user.equipment().filter(x => x.names().some(y => y.toLowerCase().startsWith(name)));
 
           /** Verify there is an item at desired count */
           if ( items.length < count ) {
@@ -274,7 +271,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `say`,
-      positions: constants.POSITIONS_AWAKE,
+      positions: world.constants().POSITIONS_AWAKE,
       execute: async (world, user, buffer, args) => {
         /** Verify at least one argument exists */
         if ( buffer.trim().length == 0 ) {
@@ -298,7 +295,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `wear`,
-      positions: constants.POSITIONS_MOBILE,
+      positions: world.constants().POSITIONS_MOBILE,
       execute: async (world, user, buffer, args) => {
         /** Verify item argument exists */
         if ( typeof args[0] != `string` ) {
@@ -341,7 +338,7 @@ module.exports.createCommands = (world) => {
           const [name, count] = world.parseName(user, args, 0);
         
           /** Compile list of items in inventory matching that item name */
-          const items = user.inventory().filter(x => x.names().some(y => y.toLowerCase().startsWith(name.toLowerCase())));
+          const items = user.inventory().filter(x => x.names().some(y => y.toLowerCase().startsWith(name)));
 
           /** Verify there is an item at desired count */
           if ( items.length < count ) {
@@ -373,7 +370,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `wield`,
-      positions: constants.POSITIONS_MOBILE,
+      positions: world.constants().POSITIONS_MOBILE,
       execute: async (world, user, buffer, args) => {
         /** Verify item argument exists */
         if ( typeof args[0] != `string` ) {
@@ -418,7 +415,7 @@ module.exports.createCommands = (world) => {
           const [name, count] = world.parseName(user, args, 0);
 
           /** Compile list of items in inventory matching that item name */
-          const items = user.inventory().filter(x => x.names().some(y => y.toLowerCase().startsWith(name.toLowerCase())));
+          const items = user.inventory().filter(x => x.names().some(y => y.toLowerCase().startsWith(name)));
 
           /** Verify there is an item at desired count */
           if ( items.length < count ) {

@@ -377,7 +377,7 @@ World.prototype.parseName = function (user, args, num) {
     count = parseInt(matches[1]);
   }
   
-  return [name, count];
+  return [name.toLowerCase(), count];
 };
 
 World.prototype.terminalWrap = function (text) {
@@ -398,19 +398,19 @@ World.prototype.colorize = function (text) {
   
   text = text.replace(/#k/g, `\u001b[30m`).replace(/#r/g, `\u001b[31m`).replace(/#g/g, `\u001b[32m`);
   text = text.replace(/#y/g, `\u001b[33m`).replace(/#b/g, `\u001b[34m`).replace(/#p/g, `\u001b[35m`);
-  text = text.replace(/#c/g, `\u001b[36m`).replace(/#w/g, `\u001b[37m`);
+  text = text.replace(/#c/g, `\u001b[36m`).replace(/#w/g, `\u001b[37m`).replace(/#o/g, `\u001b[38;5;202m`);
 
   text = text.replace(/#K/g, `\u001b[90m`).replace(/#R/g, `\u001b[91m`).replace(/#G/g, `\u001b[92m`);
   text = text.replace(/#Y/g, `\u001b[93m`).replace(/#B/g, `\u001b[94m`).replace(/#P/g, `\u001b[95m`);
-  text = text.replace(/#C/g, `\u001b[96m`).replace(/#W/g, `\u001b[97m`);
+  text = text.replace(/#C/g, `\u001b[96m`).replace(/#W/g, `\u001b[97m`).replace(/#O/g, `\u001b[38;5;214m`);
   
   text = text.replace(/%k/g, `\u001b[40m`).replace(/%r/g, `\u001b[41m`).replace(/%g/g, `\u001b[42m`);
   text = text.replace(/%y/g, `\u001b[43m`).replace(/%b/g, `\u001b[44m`).replace(/%p/g, `\u001b[45m`);
-  text = text.replace(/%c/g, `\u001b[46m`).replace(/%w/g, `\u001b[47m`);
+  text = text.replace(/%c/g, `\u001b[46m`).replace(/%w/g, `\u001b[47m`).replace(/%o/g, `\u001b[48;5;202m`);
 
   text = text.replace(/%K/g, `\u001b[100m`).replace(/%R/g, `\u001b[101m`).replace(/%G/g, `\u001b[102m`);
   text = text.replace(/%Y/g, `\u001b[103m`).replace(/%B/g, `\u001b[104m`).replace(/%P/g, `\u001b[105m`);
-  text = text.replace(/%C/g, `\u001b[106m`).replace(/%W/g, `\u001b[107m`);
+  text = text.replace(/%C/g, `\u001b[106m`).replace(/%W/g, `\u001b[107m`).replace(/%O/g, `\u001b[48;5;214m`);
 
   text = text.replace(/#n/g, `\u001b[0m`).replace(/%n/g, `\u001b[0m`);
 
@@ -807,7 +807,7 @@ World.prototype.listen = async function () {
   server.listen(this.port(), () => {
     this.log().info(`Muddy is up and running on port ${this.port()}!`);
     
-    /** Update fights every 2 seconds */
+    /** Update world every 250 milliseconds */
     setTimeout(update, 250, this);
   });
 };

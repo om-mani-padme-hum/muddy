@@ -1,5 +1,4 @@
 /** Require local modules */
-const constants = require(`./constants`);
 const fighting = require(`./fighting`);
 
 let tick = 1;
@@ -25,9 +24,9 @@ module.exports = (world) => {
           character.energy(Math.min(character.maxEnergy(), character.energy() + 1));
           
           /** Update position if necessary */
-          if ( character.position() == constants.POSITION_INCAPACITATED && character.health() > 0 ) {
+          if ( character.position() == world.constants().POSITION_INCAPACITATED && character.health() > 0 ) {
             character.send(`You come to your senses and slowly stumble to your feet.\r\n`);
-            character.position(constants.POSITION_STANDING);
+            character.position(world.constants().POSITION_STANDING);
           }
         }
       });

@@ -1,6 +1,3 @@
-/** Require local modules */
-const constants = require(`./constants`);
-
 module.exports.createCommands = (world) => {
   return [
     new world.Command({
@@ -13,6 +10,8 @@ module.exports.createCommands = (world) => {
         user.send(world.colorize(`##k - #kBlack\r\n`));
         user.send(world.colorize(`##R - #RLight red\r\n`));
         user.send(world.colorize(`##r - #rDark red\r\n`));
+        user.send(world.colorize(`##O - #OLight orange\r\n`));
+        user.send(world.colorize(`##o - #oDark orange\r\n`));
         user.send(world.colorize(`##B - #BLight blue\r\n`));
         user.send(world.colorize(`##b - #bDark blue\r\n`));
         user.send(world.colorize(`##G - #GLight green\r\n`));
@@ -30,6 +29,8 @@ module.exports.createCommands = (world) => {
         user.send(world.colorize(`%%k - %kBlack background\r\n`));
         user.send(world.colorize(`%%R - %RLight red background\r\n`));
         user.send(world.colorize(`%%r - %rDark red background\r\n`));
+        user.send(world.colorize(`%%O - %OLight orange background\r\n`));
+        user.send(world.colorize(`%%o - %oDark orange background\r\n`));
         user.send(world.colorize(`%%B - %BLight blue background\r\n`));
         user.send(world.colorize(`%%b - %bDark blue background\r\n`));
         user.send(world.colorize(`%%G - %GLight green background\r\n`));
@@ -44,7 +45,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `quit`,
-      positions: constants.POSITIONS_SAFE,
+      positions: world.constants().POSITIONS_SAFE,
       execute: async (world, user, buffer) => {
         /** Log user quit */
         world.log().info(`User ${user.name()} has quit.`);
@@ -68,7 +69,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `save`,
-      positions: constants.POSITIONS_SAFE,
+      positions: world.constants().POSITIONS_SAFE,
       execute: async (world, user, buffer) => {
         /** If user id is equal to zero, insert user into the database */
         if ( user.id() == 0 )
