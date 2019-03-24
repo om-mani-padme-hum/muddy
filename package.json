@@ -28,7 +28,8 @@
   },
   "homepage": "https://github.com/om-mani-padme-hum/muddy#readme",
   "devDependencies": {
-    "docket-parser": "^0.7.1"
+    "docket-parser": "^0.7.1",
+    "eslint": "^5.15.3"
   },
   "jshintConfig": {
     "esversion": 6,

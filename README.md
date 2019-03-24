@@ -1,4 +1,4 @@
-# Muddy v0.10.1 [![HitCount](http://hits.dwyl.com/om-mani-padme-hum/muddy.svg)](http://hits.dwyl.com/om-mani-padme-hum/muddy)
+# Muddy v0.10.2 [![HitCount](http://hits.dwyl.com/om-mani-padme-hum/muddy.svg)](http://hits.dwyl.com/om-mani-padme-hum/muddy)
 
 A Node.js Multi-User Dungeon (MUD) Framework
 
@@ -40,15 +40,15 @@ Set up the MySQL database:
 
 Start it up!
 
-`npm start`
+7. `npm start`
 
 Login:
 
-`telnet localhost 9000`
+8. `telnet localhost 9000`
 
 For the web builder, browse to:
 
-`http://localhost:7001/`
+9. `http://localhost:7001/`
  
 ## Currently Implemented Commands:
 
