@@ -1,4 +1,8 @@
+/** Require external modules */
 const util = require(`util`);
+
+/** Require local modules */
+const constants = require(`./constants`);
 
 module.exports.createCommands = (world) => {
   return [

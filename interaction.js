@@ -1,3 +1,6 @@
+/** Require local modules */
+const constants = require(`./constants`);
+
 module.exports.createCommands = (world) => {
   return [
     new world.Command({
