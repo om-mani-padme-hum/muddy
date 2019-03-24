@@ -1,4 +1,4 @@
-# Muddy v0.10.0 [![HitCount](http://hits.dwyl.com/om-mani-padme-hum/muddy.svg)](http://hits.dwyl.com/om-mani-padme-hum/muddy)
+# Muddy v0.10.1 [![HitCount](http://hits.dwyl.com/om-mani-padme-hum/muddy.svg)](http://hits.dwyl.com/om-mani-padme-hum/muddy)
 
 A Node.js Multi-User Dungeon (MUD) Framework
 
@@ -11,33 +11,42 @@ A Node.js Multi-User Dungeon (MUD) Framework
 
 # Installation 
 
-`git clone https://github.com/om-mani-padme-hum/muddy.git`
+Clone muddy:
 
-Enter muddy directory
+1. `git clone https://github.com/om-mani-padme-hum/muddy.git`
 
-`npm install`
+Enter muddy directory and install dependencies:
 
-Install a MySQL database, create a database schema and import 
-the [muddy.sql](https://github.com/om-mani-padme-hum/muddy/blob/master/muddy.sql) file.  Create a file called 
-'mysql-config.json' in the muddy directory with the following JSON containing your MySQL authentication 
-and schema info:
+2. `cd muddy` (symbolic, just get in the directory)
 
+3. `npm install`
+
+Set up the MySQL database:
+
+4. Download [MySQL](https://www.mysql.com/downloads/) and install, if not already installed.
+
+5. Create a database schema for muddy and import the [muddy.sql](https://github.com/om-mani-padme-hum/muddy/blob/master/muddy.sql) file.  
+
+6. Create a JSON file called `mysql-config.json` in the muddy directory with your MySQL info:
+
+```json
 {
-  "host"            : `localhost`,
-  "user"            : `muddy`,
-  "password"        : `S3cur3UrMuD!`,
-  "database"        : `muddy`
+  "host"            : "localhost",
+  "user"            : "muddy",
+  "password"        : "S3cur3UrMuD!",
+  "database"        : "muddy"
 }
+```
 
 Start it up!
 
 `npm start`
 
-Login...
+Login:
 
 `telnet localhost 9000`
 
-For web builder, browse to:
+For the web builder, browse to:
 
 `http://localhost:7001/`
  
