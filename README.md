@@ -1,4 +1,4 @@
-# Muddy v0.10.2 [![HitCount](http://hits.dwyl.com/om-mani-padme-hum/muddy.svg)](http://hits.dwyl.com/om-mani-padme-hum/muddy)
+# Muddy v0.10.3 [![HitCount](http://hits.dwyl.com/om-mani-padme-hum/muddy.svg)](http://hits.dwyl.com/om-mani-padme-hum/muddy)
 
 A Node.js Multi-User Dungeon (MUD) Framework
 
@@ -9,7 +9,7 @@ A Node.js Multi-User Dungeon (MUD) Framework
 * Web-based builder interface partially in place, not very useful just yet but some editing is possible.
 * Basic fighting has now been added, including incapacitated state and natural healing over time!
 
-# Installation 
+## Installation 
 
 Clone muddy:
 

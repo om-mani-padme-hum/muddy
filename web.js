@@ -351,7 +351,7 @@ module.exports.webBuilder = (world, port = 7001) => {
               if ( mobile.prototype() == mobilePrototype ) {
                 /** Define recursive helper function for adding any item contents to world and setting container of each */
                 const recursiveItemContents = async (item) => {
-                  for ( let i = item.contents().length - 1; i >= 0; i++ ) {
+                  for ( let i = item.contents().length - 1; i >= 0; i-- ) {
                     await recursiveItemContents(content);
                   }
                   

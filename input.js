@@ -343,9 +343,12 @@ async function processStateConnected(world, user, buffer) {
   /** Allowable positions are configured positions or all by default */
   const allowablePositions = command && command.positions().length > 0 ? command.positions() : world.constants().POSITIONS_ALL;
   
+  /** Convert buffer to string and trim command */
+  buffer = buffer.toString().replace(new RegExp(`^[\\s'"]*${args[0]}[\\s'"]*`), ``);
+    
   /** If it exists, execute it for this user, otherwise send error */
   if ( command && allowablePositions.includes(user.position()) )
-    await command.execute()(world, user, buffer.toString().replace(new RegExp(`^\s*${args[0]}`), ``), args.slice(1).map(x => x.toLowerCase()));
+    await command.execute()(world, user, buffer, args.slice(1).map(x => x.toLowerCase()));
   else if ( command && user.position() == world.constants().POSITION_DEAD )
     user.send(`You can't do that... you are DEAD!\r\n`);
   else if ( command && user.position() == world.constants().POSITION_INCAPACITATED )

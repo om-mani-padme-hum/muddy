@@ -804,6 +804,11 @@ module.exports.createCommands = (world) => {
           
           user.send(`Done.\r\n`);
         }
+        
+        /** Otherwise, send error */
+        else {
+          user.send(`You do not know how to edit that.\r\n`);
+        }
       }
     })
   ];
