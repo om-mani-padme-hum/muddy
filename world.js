@@ -291,7 +291,6 @@ World.prototype.itemInstanceFromPrototype = async function (prototype) {
 };
 
 World.prototype.mobileInstanceFromPrototype = async function (prototype) {
-  /** @todo inventory and equipment deployments */
   const mobileInstance = new this.MobileInstance({
     prototype: prototype,
     name: prototype.name(),
@@ -394,30 +393,57 @@ World.prototype.terminalWrap = function (text) {
 };
 
 World.prototype.colorize = function (text) {
-  text = text.replace(/##/g, `@&#$!*;`).replace(/%%/g, `*!$#&@;`);
+  /** Create list of color codes with ANSI code replacements */
+  const colors = [
+    [`#k`, `\u001b[30m`],  [`#r`, `\u001b[31m`],  [`#g`, `\u001b[32m`], 
+    [`#y`, `\u001b[33m`],  [`#b`, `\u001b[34m`],  [`#p`, `\u001b[35m`], 
+    [`#c`, `\u001b[36m`],  [`#w`, `\u001b[37m`],  [`#o`, `\u001b[38;5;202m`],
+    [`#K`, `\u001b[90m`],  [`#R`, `\u001b[91m`],  [`#G`, `\u001b[92m`],
+    [`#Y`, `\u001b[93m`],  [`#B`, `\u001b[94m`],  [`#P`, `\u001b[95m`],
+    [`#C`, `\u001b[96m`],  [`#W`, `\u001b[97m`],  [`#O`, `\u001b[38;5;214m`],
+    [`%k`, `\u001b[40m`],  [`%r`, `\u001b[41m`],  [`%g`, `\u001b[42m`],
+    [`%y`, `\u001b[43m`],  [`%b`, `\u001b[44m`],  [`%p`, `\u001b[45m`],
+    [`%c`, `\u001b[46m`],  [`%w`, `\u001b[47m`],  [`%o`, `\u001b[48;5;202m`],
+    [`%K`, `\u001b[100m`], [`%R`, `\u001b[101m`], [`%G`, `\u001b[102m`], 
+    [`%Y`, `\u001b[103m`], [`%B`, `\u001b[104m`], [`%P`, `\u001b[105m`],
+    [`%C`, `\u001b[106m`], [`%W`, `\u001b[107m`], [`%O`, `\u001b[48;5;214m`],
+    [`#n`, `\u001b[0m`],   [`%n`, `\u001b[0m`],   [`##`, `#`], [`%%`, `%`],
+  ];
+    
+  let newText = ``;
   
-  text = text.replace(/#k/g, `\u001b[30m`).replace(/#r/g, `\u001b[31m`).replace(/#g/g, `\u001b[32m`);
-  text = text.replace(/#y/g, `\u001b[33m`).replace(/#b/g, `\u001b[34m`).replace(/#p/g, `\u001b[35m`);
-  text = text.replace(/#c/g, `\u001b[36m`).replace(/#w/g, `\u001b[37m`).replace(/#o/g, `\u001b[38;5;202m`);
+  /** Loop through original text one character at a time... */
+  for ( let i = 0; i < text.length; i++ ) {
+    /** If this is not the last character and it's a '#' or '%'... */
+    if ( i < text.length - 1 && ( text[i] == `#` || text[i] == `%` ) ) {
+      /** Create code from current character and one directly succeeding */
+      const code = text[i] + text[i + 1];
+      
+      /** Attempt to find a color with code matching the one found */
+      const color = colors.find(x => x[0] == code);
+      
+      /** If a color was found... */
+      if ( color ) {
+        /** Insert ANSI color code in new text */
+        newText += color[1];
+        
+        /** Skip past second character of color code */
+        i++;
+        
+        /** Move on to the next character */
+        continue;
+      }
+    }
 
-  text = text.replace(/#K/g, `\u001b[90m`).replace(/#R/g, `\u001b[91m`).replace(/#G/g, `\u001b[92m`);
-  text = text.replace(/#Y/g, `\u001b[93m`).replace(/#B/g, `\u001b[94m`).replace(/#P/g, `\u001b[95m`);
-  text = text.replace(/#C/g, `\u001b[96m`).replace(/#W/g, `\u001b[97m`).replace(/#O/g, `\u001b[38;5;214m`);
+    /** Append the current character of the old text to the new text */
+    newText += text[i];
+  }
   
-  text = text.replace(/%k/g, `\u001b[40m`).replace(/%r/g, `\u001b[41m`).replace(/%g/g, `\u001b[42m`);
-  text = text.replace(/%y/g, `\u001b[43m`).replace(/%b/g, `\u001b[44m`).replace(/%p/g, `\u001b[45m`);
-  text = text.replace(/%c/g, `\u001b[46m`).replace(/%w/g, `\u001b[47m`).replace(/%o/g, `\u001b[48;5;202m`);
-
-  text = text.replace(/%K/g, `\u001b[100m`).replace(/%R/g, `\u001b[101m`).replace(/%G/g, `\u001b[102m`);
-  text = text.replace(/%Y/g, `\u001b[103m`).replace(/%B/g, `\u001b[104m`).replace(/%P/g, `\u001b[105m`);
-  text = text.replace(/%C/g, `\u001b[106m`).replace(/%W/g, `\u001b[107m`).replace(/%O/g, `\u001b[48;5;214m`);
-
-  text = text.replace(/#n/g, `\u001b[0m`).replace(/%n/g, `\u001b[0m`);
-
-  text = text.replace(/@&#\$!\*;/g, `#`).replace(/\*!\$#&@;/g, `%`);
-  text = text.replace(/\r\n/, `\u001b[0m\r\n`);
-  
-  return `${text}\u001b[0m`;
+  /** Be sure to cancel out any colors at the end of each new line... */
+  newText = newText.replace(/\r\n/, `\u001b[0m\r\n`);
+    
+  /** ...including at the end of the text */
+  return `${newText}\u001b[0m`;
 };
 
 World.prototype.createArea = async function (params) {

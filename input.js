@@ -7,7 +7,7 @@ const crypto = require(`crypto`);
  * @param buffer User's input buffer
  * @param user User item
  */
-async function processStateName(world, user, buffer) {
+async function processStateName(world, user, buffer) {  
   /** Force name to start with uppercase letter */
   const name = buffer.toString().trim().charAt(0).toUpperCase() + buffer.toString().trim().toLowerCase().slice(1);
 
@@ -35,7 +35,7 @@ async function processStateName(world, user, buffer) {
     /** If failed to load, send new password prompt */
     if ( !existingUser ) {
       /** Store name with original capitalization */
-      user.name(buffer.toString());
+      user.name(buffer.toString().trim().charAt(0).toUpperCase() + buffer.toString().trim().slice(1));
 
       user.send(`Welcome to Muddy, ${name}!\r\n`);
       user.send(`Please choose a password: `);
@@ -213,7 +213,7 @@ async function processStateConfirmPassword(world, user, buffer) {
     await user.update(world.database());
     
     /** Password matches, proceed to the message of the day */
-    user.send(world.motd());
+    user.send(world.colorize(world.motd()));
     
     /** Get the start room */
     const room = world.rooms().find(x => x.id() == world.constants().START_ROOM);
