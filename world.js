@@ -10,8 +10,10 @@ const building = require(`./building`);
 const characters = require(`./characters`);
 const commands = require(`./commands`);
 const constants = require(`./constants`);
+const deployments = require(`./deployments`);
 const exits = require(`./exits`);
 const fighting = require(`./fighting`);
+const help = require(`./help`);
 const info = require(`./info`);
 const input = require(`./input`);
 const interaction = require(`./interaction`);
@@ -34,6 +36,8 @@ const configWorld = {
     { name: `commands`, type: `Array`, arrayOf: { instanceOf: `Command` } },
     { name: `constants`, type: `Object`, default: constants },
     { name: `database`, type: `MySQLConnection` },
+    { name: `deployments`, type: `Array`, arrayOf: { instanceOf: `Deployment` } },
+    { name: `help`, type: `Array`, arrayOf: { instanceOf: `Help` } },
     { name: `itemPrototypes`, type: `Array`, arrayOf: { instanceOf: `ItemPrototype` } },
     { name: `log`, instanceOf: `Object` },
     { name: `mobilePrototypes`, type: `Array`, arrayOf: { instanceOf: `MobilePrototype` } },
@@ -69,21 +73,24 @@ World.prototype.loadAreas = async function () {
   /** Load areas */
   const areaList = await this.database().query(`SELECT * FROM areas`);
   
-  for ( let i = 0, i_max = areaList.length; i < i_max; i++ ) {
+  for ( let i = 0, iMax = areaList.length; i < iMax; i++ ) {
     /** Load area from database */
     const area = await new this.Area().load(areaList[i], this.database());
     
     /** Add area to world */
     this.areas().push(area);
   
-    for ( let j = 0, j_max = area.mobilePrototypes().length; j < j_max; j++ )
+    for ( let j = 0, jMax = area.mobilePrototypes().length; j < jMax; j++ )
       this.mobilePrototypes().push(area.mobilePrototypes()[j]);
     
-    for ( let j = 0, j_max = area.itemPrototypes().length; j < j_max; j++ )
+    for ( let j = 0, jMax = area.itemPrototypes().length; j < jMax; j++ )
       this.itemPrototypes().push(area.itemPrototypes()[j]);
     
+    for ( let j = 0, jMax = area.deployments().length; j < jMax; j++ )
+      this.deployments().push(area.deployments()[j]);
+    
     /** Loop through area rooms */
-    for ( let i = 0, i_max = area.rooms().length; i < i_max; i++ ) {
+    for ( let i = 0, iMax = area.rooms().length; i < iMax; i++ ) {
       /** Set area of room */
       area.rooms()[i].area(area);
       
@@ -124,6 +131,18 @@ World.prototype.loadAreas = async function () {
       });
     });
   });
+  
+  /** Load help */
+  const helpList = await this.database().query(`SELECT * FROM help`);
+  
+  /** Load help from database */
+  for ( let i = 0, iMax = helpList.length; i < iMax; i++ ) {
+    /** Load help data into object */
+    const help = await new this.Help().load(helpList[i]);
+    
+    /** Add help to world */
+    this.help().push(help);
+  }
 };
 
 World.prototype.characterFromAnywhere = async function (character) {  
@@ -188,9 +207,19 @@ World.prototype.itemFromAnywhere = async function (item) {
     if ( item.character().inventory().indexOf(item) !== -1 )
       item.character().inventory().splice(item.character().inventory().indexOf(item), 1);
         
-    /** If item is part of the equipment, remove it from the equipment list */
-    if ( item.character().equipment().indexOf(item) !== -1 )
+    /** If item is part of the equipment... */
+    if ( item.character().equipment().indexOf(item) !== -1 ) {
+      /** Subtract item stats from character's stats */
+      item.character().accuracy(item.character().accuracy() - item.accuracy());
+      item.character().armor(item.character().armor() - item.armor());
+      item.character().deflection(item.character().deflection() - item.deflection());
+      item.character().dodge(item.character().dodge() - item.dodge());
+      item.character().power(item.character().power() - item.power());
+      item.character().speed(item.character().speed() - item.speed());
+
+      /** Remove item from equipment list */
       item.character().equipment().splice(item.character().equipment().indexOf(item), 1);
+    }
     
     /** Save character */
     await item.character().update(this.database());
@@ -251,6 +280,14 @@ World.prototype.itemToEquipment = async function (item, character) {
   /** Add item to character's equipment list */
   character.equipment().push(item);
   
+  /** Add item stats to character's stats */
+  character.accuracy(character.accuracy() + item.accuracy());
+  character.armor(character.armor() + item.armor());
+  character.deflection(character.deflection() + item.deflection());
+  character.dodge(character.dodge() + item.dodge());
+  character.power(character.power() + item.power());
+  character.speed(character.speed() + item.speed());
+  
   /** Save character */
   await character.update(this.database());
 };
@@ -281,9 +318,6 @@ World.prototype.itemInstanceFromPrototype = async function (prototype) {
     slot: prototype.slot(),
     flags: prototype.flags()
   });
-  
-  for ( let i = 0, i_max = prototype.contents().length; i < i_max; i++ )
-    itemInstance.contents().push(await this.itemInstanceFromPrototype(prototype.contents()[i]));
   
   await itemInstance.insert(this.database());
   
@@ -321,31 +355,32 @@ World.prototype.send = function (text, exclude = []) {
 World.prototype.sendUserEquipment = function (user, other) {
   user.send(`Equipment:\r\n`);
 
-  user.send(this.colorize(`  #y[Head       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_HEAD) ? other.equipment().find(x => x.slot() == this.constants().SLOT_HEAD).name() : `none`}\r\n`));
-  user.send(this.colorize(`  #y[Face       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_FACE) ? other.equipment().find(x => x.slot() == this.constants().SLOT_FACE).name() : `none`}\r\n`));
-  user.send(this.colorize(`  #y[Neck       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_NECK) ? other.equipment().find(x => x.slot() == this.constants().SLOT_NECK).name() : `none`}\r\n`));
-  user.send(this.colorize(`  #y[Shoulders  ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_SHOULDERS) ? other.equipment().find(x => x.slot() == this.constants().SLOT_SHOULDERS).name() : `none`}\r\n`));
-  user.send(this.colorize(`  #y[Chest      ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_CHEST) ? other.equipment().find(x => x.slot() == this.constants().SLOT_CHEST).name() : `none`}\r\n`));
-  user.send(this.colorize(`  #y[Back       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_BACK) ? other.equipment().find(x => x.slot() == this.constants().SLOT_BACK).name() : `none`}\r\n`));
-  user.send(this.colorize(`  #y[Arms       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_ARMS) ? other.equipment().find(x => x.slot() == this.constants().SLOT_ARMS).name() : `none`}\r\n`));
-  user.send(this.colorize(`  #y[Wrists     ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_WRISTS) ? other.equipment().find(x => x.slot() == this.constants().SLOT_WRISTS).name() : `none`}\r\n`));
-  user.send(this.colorize(`  #y[Gloves     ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_GLOVES) ? other.equipment().find(x => x.slot() == this.constants().SLOT_GLOVES).name() : `none`}\r\n`));
-  user.send(this.colorize(`  #y[Waist      ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_WAIST) ? other.equipment().find(x => x.slot() == this.constants().SLOT_WAIST).name() : `none`}\r\n`));
-  user.send(this.colorize(`  #y[Legs       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_LEGS) ? other.equipment().find(x => x.slot() == this.constants().SLOT_LEGS).name() : `none`}\r\n`));
-  user.send(this.colorize(`  #y[Feet       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_FEET) ? other.equipment().find(x => x.slot() == this.constants().SLOT_FEET).name() : `none`}\r\n`));
+  user.send(this.colorize(`  #y[Head       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_HEAD) ? other.equipment().find(x => x.slot() == this.constants().SLOT_HEAD).name() : `nothing`}\r\n`));
+  user.send(this.colorize(`  #y[Face       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_FACE) ? other.equipment().find(x => x.slot() == this.constants().SLOT_FACE).name() : `nothing`}\r\n`));
+  user.send(this.colorize(`  #y[Neck       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_NECK) ? other.equipment().find(x => x.slot() == this.constants().SLOT_NECK).name() : `nothing`}\r\n`));
+  user.send(this.colorize(`  #y[Shoulders  ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_SHOULDERS) ? other.equipment().find(x => x.slot() == this.constants().SLOT_SHOULDERS).name() : `nothing`}\r\n`));
+  user.send(this.colorize(`  #y[Chest      ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_CHEST) ? other.equipment().find(x => x.slot() == this.constants().SLOT_CHEST).name() : `nothing`}\r\n`));
+  user.send(this.colorize(`  #y[Back       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_BACK) ? other.equipment().find(x => x.slot() == this.constants().SLOT_BACK).name() : `nothing`}\r\n`));
+  user.send(this.colorize(`  #y[Arms       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_ARMS) ? other.equipment().find(x => x.slot() == this.constants().SLOT_ARMS).name() : `nothing`}\r\n`));
+  user.send(this.colorize(`  #y[Wrists     ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_WRISTS) ? other.equipment().find(x => x.slot() == this.constants().SLOT_WRISTS).name() : `nothing`}\r\n`));
+  user.send(this.colorize(`  #y[Gloves     ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_GLOVES) ? other.equipment().find(x => x.slot() == this.constants().SLOT_GLOVES).name() : `nothing`}\r\n`));
+  user.send(this.colorize(`  #y[Waist      ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_WAIST) ? other.equipment().find(x => x.slot() == this.constants().SLOT_WAIST).name() : `nothing`}\r\n`));
+  user.send(this.colorize(`  #y[Legs       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_LEGS) ? other.equipment().find(x => x.slot() == this.constants().SLOT_LEGS).name() : `nothing`}\r\n`));
+  user.send(this.colorize(`  #y[Feet       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_FEET) ? other.equipment().find(x => x.slot() == this.constants().SLOT_FEET).name() : `nothing`}\r\n`));
 
   const wieldedItems = other.equipment().filter(x => x.slot() == this.constants().SLOT_WIELD);
 
   if ( wieldedItems.length == 2 ) {
     user.send(this.colorize(`  #y[Right Hand ]#n ${wieldedItems[0].name()}\r\n`));
     user.send(this.colorize(`  #y[Left Hand  ]#n ${wieldedItems[1].name()}\r\n`));
+  } else if ( wieldedItems.length == 1 && wieldedItems[0].type() == this.constants().ITEM_2H_WEAPON ) {
+    user.send(this.colorize(`  #y[Hands      ]#n ${wieldedItems[0].name()}\r\n`));
   } else if ( wieldedItems.length == 1 ) {
-    if ( wieldedItems[0].type() == this.constants().ITEM_2H_WEAPON )
-      user.send(this.colorize(`  #y[Hands      ]#n ${wieldedItems[0].name()}\r\n`));
-    else
-      user.send(this.colorize(`  #y[Right Hand ]#n ${wieldedItems[0].name()}\r\n`));
+    user.send(this.colorize(`  #y[Right Hand ]#n ${wieldedItems[0].name()}\r\n`));
+    user.send(this.colorize(`  #y[Left Hand  ]#n nothing\r\n`));
   } else {
-    user.send(this.colorize(`  #y[Hands      ]#n none\r\n`));
+    user.send(this.colorize(`  #y[Right Hand ]#n nothing\r\n`));
+    user.send(this.colorize(`  #y[Left Hand  ]#n nothing\r\n`));
   }
 };
 
@@ -446,6 +481,28 @@ World.prototype.colorize = function (text) {
   return `${newText}\u001b[0m`;
 };
 
+World.prototype.colorizedLength = function (text) {
+  let newText = ``;
+  
+  /** Loop through original text one character at a time... */
+  for ( let i = 0; i < text.length; i++ ) {
+    /** If this is not the last character and it's a '#' or '%'... */
+    if ( i < text.length - 1 && ( text[i] == `#` || text[i] == `%` ) ) {
+      /** Skip past second character of color code */
+      i++;
+
+      /** Move on to the next character */
+      continue;
+    }
+
+    /** Append the current character of the old text to the new text */
+    newText += text[i];
+  }
+  
+  /** Return new text length */
+  return newText.length;
+};
+
 World.prototype.createArea = async function (params) {
   /** Create new area */
   const area = new this.Area(params);
@@ -460,14 +517,37 @@ World.prototype.createArea = async function (params) {
   return area;
 };
 
+World.prototype.createDeployment = async function (area, params) {
+  /** Create new deployment */
+  const deployment = new this.Deployment(params);
+
+  /** Insert deployment into the database */
+  await deployment.insert(this.database());
+  
+  /** Add deployment to area */
+  area.deployments().push(deployment);
+  
+  /** Update area in database */
+  await area.update(this.database());
+  
+  /** Return room */
+  return deployment;
+};
+
 World.prototype.createExit = async function (params) {
   /** Create new exit */
   const exit = new this.Exit(params);
-
+  
   /** Insert exit into the database */
   await exit.insert(this.database());
   
-  /** Return room */
+  /** Add outgoing exit to user's room */
+  exit.room().exits().push(exit);
+
+  /** Save exit's room */
+  await exit.room().update(this.database());
+  
+  /** Return exit */
   return exit;
 };
 
@@ -569,6 +649,9 @@ World.prototype.createMobilePrototype = async function (area, params) {
 World.prototype.createRoom = async function (area, params) {
   /** Create new room */
   const room = new this.Room(params);
+  
+  /** Set room's area */
+  room.area(area);
 
   /** Insert room into the database */
   await room.insert(this.database());
@@ -584,6 +667,23 @@ World.prototype.createRoom = async function (area, params) {
   
   /** Return room */
   return room;
+};
+
+World.prototype.colorStat = function (value, maxValue) {
+  const ratio = value / maxValue;
+
+  if ( ratio < 0.2 )
+    return `#R${value}#n`;
+  else if ( ratio < 0.4 )
+    return `#P${value}#n`;
+  else if ( ratio < 0.6 )
+    return `#B${value}#n`;
+  else if ( ratio < 0.8 )
+    return `#Y${value}#n`;
+  else if ( ratio < 1 )
+    return `#G${value}#n`;
+
+  return `#C${value}#n`;
 };
 
 /**
@@ -626,12 +726,16 @@ World.prototype.listen = async function () {
   const configArea = areas.configArea(this);
   const configCharacter = characters.configCharacter(this);
   const configCommand = commands.configCommand(this);
+  const configDeployment = deployments.configDeployment(this);
   const configExit = exits.configExit(this);
+  const configHelp = help.configHelp(this);
   const configItemPrototype = itemPrototypes.configItemPrototype(this);
   const configRoom = rooms.configRoom(this);
 
   await ezobjects.createTable(configArea, this.database());
+  await ezobjects.createTable(configDeployment, this.database());
   await ezobjects.createTable(configExit, this.database());
+  await ezobjects.createTable(configHelp, this.database());
   await ezobjects.createTable(configItemPrototype, this.database());
   await ezobjects.createTable(configRoom, this.database());
   
@@ -639,7 +743,9 @@ World.prototype.listen = async function () {
   ezobjects.createClass(configArea);
   ezobjects.createClass(configCharacter);
   ezobjects.createClass(configCommand);
+  ezobjects.createClass(configDeployment);
   ezobjects.createClass(configExit);
+  ezobjects.createClass(configHelp);
   ezobjects.createClass(configItemPrototype);
   ezobjects.createClass(configRoom);
   
@@ -660,57 +766,12 @@ World.prototype.listen = async function () {
 
   /** Create prompt function */
   User.prototype.prompt = function (world) {
-    const healthRatio = this.health() / this.maxHealth();
-    const manaRatio = this.mana() / this.maxMana();
-    const energyRatio = this.energy() / this.maxEnergy();
-    
-    let health, mana, energy;
-    
-    if ( healthRatio < 0.2 )
-      health = `#R${this.health()}#n`;
-    else if ( healthRatio < 0.4 )
-      health = `#P${this.health()}#n`;
-    else if ( healthRatio < 0.6 )
-      health = `#B${this.health()}#n`;
-    else if ( healthRatio < 0.8 )
-      health = `#Y${this.health()}#n`;
-    else if ( healthRatio < 1 )
-      health = `#G${this.health()}#n`;
-    else
-      health = `#C${this.health()}#n`;
-        
-    if ( manaRatio < 0.2 )
-      mana = `#R${this.mana()}#n`;
-    else if ( manaRatio < 0.4 )
-      mana = `#P${this.mana()}#n`;
-    else if ( manaRatio < 0.6 )
-      mana = `#B${this.mana()}#n`;
-    else if ( manaRatio < 0.8 )
-      mana = `#Y${this.mana()}#n`;
-    else if ( manaRatio < 1 )
-      mana = `#G${this.mana()}#n`;
-    else
-      mana = `#C${this.mana()}#n`;
-        
-    if ( energyRatio < 0.2 )
-      energy = `#R${this.energy()}#n`;
-    else if ( energyRatio < 0.4 )
-      energy = `#P${this.energy()}#n`;
-    else if ( energyRatio < 0.6 )
-      energy = `#B${this.energy()}#n`;
-    else if ( energyRatio < 0.8 )
-      energy = `#Y${this.energy()}#n`;
-    else if ( energyRatio < 1 )
-      energy = `#G${this.energy()}#n`;
-    else
-      energy = `#C${this.energy()}#n`;
-
     let prompt = `\r\n` + this.promptFormat();
     
     prompt = prompt.replace(/\$xp/g, `#c${this.experience()}#n`);
-    prompt = prompt.replace(/\$hp/g, health);
-    prompt = prompt.replace(/\$m/g, mana);
-    prompt = prompt.replace(/\$e/g, energy);
+    prompt = prompt.replace(/\$hp/g, world.colorStat(this.health(), this.maxHealth()));
+    prompt = prompt.replace(/\$m/g, world.colorStat(this.mana(), this.maxMana()));
+    prompt = prompt.replace(/\$e/g, world.colorStat(this.energy(), this.maxEnergy()));
     
     this.send(world.colorize(prompt));
   };
@@ -746,7 +807,9 @@ World.prototype.listen = async function () {
   this.Area = Area;
   this.Character = Character;
   this.Command = Command;
+  this.Deployment = Deployment;
   this.Exit = Exit;
+  this.Help = Help;
   this.ItemPrototype = ItemPrototype;
   this.ItemInstance = ItemInstance;
   this.MobilePrototype = MobilePrototype;

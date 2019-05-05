@@ -10,6 +10,7 @@ module.exports.configItemInstance = (world) => {
       { name: `container`, instanceOf: `ItemInstance`, store: false },
       { name: `contents`, type: `Array`, arrayOf: { instanceOf: `ItemInstance` } },
       { name: `deflection`, type: `int` },
+      { name: `deployment`, type: `Deployment`, store: false },
       { name: `description`, type: `varchar`, length: 512, default: `It looks like a wieghtless and translucent spherical form of bound energy.` },
       { name: `details`, type: `object` },
       { name: `dodge`, type: `int` },

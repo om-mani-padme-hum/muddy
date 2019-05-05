@@ -1,11 +1,11 @@
-# Muddy v0.10.5 [![HitCount](http://hits.dwyl.com/om-mani-padme-hum/muddy.svg)](http://hits.dwyl.com/om-mani-padme-hum/muddy)
+# Muddy v0.10.6 [![HitCount](http://hits.dwyl.com/om-mani-padme-hum/muddy.svg)](http://hits.dwyl.com/om-mani-padme-hum/muddy)
 
 A Node.js Multi-User Dungeon (MUD) Framework
 
 ## Current Status:
 
 * A good amount of basic functionality in place, but still under development.  
-* Ability to build onto world while in game partially in place, now can edit rooms and areas.  
+* Ability to build onto world while in game partially in place, now can edit items, rooms, and areas.  
 * Web-based builder interface partially in place, not very useful just yet but some editing is possible.
 * Basic fighting has now been added, including incapacitated state and natural healing over time!
 
@@ -60,11 +60,12 @@ For the web builder, browse to:
 * down
 * drop
 * east
-* edit (partly functional)
+* edit
 * equipment
 * get
 * goto
 * look
+* help
 * ilist
 * inventory
 * istat
@@ -80,6 +81,7 @@ For the web builder, browse to:
 * rstat
 * say
 * save
+* score
 * shutdown
 * south
 * southeast (se)
@@ -94,6 +96,10 @@ For the web builder, browse to:
 
 ## Latest Changes
 
+* Added mobile instance and prototype editing in game
+* Ability to create exits in game
+* Added elemental properties to characters
+* Added help and score commands, default help added, many more to do
 * Fixed bugs with capitalization and colors on new character logins
 * Ability to look at item details
 * Ability to edit item instances and prototypes in game
@@ -110,7 +116,7 @@ For the web builder, browse to:
 * Massive, in-game expandable, interactive and dynamic world, with a range of areas, rooms, items, and mobiles
 * Random and wide-ranging item rarities and stats, customization on top of that
 * Advanced mobile scripting capabilities, along with dynamic weather and other periodic events, all customizable
-* Paths and lineages, each with their unique benefits, deficiencies, and skillsets, again completely customizable
+* Paths and races, each with their unique benefits, deficiencies, and skillsets, again completely customizable
 
 # License
 

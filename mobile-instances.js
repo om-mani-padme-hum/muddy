@@ -6,6 +6,7 @@ module.exports.configMobileInstance = (world, ext, extConfig) => {
     extends: ext,
     extendsConfig: extConfig,
     properties: [
+      { name: `deployment`, type: `Deployment`, store: false },
       { name: `description`, type: `varchar`, length: 512, default: `They look like the most boring person you could possibly imagine.` },
       { name: `equipment`, type: `Array`, arrayOf: { instanceOf: `ItemInstance` } },
       { name: `inventory`, type: `Array`, arrayOf: { instanceOf: `ItemInstance` } },

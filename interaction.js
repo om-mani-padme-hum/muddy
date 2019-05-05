@@ -344,16 +344,16 @@ module.exports.createCommands = (world) => {
           if ( items.length < count ) {
             user.send(`You don't have that item in your inventory.\r\n`);
           } 
-          
-          /** Verify item is equippable */
-          else if ( items[count - 1].slot() == world.constants().SLOT_NONE ) {
-            user.send(`That item is not equippable.\r\n`);
-          }
 
           /** Verify item is wearable */
-          else if ( items[count - 1].slot() == world.constants().SLOT_WIELD ) {
+          else if ( items[count - 1].slot() == world.constants().SLOT_WIELD && world.constants().itemTypesWieldable.includes(items[count - 1].type()) ) {
             user.send(`You need to 'wield' weapons and held items, not 'wear' them.\r\n`);
           } 
+          
+          /** Verify item is equippable */
+          else if ( items[count - 1].slot() != world.constants().SLOT_ARMOR ) {
+            user.send(`That item is not equippable.\r\n`);
+          }
           
           /** Verify the appropriate slot is available */
           else if ( user.equipment().find(x => x.slot() == items[count - 1].slot()) ) {
@@ -432,6 +432,11 @@ module.exports.createCommands = (world) => {
           else if ( items[count - 1].slot() != world.constants().SLOT_WIELD ) {
             user.send(`You need to 'wear' armor, not 'wield' it.\r\n`);
           } 
+          
+          /** Verify item is a weapon */
+          else if ( !world.constants().itemTypesWieldable.includes(items[count - 1].type()) ) {
+            user.send(`That item is not wieldable.\r\n`);
+          }
           
           /** Try to wield item */
           else {

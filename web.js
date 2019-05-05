@@ -499,7 +499,7 @@ module.exports.webBuilder = (world, port = 7001) => {
     p.select(`row`).cols(6).name(`type`).label(`Type:`);
     p.option().value(``).text(`Choose Type`);
     
-    world.constants().itemNames.forEach((name, value) => {
+    world.constants().itemTypeNames.forEach((name, value) => {
       p.option().value(value).text(name);
     });
     

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node example.js",
-    "test": "node_modules/.bin/eslint admin.js areas.js building.js characters.js commands.js constants.js deployments.js example.js exits.js fighting.js index.js info.js input.js interaction.js item-instances.js item-prototypes.js mobile-instances.js mobile-prototypes.js movement.js rooms.js senses.js system.js users.js web.js world.js"
+    "test": "node_modules/.bin/eslint admin.js areas.js building.js characters.js commands.js constants.js deployments.js example.js exits.js fighting.js help.js index.js info.js input.js interaction.js item-instances.js item-prototypes.js mobile-instances.js mobile-prototypes.js movement.js rooms.js senses.js system.js users.js web.js world.js"
   },
   "repository": {
     "type": "git",
@@ -28,19 +28,19 @@
   },
   "homepage": "https://github.com/om-mani-padme-hum/muddy#readme",
   "devDependencies": {
-    "docket-parser": "^0.7.1",
-    "eslint": "^5.15.3"
+    "docket-parser": "^0.7.2",
+    "eslint": "^5.16.0"
   },
   "jshintConfig": {
     "esversion": 6,
     "node": true
   },
   "dependencies": {
-    "body-parser": "^1.18.3",
+    "body-parser": "^1.19.0",
     "express": "^4.16.4",
     "ezobjects-mysql": "^6.1.16",
     "moment": "^2.24.0",
-    "strapped": "^0.6.4",
+    "strapped": "^0.6.8",
     "winston": "^2.4.4"
   }
 }

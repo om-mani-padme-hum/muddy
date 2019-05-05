@@ -6,6 +6,7 @@ module.exports.configArea = (world) => {
     properties: [
       { name: `author`, type: `varchar`, length: 32, default: `Anonymous` },
       { name: `created`, type: `datetime`, default: new Date() },
+      { name: `deployments`, type: `array`, arrayOf: { instanceOf: `Deployment` } },
       { name: `description`, type: `varchar`, length: 512, default: `This area is totally boring, who would visit here?` },
       { name: `flags`, type: `Array`, arrayOf: { type: `int` } },
       { name: `id`, type: `int` },

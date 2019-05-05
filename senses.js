@@ -106,6 +106,7 @@ module.exports.createCommands = (world) => {
             /** Otherwise, if target is a mobile... */
             else if ( targets[count - 1] instanceof world.MobileInstance ) {
               /** Send target mobile's description */
+              user.send(`${world.terminalWrap(world.colorize(targets[count - 1].name()))}\r\n`);
               user.send(`${world.terminalWrap(world.colorize(targets[count - 1].description()))}\r\n\r\n`);
               
               /** Send target mobile's equipment */
@@ -118,8 +119,10 @@ module.exports.createCommands = (world) => {
               if ( !args[1].match(/^[a-z0-9]+$/i) )
                 return user.send(`You can't find that anywhere.\r\n`);
               
+              /** Parse detail name and count */
               const [detailName, detailCount] = world.parseName(user, args, 1);
               
+              /** Attempt to find detail on target */
               const detail = Object.keys(targets[count - 1].details()).filter(x => x.startsWith(detailName))[detailCount - 1];
               
               /** If detail doesn't exist, send error */
@@ -130,19 +133,28 @@ module.exports.createCommands = (world) => {
               user.send(`${world.terminalWrap(world.colorize(targets[count - 1].details()[detail]))}\r\n`);
             } 
             
-            /** Otherwise, send target description */
+            /** Otherwise... */
             else {
+              /** Send item description */
               user.send(`${world.terminalWrap(world.colorize(targets[count - 1].description()))}\r\n`);
               
+              /** Create array of detail keys */
               const keys = Object.keys(targets[count - 1].details());
               
+              /** If there are details, output heading */
               if ( keys.length > 0 )
                 user.send(`\r\nDetails: `);
               
-              keys.forEach((key) => {
+              /** Loop through each detail key and output */
+              keys.forEach((key, index) => {
                 user.send(`${key} `);
+                
+                /** Output new line after every fifth key */
+                if ( (index + 1) % 6 == 0 && index != keys.length - 1 )
+                  user.send(`\r\n`);
               });
               
+              /** If we output some detail keys, send new line */
               if ( keys.length > 0 )
                 user.send(`\r\n`);
             }
@@ -197,15 +209,34 @@ module.exports.createCommands = (world) => {
             itemsIncluded.push(item.roomDescription());
           });
           
-          /** Loop through each mobile in user's room and send room description */
+          /** Loop through each mobile in user's room... */
           user.room().mobiles().forEach((mobile) => {
-            user.send(` ${mobile.roomDescription()}\r\n`);
+            /** Send description based on mobile's position and who they're fighting */
+            if ( mobile.position() == world.constants().POSITION_INCAPACITATED )
+              user.send(` ${mobile.name()} is lying here incapacitated!\r\n`);
+            else if ( mobile.position() == world.constants().POSITION_SLEEPING )
+              user.send(` ${mobile.name()} is lying here sleeping\r\n`);
+            else if ( mobile.position() == world.constants().POSITION_MEDITATING )
+              user.send(` ${mobile.name()} is meditating here\r\n`);
+            else if ( mobile.position() == world.constants().POSITION_LYING_DOWN )
+              user.send(` ${mobile.name()} is lying down here\r\n`);
+            else if ( mobile.position() == world.constants().POSITION_KNEELING )
+              user.send(` ${mobile.name()} is kneeling here\r\n`);
+            else if ( mobile.position() == world.constants().POSITION_SITTING )
+              user.send(` ${mobile.name()} is sitting here\r\n`);
+            else if ( mobile.fighting() && mobile.fighting() == user )
+              user.send(` ${mobile.name()} is here fighting YOU!\r\n`);
+            else if ( mobile.fighting() )
+              user.send(` ${mobile.name()} is here fighting ${mobile.fighting().name()}!\r\n`);
+            else
+              user.send(` ${mobile.roomDescription()}\r\n`);
           });
 
           /** Loop through each other user in the user's room... */
           user.room().users().forEach((other) => {
-            /** If user in room is not the looking user, send user name */
+            /** If user in room is not the looking user... */
             if ( user != other ) {
+              /** Send description based on user's position and who they're fighting */
               if ( other.position() == world.constants().POSITION_INCAPACITATED )
                 user.send(` ${other.name()} is lying here incapacitated!\r\n`);
               else if ( other.position() == world.constants().POSITION_SLEEPING )
@@ -280,7 +311,7 @@ module.exports.createCommands = (world) => {
       name: `who`,
       execute: async (world, user, buffer) => {
         /** Send top border */
-        user.send(world.colorize(`#r~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\n`));
+        user.send(world.colorize(`#r~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n\r\n`));
         
         /** Keep track of the number of visible other users */
         let count = 0;

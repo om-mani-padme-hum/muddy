@@ -31,6 +31,64 @@ module.exports.createCommands = (world) => {
       }
     }),
     new world.Command({
+      name: `dlist`,
+      execute: async (world, user, buffer, args) => {
+        /** Determine length of longest area id number */
+        const areaIdLength = Math.max(...world.areas().map(x => x.id())).toString().length;
+        
+        /** Create array of all areas in the world with deployments */
+        const areas = world.areas().filter(x => x.deployments().length > 0);
+        
+        /** Loop through each area... */
+        areas.forEach((area, index) => {
+          /** If this is not the first area, send new line */
+          if ( index > 0 )
+            user.send(`\r\n`);
+
+          /** Send area id and name */
+          user.send(`Area: [${area.id().toString().padEnd(areaIdLength)}] ${area.name()}\r\n`);
+          user.send(`******` + `*`.repeat(areaIdLength + 3 + area.name().length) + `\r\n`);
+          
+          /** Determine length of longest room id number */
+          const deploymentIdLength = Math.max(...area.deployments().map(x => x.id())).toString().length;
+
+          /** Loop through each deployment in the area... */
+          area.deployments().forEach((deployment) => {
+            user.send(`  [${deployment.id().toString().padEnd(deploymentIdLength)}] ${world.constants().deploymentNames[deployment.type()]} - (${deployment.count()}) of subject ID #${deployment.subject()} to target ID #${deployment.target()} - ${deployment.refresh()}s refresh\r\n`);
+          });
+        });
+        
+        /** If there were no areas with rooms, send error */
+        if ( areas.length == 0 )
+          user.send(`There are no deployments in this world.\r\n`);
+      }
+    }),
+    new world.Command({
+      name: `dstat`,
+      execute: async (world, user, buffer, args) => {
+        /** If no argument was provided, send error and return */
+        if ( typeof args[0] != `string` )
+          return user.send(`Dstat what?\r\n`);
+        
+        /** Parse name and count of first argument */
+        const [name, count] = world.parseName(user, args, 0);
+        
+        /** Parse depth of second argument for util inspect */
+        const depth = world.parseDepth(user, args, 1);
+        
+        /** If depth was parsed successfully... */
+        if ( depth >= 0 ) {
+          /** If the number of items is less than the count, send error */
+          if ( world.deployments().length < count )
+            user.send(`You can't find a reference to that deployment anywhere.\r\n`);
+          
+          /** Otherwise, send util inspect of item */
+          else
+            user.send(`${util.inspect(world.deployments()[count - 1], { depth: depth })}\r\n`);
+        }
+      }
+    }),
+    new world.Command({
       name: `goto`,
       execute: async (world, user, buffer, args) => {
         /** If no argument was provided, send error and return */
