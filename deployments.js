@@ -5,6 +5,7 @@ module.exports.configDeployment = (world) => {
     className: `Deployment`,
     properties: [
       { name: `count`, type: `int` },
+      { name: `id`, type: `int` },
       { name: `refresh`, type: `int` },
       { name: `subject`, type: `int` },
       { name: `target`, type: `int` },

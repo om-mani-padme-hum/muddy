@@ -19,7 +19,7 @@ module.exports.configUser = (world, ext, extConfig) => {
       { name: `room`, instanceOf: `Room`, loadTransform: x => new world.Room({ id: x }) },
       { name: `salt`, type: `varchar`, length: 32 },
       { name: `socket`, instanceOf: `Socket`, store: false },
-      { name: `state`, type: `int`, default: world.constants().STATE_NAME, store: false },
+      { name: `state`, type: `int`, default: world.constants().states.NAME, store: false },
       { name: `title`, type: `varchar`, length: 32 }
     ],
     indexes: [

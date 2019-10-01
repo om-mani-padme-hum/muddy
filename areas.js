@@ -11,6 +11,7 @@ module.exports.configArea = (world) => {
       { name: `flags`, type: `Array`, arrayOf: { type: `int` } },
       { name: `id`, type: `int` },
       { name: `itemPrototypes`, type: `array`, arrayOf: { instanceOf: `ItemPrototype` } },
+      { name: `level`, type: `int` },
       { name: `mobilePrototypes`, type: `array`, arrayOf: { instanceOf: `MobilePrototype` } },
       { name: `name`, type: `varchar`, length: 32, default: `a boring area` },
       { name: `rooms`, type: `Array`, arrayOf: { instanceOf: `Room` } }

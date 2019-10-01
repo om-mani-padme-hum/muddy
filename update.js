@@ -24,9 +24,9 @@ module.exports = (world) => {
           character.energy(Math.min(character.maxEnergy(), character.energy() + 1));
           
           /** Update position if necessary */
-          if ( character.position() == world.constants().POSITION_INCAPACITATED && character.health() > 0 ) {
+          if ( character.position() == world.constants().positions.INCAPACITATED && character.health() > 0 ) {
             character.send(`You come to your senses and slowly stumble to your feet.\r\n`);
-            character.position(world.constants().POSITION_STANDING);
+            character.position(world.constants().positions.STANDING);
           }
         }
       });
@@ -36,9 +36,9 @@ module.exports = (world) => {
   /** Loop through each user in the world */
   world.users().forEach((user) => {
     /** If the user is connected and has text waiting in the output buffer... */
-    if ( user.state() != world.constants().STATE_DISCONNECTED && user.socket() && user.outBuffer().length > 0 ) {
+    if ( user.state() != world.constants().states.DISCONNECTED && user.socket() && user.outBuffer().length > 0 ) {
       /** If user is connected, send prompt */
-      if ( user.state() == world.constants().STATE_CONNECTED )
+      if ( user.state() == world.constants().states.CONNECTED )
         user.prompt(world);
       
       if ( !user.command() )

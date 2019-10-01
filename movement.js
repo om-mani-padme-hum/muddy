@@ -3,10 +3,10 @@ module.exports.createCommands = (world) => {
   const directionCommand = (direction) => {
     return new world.Command({
       name: direction,
-      positions: [world.constants().POSITION_STANDING],
+      positions: [world.constants().positions.STANDING],
       execute: async (world, user, buffer) => {
         /** Find exit in the direction specified, if one exists */
-        const exit = user.room().exits().find(x => x.direction() == world.constants().directions[direction]);
+        const exit = user.room().exits().find(x => x.direction() == world.constants().directionsLookup[direction]);
 
         /** If the exit exists... */
         if ( exit ) {

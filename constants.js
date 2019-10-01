@@ -54,15 +54,17 @@ module.exports = {
                  `--------------------------------------------------------------------------------`].join(``),
   
   /** Define deployment types */
-  DEPLOY_ITEMS_TO_ROOM: 0,
-  DEPLOY_MOBILES_TO_ROOM: 1,
-  DEPLOY_ITEMS_TO_AREA: 1,
-  DEPLOY_MOBILES_TO_AREA: 2,
-  DEPLOY_ITEMS_TO_EQUIPMENT: 2,
-  DEPLOY_ITEMS_TO_INVENTORY: 3,
-  DEPLOY_ITEMS_TO_CONTAINER: 4,
+  deploymentTypes: {
+    ITEMS_TO_ROOM: 0,
+    MOBILES_TO_ROOM: 1,
+    ITEMS_TO_AREA: 2,
+    MOBILES_TO_AREA: 3,
+    ITEMS_TO_EQUIPMENT: 4,
+    ITEMS_TO_INVENTORY: 5,
+    ITEMS_TO_CONTAINER: 6
+  },
   
-  deploymentNames: [
+  deploymentTypeNames: [
     `Items To Room`,
     `Mobiles To Room`,
     `Items To Area`,
@@ -73,81 +75,62 @@ module.exports = {
   ],
   
   /** Define direction flags */
-  DIR_NORTH: 0,                    /** n */
-  DIR_NORTHEAST: 1,                /** ne */
-  DIR_EAST: 2,                     /** e */
-  DIR_SOUTHEAST: 3,                /** se */
-  DIR_SOUTH: 4,                    /** s */
-  DIR_SOUTHWEST: 5,                /** sw */
-  DIR_WEST: 6,                     /** w */
-  DIR_NORTHWEST: 7,                /** nw */
-  DIR_UP: 8,                       /** u */
-  DIR_DOWN: 9,                     /** d */
-  
-  /** Define direction flag lookup by name */
   directions: {
-    north: 0,
-    northeast: 1,
-    east: 2,
-    southeast: 3,
-    south: 4,
-    southwest: 5,
-    west: 6,
-    northwest: 7,
-    up: 8,
-    down: 9,
-    ne: 1,
-    se: 3,
-    sw: 5,
-    nw: 7
+    NORTH: 0,                    /** n */
+    NORTHEAST: 1,                /** ne */
+    EAST: 2,                     /** e */
+    SOUTHEAST: 3,                /** se */
+    SOUTH: 4,                    /** s */
+    SOUTHWEST: 5,                /** sw */
+    WEST: 6,                     /** w */
+    NORTHWEST: 7,                /** nw */
+    UP: 8,                       /** u */
+    DOWN: 9,                     /** d */
   },
   
   /** Define direction name lookup by direction flag */
   directionNames: [`north`, `northeast`, `east`, `southeast`, `south`,
                    `southwest`, `west`, `northwest`, `up`, `down`],
   
+  /** Define direction lookup by name whether short or long */
+  directionsLookup: {
+    north: 0,                    /** n */
+    northeast: 1,                /** ne */
+    east: 2,                     /** e */
+    southeast: 3,                /** se */
+    south: 4,                    /** s */
+    southwest: 5,                /** sw */
+    west: 6,                     /** w */
+    northwest: 7,                /** nw */
+    up: 8,                       /** u */
+    down: 9,                     /** d */
+    ne: 1,                       /** ne */
+    se: 3,                       /** se */
+    sw: 5,                       /** sw */
+    nw: 7                        /** nw */
+  },
+  
   /** Define direction short name lookup by direction flag */
   directionShortNames: [`n`, `ne`, `e`, `se`, `s`, `sw`, `w`, `nw`, `u`, `d`],
   
   /** Define direction opposites by direction flag */
   directionOpposites: [4, 5, 6, 7, 0, 1, 2, 3, 9, 8],
-  
-  /** Define element flags */
-  ELEMENT_AIR: 0,
-  ELEMENT_EARTH: 1,
-  ELEMENT_FIRE: 2,
-  ELEMENT_LIFE: 3,
-  ELEMENT_WATER: 4,
-  
-  elementNames: [
-    `Air`,
-    `Earth`,
-    `Fire`,
-    `Life`,
-    `Water`
-  ],
-  
-  elementShortcuts: [
-    `air`,
-    `earth`,
-    `fire`,
-    `life`,
-    `water`
-  ],
 
   /** Define item flags */
-  ITEM_CONTAINER: 0,
-  ITEM_FIXED: 1,
-  ITEM_CLOSED: 2,
-  ITEM_LOCKED: 3,
-  ITEM_CAN_DRINK: 4,
-  ITEM_CAN_EAT: 5,
-  ITEM_CAN_LAY_DOWN: 6,
-  ITEM_CAN_KNEEL: 7,
-  ITEM_CAN_SIT: 8,
-  ITEM_CAN_OPEN_CLOSE: 9,
-  ITEM_CAN_LOCK: 10,
-  ITEM_FLAMMABLE: 11,
+  itemFlags: {
+    CONTAINER: 0,
+    FIXED: 1,
+    CLOSED: 2,
+    LOCKED: 3,
+    CAN_DRINK: 4,
+    CAN_EAT: 5,
+    CAN_LAY_DOWN: 6,
+    CAN_KNEEL: 7,
+    CAN_SIT: 8,
+    CAN_OPEN_CLOSE: 9,
+    CAN_LOCK: 10,
+    FLAMMABLE: 11
+  },
   
   itemFlagNames: [
     `Container`,
@@ -180,12 +163,14 @@ module.exports = {
   ],
 
   /** Define item types */
-  ITEM_OTHER: 0,
-  ITEM_ARMOR: 1,
-  ITEM_1H_WEAPON: 2,
-  ITEM_2H_WEAPON: 3,
-  ITEM_HELD: 4,
-  ITEM_SHIELD: 5,
+  itemTypes: {
+    OTHER: 0,
+    ARMOR: 1,
+    WEAPON_1H: 2,
+    WEAPON_2H: 3,
+    HELD: 4,
+    SHIELD: 5
+  },
   
   itemTypesWieldable: [2, 3, 4, 5],
   
@@ -208,13 +193,15 @@ module.exports = {
   ],
   
   /** Define paths */
-  PATH_DRUID: 0,       
-  PATH_MAGE: 1,        
-  PATH_NECROMANCER: 2, 
-  PATH_RANGER: 3,
-  PATH_SHAMAN: 4,
-  PATH_WARRIOR: 5,     
-  PATH_WIZARD: 6,     
+  paths: {
+    DRUID: 0,       
+    MAGE: 1,        
+    NECROMANCER: 2, 
+    RANGER: 3,
+    SHAMAN: 4,
+    WARRIOR: 5,     
+    WIZARD: 6
+  },
   
   pathNames: [
     `Druid`,
@@ -237,21 +224,23 @@ module.exports = {
   ],
   
   /** Define positions */
-  POSITION_DEAD: -7,
-  POSITION_INCAPACITATED: -6,
-  POSITION_SLEEPING: -5,
-  POSITION_MEDITATING: -4,
-  POSITION_LYING_DOWN: -3,
-  POSITION_KNEELING: -2,
-  POSITION_SITTING: -1,
-  POSITION_STANDING: 0,
-  POSITION_FIGHTING: 1,
+  positions: {
+    DEAD: -7,
+    INCAPACITATED: -6,
+    SLEEPING: -5,
+    MEDITATING: -4,
+    LYING_DOWN: -3,
+    KNEELING: -2,
+    SITTING: -1,
+    STANDING: 0,
+    FIGHTING: 1
+  },
     
-  POSITIONS_ALL: [-7, -6, -5, -4, -3, -2, -1, 0, 1],
-  POSITIONS_AWAKE: [-3, -2, -1, 0, 1],
-  POSITIONS_MOBILE: [-2, -1, 0, 1],
-  POSITIONS_SAFE: [-5, -4, -3, -2, -1, 0],
-  POSITIONS_AWAKE_AND_SAFE: [-3, -2, -1, 0],
+  positionsAll: [-7, -6, -5, -4, -3, -2, -1, 0, 1],
+  positionsAwake: [-3, -2, -1, 0, 1],
+  positionsMobile: [-2, -1, 0, 1],
+  positionsSafe: [-5, -4, -3, -2, -1, 0],
+  positionsAwake_AND_SAFE: [-3, -2, -1, 0],
   
   positionNames: {
     '-7': `Dead`,
@@ -266,69 +255,110 @@ module.exports = {
   },
   
   /** Define item rarities */
-  RARITY_COMMON: 0,
-  RARITY_UNCOMMON: 1,
-  RARITY_RARE: 2,
-  RARITY_EPIC: 3,
-  RARITY_LEGENDARY: 4,
+  rarities: {
+    COMMON: 0,
+    UNCOMMON: 1,
+    RARE: 2,
+    LEGENDARY: 3,
+    ANCIENT: 4
+  },
+  
+  /** Define item rarity names */
+  rarityNames: [
+    `Common`,
+    `Uncommon`,
+    `Rare`,
+    `Legendary`,
+    `Ancient`
+  ],
   
   /** Define races */
-  RACE_CENTAUR: 0,
-  RACE_DRAGONKIN: 1,
-  RACE_DWARF: 2,
-  RACE_ELF: 3,
-  RACE_GIANT: 4,
-  RACE_GOBLIN: 5,
-  RACE_HALFLING: 6,
-  RACE_HUMAN: 7,
-  RACE_MERFOLK: 8,
-  RACE_ORC: 9,
-  
-  racesAllowed: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-  
+  races: {
+    CENTAUR: 0,
+    DWARF: 1,
+    ELF: 2,
+    GIANT: 3,
+    GOBLIN: 4,
+    HALFLING: 5,
+    HUMAN: 6,
+    MERFOLK: 7,
+    MINOTAUR: 8,
+    ORC: 9,
+    SATYR: 10,
+    WYRM: 11
+  },
+    
   raceNames: [
+    `Centaur`,
     `Dwarf`,
     `Elf`,
+    `Giant`,
+    `Goblin`,
     `Halfling`,
-    `Human`
+    `Human`,
+    `Merfolk`,
+    `Minotaur`,
+    `Orc`,
+    `Satyr`,
+    `Wyrm`
   ],
   
   raceShortcuts: [
+    `centaur`,
     `dwarf`,
     `elf`,
+    `giant`,
+    `goblin`,
     `halfling`,
-    `human`
+    `human`,
+    `merfolk`,
+    `minotaur`,
+    `orc`,
+    `satyr`,
+    `wyrm`
   ],
   
+  randomnessFactor: 0.15,
+  
   /** Define sexes */
-  SEX_MALE: 0,
-  SEX_FEMALE: 1,
+  sexes: {
+    MALE: 0,
+    FEMALE: 1,
+    BOTH: 2,
+    NONE: 3
+  },
   
   sexNames: [
     `Male`,
-    `Female`
+    `Female`,
+    `Both`,
+    `None`
   ],
   
   sexShortcuts: [
     `male`,
-    `female`
+    `female`,
+    `both`,
+    `none`
   ],
   
   /** Define item slots */
-  SLOT_NONE: 0,
-  SLOT_HEAD: 1,
-  SLOT_FACE: 2,
-  SLOT_NECK: 3,
-  SLOT_SHOULDERS: 4,
-  SLOT_CHEST: 5,
-  SLOT_BACK: 6,
-  SLOT_ARMS: 7,
-  SLOT_FOREARMS: 8,
-  SLOT_GLOVES: 9,
-  SLOT_WAIST: 10,
-  SLOT_LEGS: 11,
-  SLOT_FEET: 12,
-  SLOT_WIELD: 13,
+  slots: {
+    NONE: 0,
+    HEAD: 1,
+    FACE: 2,
+    NECK: 3,
+    SHOULDERS: 4,
+    CHEST: 5,
+    BACK: 6,
+    ARMS: 7,
+    FOREARMS: 8,
+    GLOVES: 9,
+    WAIST: 10,
+    LEGS: 11,
+    FEET: 12,
+    WIELD: 13
+  },
   
   slotNames: [
     `None`,
@@ -368,13 +398,44 @@ module.exports = {
   START_ROOM: 1,
   
   /** Define socket states */
-  STATE_NAME: 0,
-  STATE_OLD_PASSWORD: 1,
-  STATE_NEW_PASSWORD: 2,
-  STATE_CONFIRM_PASSWORD: 3,
-  STATE_MOTD: 4,
-  STATE_CONNECTED: 5,
-  STATE_DISCONNECTED: 6,
+  states: {
+    NAME: 0,
+    OLD_PASSWORD: 1,
+    NEW_PASSWORD: 2,
+    CONFIRM_PASSWORD: 3,
+    MOTD: 4,
+    CONNECTED: 5,
+    DISCONNECTED: 6,
+  },
+  
+  statNames: [
+    `Accuracy`,
+    `Air`,
+    `Armor`,
+    `Deflection`,
+    `Dodge`,
+    `Earth`,
+    `Fire`,
+    `Life`,
+    `Power`,
+    `Speed`,
+    `Water`
+  ],
+  
+  /** Define stat flags */
+  stats: {
+    ACCURACY: 0,
+    AIR: 1,
+    ARMOR: 2,
+    DEFLECTION: 3,
+    DODGE: 4,
+    EARTH: 5,
+    FIRE: 6,
+    LIFE: 7,
+    POWER: 8,
+    SPEED: 9,
+    WATER: 10
+  },
   
   /** Define VT100 terminal modifiers */
   VT100_CLEAR: `\x1b[0m`,

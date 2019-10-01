@@ -98,19 +98,16 @@ module.exports.createCommands = (world) => {
         user.send(world.colorize(`#r|                                                                              |\r\n`));
 
         /** Send user name and stats header */
-        user.send(world.colorize(`#r|  #wName: #W${user.name().padEnd(16)}            #wSex:     #W${world.constants().sexNames[user.sex()].padStart(6)}   #wLevel:      #W${user.level().toString().padStart(5)}       #r|\r\n`));
+        user.send(world.colorize(`#r|  ` + `#W${user.name()} #w${user.title()}`.padEnd(79) + ` #r|\r\n`));
         user.send(world.colorize(`#r|                                                                              |\r\n`));
-        user.send(world.colorize(`#r|  #wHealth: ${(world.colorStat(user.health(), user.maxHealth()) + `#w/#C` + user.maxHealth()).padStart(21)}             #wCombat Stats:                             #r|\r\n`));
-        user.send(world.colorize(`#r|  #wMana:   ${(world.colorStat(user.mana(), user.maxMana()) + `#w/#C` + user.maxMana()).padStart(21)}                                                       #r|\r\n`));
-        user.send(world.colorize(`#r|  #wEnergy: ${(world.colorStat(user.energy(), user.maxEnergy()) + `#w/#C` + user.maxEnergy()).padStart(21)}             #wAccuracy: #G${user.accuracy().toString().padStart(5)}   #wArmor:      #G${user.armor().toString().padStart(5)}       #r|\r\n`));
-        user.send(world.colorize(`#r|                                    #wPower:    #G${user.power().toString().padStart(5)}   #wDeflection: #G${user.deflection().toString().padStart(5)}       #r|\r\n`));
-        user.send(world.colorize(`#r|  #wExperience: #C${user.experience().toString().padStart(9)}             #wSpeed:    #G${user.speed().toString().padStart(5)}   #wDodge:      #G${user.accuracy().toString().padStart(5)}       #r|\r\n`));
-        user.send(world.colorize(`#r|                                                                              |\r\n`));
-        user.send(world.colorize(`#r~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n`));
-        user.send(world.colorize(`#r|                                                                              |\r\n`));
-        user.send(world.colorize(`#r|  #wElemental Attunement:                                                       #r|\r\n`));
-        user.send(world.colorize(`#r|                                                                              |\r\n`));
-        user.send(world.colorize(`#r|     #WAir: #G${user.air().toString().padStart(5)}   #yEarth: #G${user.earth().toString().padStart(5)}   #RFire: #G${user.fire().toString().padStart(5)}#n   #gLife: #G${user.life().toString().padStart(5)}   #cWater: #G${user.water().toString().padStart(5)}     #r|\r\n`));
+        user.send(world.colorize(`#r|  #wSex:           #W${world.constants().sexNames[user.sex()].padStart(6)}             #wCombat Stats:                             #r|\r\n`));
+        user.send(world.colorize(`#r|  #wLevel:          #W${user.level().toString().padStart(5)}                                                       #r|\r\n`));
+        user.send(world.colorize(`#r|                                    #OAccuracy: #G${user.accuracy().toString().padStart(5)}   #WAir:        #G${user.air().toString().padStart(5)}       #r|\r\n`));
+        user.send(world.colorize(`#r|  #wHealth: ${(world.colorStat(user.health(), user.maxHealth()) + `#w/#C` + user.maxHealth()).padStart(21)}             #KArmor:    #G${user.armor().toString().padStart(5)}#o   #PDeflection: #G${user.deflection().toString().padStart(5)}       #r|\r\n`));
+        user.send(world.colorize(`#r|  #wMana:   ${(world.colorStat(user.mana(), user.maxMana()) + `#w/#C` + user.maxMana()).padStart(21)}             #cDodge:    #G${user.accuracy().toString().padStart(5)}   #yEarth:      #G${user.earth().toString().padStart(5)}       #r|\r\n`));
+        user.send(world.colorize(`#r|  #wEnergy: ${(world.colorStat(user.energy(), user.maxEnergy()) + `#w/#C` + user.maxEnergy()).padStart(21)}             #RFire:     #G${user.fire().toString().padStart(5)}   #gLife:       #G${user.life().toString().padStart(5)}       #r|\r\n`));
+        user.send(world.colorize(`#r|                                    #oPower:    #G${user.power().toString().padStart(5)}   #YSpeed:      #G${user.speed().toString().padStart(5)}       #r|\r\n`));
+        user.send(world.colorize(`#r|  #wExperience: #C${user.experience().toString().padStart(9)}             #BWater:    #G${user.water().toString().padStart(5)}                           #r|\r\n`));
         user.send(world.colorize(`#r|                                                                              |\r\n`));
         user.send(world.colorize(`#r~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n`));
         user.send(world.colorize(`#r|                                                                              |\r\n`));

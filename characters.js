@@ -15,7 +15,7 @@ module.exports.configCharacter = (world) => {
       { name: `fire`, type: `int`, default: 1, store: false },
       { name: `health`, type: `int`, default: 100 },
       { name: `id`, type: `int` },
-      { name: `level`, type: `int`, default: 1 },
+      { name: `level`, type: `int`, default: 1, store: false },
       { name: `life`, type: `int`, default: 1, store: false },
       { name: `mana`, type: `int`, default: 100 },
       { name: `maxEnergy`, type: `int`, default: 100, store: false },

@@ -2,7 +2,7 @@ module.exports.createCommands = (world) => {
   return [
     new world.Command({
       name: `drop`,
-      positions: world.constants().POSITIONS_MOBILE,
+      positions: world.constants().positionsMobile,
       execute: async (world, user, buffer, args) => {
         /** Verify item argument exists */
         if ( typeof args[0] != `string` ) {
@@ -50,7 +50,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `get`,
-      positions: world.constants().POSITIONS_MOBILE,
+      positions: world.constants().positionsMobile,
       execute: async (world, user, buffer, args) => {
         let containerName, containerCount, containers = [], items = [];
 
@@ -75,7 +75,7 @@ module.exports.createCommands = (world) => {
         } 
 
         /** If container is specified, verify item is a container */
-        else if ( containers.length > 0 && !containers[containerCount - 1].flags().includes(world.constants().ITEM_CONTAINER) ) {
+        else if ( containers.length > 0 && !containers[containerCount - 1].flags().includes(world.constants().itemFlags.CONTAINER) ) {
           user.send(`That item is not a container.\r\n`);
         }
         
@@ -85,7 +85,7 @@ module.exports.createCommands = (world) => {
           if ( containers.length > 0 )
             items = containers[containerCount - 1].contents();
           else
-            items = user.room().items().filter(x => !x.flags().includes(world.constants().ITEM_FIXED));
+            items = user.room().items().filter(x => !x.flags().includes(world.constants().itemFlags.FIXED));
           
           /** Verify there's at least one item in the container */
           if ( containers.length > 0 && items.length == 0 ) {
@@ -127,7 +127,7 @@ module.exports.createCommands = (world) => {
           } 
           
           /** Verify the item doesn't have the 'fixed' flag */
-          else if ( items[itemCount - 1].flags().includes(world.constants().ITEM_FIXED) ) {
+          else if ( items[itemCount - 1].flags().includes(world.constants().itemFlags.FIXED) ) {
             user.send(`You are not able to pick up that item.\r\n`);
           }
 
@@ -145,7 +145,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `put`,
-      positions: world.constants().POSITIONS_MOBILE,
+      positions: world.constants().positionsMobile,
       execute: async (world, user, buffer, args) => {
         /** Verify item argument exists */
         if ( typeof args[0] != `string` ) {
@@ -214,7 +214,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `remove`,
-      positions: world.constants().POSITIONS_MOBILE,
+      positions: world.constants().positionsMobile,
       execute: async (world, user, buffer, args) => {
         /** Verify item argument exists */
         if ( typeof args[0] != `string` ) {
@@ -234,7 +234,7 @@ module.exports.createCommands = (world) => {
           /** Loop through equipment items and transfer each item to inventory */
           else {
             for ( let i = items.length - 1; i >= 0; i-- ) {
-              if ( items[i].slot() == world.constants().SLOT_WIELD )
+              if ( items[i].slot() == world.constants().slots.WIELD )
                 user.send(`You return ${items[i].name()} to your inventory.\r\n`);
               else
                 user.send(`You remove ${items[i].name()}.\r\n`);
@@ -259,7 +259,7 @@ module.exports.createCommands = (world) => {
           
           /** Transfer item to inventory */
           else {
-            if ( items[count - 1].slot() == world.constants().SLOT_WIELD )
+            if ( items[count - 1].slot() == world.constants().slots.WIELD )
               user.send(`You return ${items[count - 1].name()} to your inventory.\r\n`);
             else
               user.send(`You remove ${items[count - 1].name()}.\r\n`);
@@ -271,7 +271,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `say`,
-      positions: world.constants().POSITIONS_AWAKE,
+      positions: world.constants().positionsAwake,
       execute: async (world, user, buffer, args) => {
         /** Verify at least one argument exists */
         if ( buffer.trim().length == 0 ) {
@@ -295,7 +295,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `wear`,
-      positions: world.constants().POSITIONS_MOBILE,
+      positions: world.constants().positionsMobile,
       execute: async (world, user, buffer, args) => {
         /** Verify item argument exists */
         if ( typeof args[0] != `string` ) {
@@ -305,7 +305,7 @@ module.exports.createCommands = (world) => {
         /** Wear all */
         else if ( args[0] == `all` ) {
           /** Compile list of items in inventory that are equippable and don't need to be wielded */
-          const items = user.inventory().filter(x => x.slot() != world.constants().SLOT_NONE && x.slot() != world.constants().SLOT_WIELD);
+          const items = user.inventory().filter(x => x.slot() != world.constants().slots.NONE && x.slot() != world.constants().slots.WIELD);
           
           /** Verify there is at least one item in inventory to wear */
           if ( items.length == 0 ) {
@@ -319,7 +319,7 @@ module.exports.createCommands = (world) => {
             /** Loop through wearable inventory items */
             for ( let i = items.length - 1; i >= 0; i-- ) {
               /** Transfer item to equipment if there is a slot open */
-              if ( items[i].slot() != world.constants().SLOT_WIELD &&  !user.equipment().find(x => x.slot() == items[i].slot()) ) {
+              if ( items[i].slot() != world.constants().slots.WIELD &&  !user.equipment().find(x => x.slot() == items[i].slot()) ) {
                 user.send(`You put on ${items[i].name()}.\r\n`);
                 await world.itemToEquipment(items[i], user);
                 count++;
@@ -346,12 +346,12 @@ module.exports.createCommands = (world) => {
           } 
 
           /** Verify item is wearable */
-          else if ( items[count - 1].slot() == world.constants().SLOT_WIELD && world.constants().itemTypesWieldable.includes(items[count - 1].type()) ) {
+          else if ( items[count - 1].slot() == world.constants().slots.WIELD && world.constants().itemTypesWieldable.includes(items[count - 1].type()) ) {
             user.send(`You need to 'wield' weapons and held items, not 'wear' them.\r\n`);
           } 
           
           /** Verify item is equippable */
-          else if ( items[count - 1].slot() != world.constants().SLOT_ARMOR ) {
+          else if ( items[count - 1].slot() != world.constants().slots.ARMOR ) {
             user.send(`That item is not equippable.\r\n`);
           }
           
@@ -370,7 +370,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `wield`,
-      positions: world.constants().POSITIONS_MOBILE,
+      positions: world.constants().positionsMobile,
       execute: async (world, user, buffer, args) => {
         /** Verify item argument exists */
         if ( typeof args[0] != `string` ) {
@@ -380,7 +380,7 @@ module.exports.createCommands = (world) => {
         /** Wield all */
         else if ( args[0] == `all` ) {
           /** Compile list of items in inventory that are equippable and wieldable */
-          const items = user.inventory().filter(x => x.slot() != world.constants().SLOT_NONE && x.slot() == world.constants().SLOT_WIELD);
+          const items = user.inventory().filter(x => x.slot() != world.constants().slots.NONE && x.slot() == world.constants().slots.WIELD);
           
           /** Verify there is at least one item in inventory to wield */
           if ( items.length == 0 ) {
@@ -393,10 +393,10 @@ module.exports.createCommands = (world) => {
             
             /** Loop through wieldable inventory items */
             for ( let i = items.length - 1; i >= 0; i-- ) {
-              const wieldedItems = user.equipment().filter(x => x.slot() == world.constants().SLOT_WIELD);
+              const wieldedItems = user.equipment().filter(x => x.slot() == world.constants().slots.WIELD);
 
               /** Transfer item to equipment if there is a slot open */
-              if ( wieldedItems.length == 0 || ( wieldedItems.length == 1 && wieldedItems[0].type() != world.constants().ITEM_2H_WEAPON ) ) {
+              if ( wieldedItems.length == 0 || ( wieldedItems.length == 1 && wieldedItems[0].type() != world.constants().itemTypes.WEAPON_2H ) ) {
                 user.send(`You wield ${items[i].name()}.\r\n`);
                 await world.itemToEquipment(items[i], user);
                 count++;
@@ -423,13 +423,13 @@ module.exports.createCommands = (world) => {
           } 
           
           /** Verify item is equippable */
-          else if ( items[count - 1].slot() == world.constants().SLOT_NONE ) {
+          else if ( items[count - 1].slot() == world.constants().slots.NONE ) {
             user.send(`That item is not equippable.\r\n`);
             return;
           }
 
           /** Verify item is wieldable */
-          else if ( items[count - 1].slot() != world.constants().SLOT_WIELD ) {
+          else if ( items[count - 1].slot() != world.constants().slots.WIELD ) {
             user.send(`You need to 'wear' armor, not 'wield' it.\r\n`);
           } 
           
@@ -441,10 +441,10 @@ module.exports.createCommands = (world) => {
           /** Try to wield item */
           else {
             /** Compile list of wielded items in equipment */
-            const wieldedItems = user.equipment().filter(x => x.slot() == world.constants().SLOT_WIELD);
+            const wieldedItems = user.equipment().filter(x => x.slot() == world.constants().slots.WIELD);
 
             /** Verify there is a slot available for wielding */
-            if ( wieldedItems.length == 2 || ( wieldedItems.length == 1 && wieldedItems[0].type() == world.constants().ITEM_2H_WEAPON ) ) {
+            if ( wieldedItems.length == 2 || ( wieldedItems.length == 1 && wieldedItems[0].type() == world.constants().itemTypes.WEAPON_2H ) ) {
               user.send(`You have already wielded all that you are capable of holding.\r\n`);
             } 
             

@@ -605,13 +605,16 @@ module.exports.webBuilder = (world, port = 7001) => {
     p.row();
     p.col().size(7);
     p.form().method(`post`).action(`/mobiles/:id`);
-    p.input().cols(8).type(`text`).name(`name`).label(`Name:`).value(mobile.name());
+    p.row(`form`).center(false);
+    p.input(`row`).cols(8).type(`text`).name(`name`).label(`Name:`).value(mobile.name());
+    p.row(`form`).center(false);
+    p.input(`row`).cols(9).type(`text`).label(`Names:`).name(`names`).value(mobile.names().join(` `));
     p.row(`form`);
-    p.input().cols(12).type(`text`).name(`roomDescription`).label(`Room Description:`).value(mobile.roomDescription());
+    p.input(`row`).cols(12).type(`text`).name(`roomDescription`).label(`Room Description:`).value(mobile.roomDescription());
     p.row(`form`);
-    p.textarea().label(`Description:`).rows(3).name(`description`).cols(12).text(mobile.description());
+    p.textarea(`row`).label(`Description:`).rows(3).name(`description`).cols(12).text(mobile.description());
     
-    p.row();
+    p.row(`form`);
     p.col().center(true);
     p.buttonLink().color(`secondary`).addClass(`mx-2`).href(`javascript:history.back()`).text(`Back`);
     p.button().color(`primary`).addClass(`mx-2`).type(`submit`).text(`Save Changes`);
@@ -627,15 +630,70 @@ module.exports.webBuilder = (world, port = 7001) => {
     p.col();
     p.h2().addClass(`my-3`).color(`primary`).text(`Item Details`);
     p.row();
-    p.col().size(7);
+    p.col().size(6);
     p.form().method(`post`).action(`/items/:id`);
-    p.input().cols(8).type(`text`).name(`name`).label(`Name:`).value(item.name());
+    p.row(`form`).center(false);
+    p.input(`row`).cols(8).type(`text`).name(`name`).label(`Name:`).value(item.name());
+    p.row(`form`).center(false);
+    p.input(`row`).cols(9).type(`text`).label(`Names:`).name(`names`).value(item.names().join(` `));
     p.row(`form`);
-    p.input().cols(12).type(`text`).name(`roomDescription`).label(`Room Description:`).value(item.roomDescription());
+    p.input(`row`).cols(12).type(`text`).name(`roomDescription`).label(`Room Description:`).value(item.roomDescription());
     p.row(`form`);
-    p.textarea().label(`Description:`).rows(3).name(`description`).cols(12).text(item.description());
+    p.textarea(`row`).label(`Description:`).rows(3).name(`description`).cols(12).text(item.description());
+    p.row(`form`);
+    p.select(`row`).label(`Type:`).name(`type`).cols(4);
     
-    p.row();
+    world.constants().itemTypeNames.forEach((itemTypeName, index) => {
+      p.option().value(index).text(itemTypeName).selected(index == item.type());
+    });
+    
+    p.select(`row`).label(`Slot:`).name(`slot`).cols(4);
+    
+    world.constants().slotNames.forEach((slotName, index) => {
+      p.option().value(index).text(slotName).selected(index == item.slot());
+    });
+    
+    p.select(`row`).label(`Rarity:`).name(`rarity`).cols(4);
+    
+    world.constants().rarityNames.forEach((rarityName, index) => {
+      p.option().value(index).text(rarityName).selected(index == item.rarity());
+    });
+    
+    p.row(`form`);
+    p.col(`row`).size(4);
+    p.label().text(`Flags:`);
+    p.inputSet(`col`).addClass(`ml-2`);
+    
+    world.constants().itemFlagNames.forEach((itemFlagName, index) => {
+      if ( index >= Math.ceil(world.constants().itemFlagNames.length / 3) )
+        return;
+      
+      p.input('inputSet').id(world.constants().itemFlagShortcuts[index]).name(world.constants().itemFlagShortcuts[index]).label(itemFlagName).value(index).type(`checkbox`).checked(item.flags().includes(index));
+    });
+    
+    p.col(`row`).size(4);
+    p.lineBreak();
+    p.inputSet(`col`).addClass(`ml-2 mt-2`);
+    
+    world.constants().itemFlagNames.forEach((itemFlagName, index) => {
+      if ( index < Math.ceil(world.constants().itemFlagNames.length / 3) || index >= 2 * Math.ceil(world.constants().itemFlagNames.length / 3) )
+        return;
+      
+      p.input('inputSet').id(world.constants().itemFlagShortcuts[index]).name(world.constants().itemFlagShortcuts[index]).label(itemFlagName).value(index).type(`checkbox`).checked(item.flags().includes(index));
+    });
+    
+    p.col(`row`).size(4);
+    p.lineBreak();
+    p.inputSet(`col`).addClass(`ml-2 mt-2`);
+    
+    world.constants().itemFlagNames.forEach((itemFlagName, index) => {
+      if ( index < 2 * Math.ceil(world.constants().itemFlagNames.length / 3) )
+        return;
+      
+      p.input('inputSet').id(world.constants().itemFlagShortcuts[index]).name(world.constants().itemFlagShortcuts[index]).label(itemFlagName).value(index).type(`checkbox`).checked(item.flags().includes(index));
+    });
+    
+    p.row(`form`);
     p.col().center(true);
     p.buttonLink().color(`secondary`).addClass(`mx-2`).href(`javascript:history.back()`).text(`Back`);
     p.button().color(`primary`).addClass(`mx-2`).type(`submit`).text(`Save Changes`);

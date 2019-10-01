@@ -5,7 +5,7 @@ module.exports.createCommands = (world) => {
   return [
     new world.Command({
       name: `create`,
-      positions: world.constants().POSITIONS_AWAKE_AND_SAFE,
+      positions: world.constants().positionsAwake_AND_SAFE,
       execute: async (world, user, buffer, args) => {
         /** If no first argument was provided, send error */
         if ( typeof args[0] != `string` ) {
@@ -100,7 +100,7 @@ module.exports.createCommands = (world) => {
             
             /** Otherwise, if no fourth argument was provided, send error */
             else if ( typeof args[3] != `string` )
-              return user.send(`Where item prototype ID # is being deployed?\r\n`);
+              return user.send(`Which item prototype ID # is being deployed?\r\n`);
             
             /** Otherwise, if the fourth argument is not a number, send error */
             else if ( isNaN(args[3]) )
@@ -158,19 +158,16 @@ module.exports.createCommands = (world) => {
                 refresh = parseInt(args[6]);
               }
               
-              world.log().verbose(`Creating item to area deployment of (${count}) ID #${itemPrototype.id()} to #${area.id()} [${refresh}s]${parentDeployment ? ` (Parent: ` + parentDeployment.id() + `)` : ``}.`);
+              world.log().verbose(`Creating item to area deployment of (${count}) ID #${itemPrototype.id()} to #${area.id()} [${refresh}s].`);
             
               /** Create deployment */
-              const deployment = world.createDeployment({
+              const deployment = world.createDeployment(user.room().area(), {
                 count: count,
                 refresh: refresh,
-                type: world.constants().DEPLOY_ITEMS_TO_AREA,
+                type: world.constants().deploymentTypes.ITEMS_TO_AREA,
                 subject: itemPrototype.id(),
                 target: area.id()
               });
-              
-              /** Insert deployment into database */
-              await deployment.insert(world.database());
               
               /** Send success */
               user.send(`That item to area deployment has been successfully created.\r\n`);
@@ -256,7 +253,7 @@ module.exports.createCommands = (world) => {
               const deployment = world.createDeployment({
                 count: count,
                 refresh: refresh,
-                type: world.constants().DEPLOY_ITEMS_TO_AREA,
+                type: world.constants().deploymentTypes.ITEMS_TO_AREA,
                 subject: mobilePrototype.id(),
                 target: area.id()
               });
@@ -479,7 +476,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `edit`,
-      positions: world.constants().POSITIONS_AWAKE_AND_SAFE,
+      positions: world.constants().positionsAwake_AND_SAFE,
       execute: async (world, user, buffer, args) => {
         /** If no first argument was provided, send error */
         if ( typeof args[0] != `string` ) {

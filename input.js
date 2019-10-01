@@ -41,7 +41,7 @@ async function processStateName(world, user, buffer) {
       user.send(`Please choose a password: `);
 
       /** Move on to ask for them to pick a password */
-      user.state(world.constants().STATE_NEW_PASSWORD);
+      user.state(world.constants().states.NEW_PASSWORD);
     } 
     
     /** Otherwise, send old pasword prompt */
@@ -50,7 +50,7 @@ async function processStateName(world, user, buffer) {
       user.send(`Please enter your password: `);
 
       /** Move on to ask for existing password */
-      user.state(world.constants().STATE_OLD_PASSWORD);
+      user.state(world.constants().states.OLD_PASSWORD);
     }
 
     /** Hide text for password */
@@ -124,6 +124,19 @@ async function processStateOldPassword(world, user, buffer) {
     user.equipment().forEach((item) => {
       item.character(user);
       
+      /** Add item stats to user's stats */
+      user.accuracy(user.accuracy() + item.accuracy());
+      user.air(user.air() + item.air());
+      user.armor(user.armor() + item.armor());
+      user.deflection(user.deflection() + item.deflection());
+      user.dodge(user.dodge() + item.dodge());
+      user.earth(user.earth() + item.earth());
+      user.fire(user.fire() + item.fire());
+      user.life(user.life() + item.life());
+      user.power(user.power() + item.power());
+      user.speed(user.speed() + item.speed());
+      user.water(user.water() + item.water());
+
       recursiveItemContents(item);
     });
         
@@ -131,7 +144,7 @@ async function processStateOldPassword(world, user, buffer) {
     await world.characterToRoom(user, room);
     
     /** Move on and pause until they're done reading the message of the day */
-    user.state(world.constants().STATE_MOTD);
+    user.state(world.constants().states.MOTD);
 
     world.log().info(`User ${user.name()} connected.`);
   } else {
@@ -181,7 +194,7 @@ async function processStateNewPassword(world, user, buffer) {
     user.send(`Please confirm your new password: `);
 
     /** Move on and confirm the password */
-    user.state(world.constants().STATE_CONFIRM_PASSWORD);
+    user.state(world.constants().states.CONFIRM_PASSWORD);
   }
   
   /** Hide text for password */
@@ -210,7 +223,8 @@ async function processStateConfirmPassword(world, user, buffer) {
     if ( !user.addresses().includes(user.socket().address().address) )
       user.addresses().push(user.socket().address().address);
     
-    await user.update(world.database());
+    /** I don't think we want to save new character here */
+    //await user.update(world.database());
     
     /** Password matches, proceed to the message of the day */
     user.send(world.colorize(world.motd()));
@@ -228,14 +242,14 @@ async function processStateConfirmPassword(world, user, buffer) {
     await world.characterToRoom(user, room);
 
     /** Move on and pause until they're done reading the message of the day */
-    user.state(world.constants().STATE_MOTD);
+    user.state(world.constants().states.MOTD);
 
     world.log().info(`User ${user.name()} connected.`);
   } else {
     /** Password does not match, let's try this again */
     user.send(`Passwords do not match, please try again!\r\n`);
     user.send(`Please choose a password: `);
-    user.state(world.constants().STATE_NEW_PASSWORD);
+    user.state(world.constants().states.NEW_PASSWORD);
     
     /** Hide text for password */
     user.send(world.constants().VT100_HIDE_TEXT);
@@ -283,7 +297,7 @@ async function processStateMOTD(world, user, buffer) {
   world.send(world.colorize(`#YInfo -> ${user.name()} has come online.#n\r\n`));
 
   /** Move on and put user in game */
-  user.state(world.constants().STATE_CONNECTED);
+  user.state(world.constants().states.CONNECTED);
 }
 
 /**
@@ -341,7 +355,7 @@ async function processStateConnected(world, user, buffer) {
   const command = world.commands().filter(x => x.name().startsWith(commandName))[0];
   
   /** Allowable positions are configured positions or all by default */
-  const allowablePositions = command && command.positions().length > 0 ? command.positions() : world.constants().POSITIONS_ALL;
+  const allowablePositions = command && command.positions().length > 0 ? command.positions() : world.constants().positionsAll;
   
   /** Convert buffer to string and trim command */
   buffer = buffer.toString().replace(new RegExp(`^[\\s'"]*${args[0]}[\\s'"]*`), ``);
@@ -349,23 +363,23 @@ async function processStateConnected(world, user, buffer) {
   /** If it exists, execute it for this user, otherwise send error */
   if ( command && allowablePositions.includes(user.position()) )
     await command.execute()(world, user, buffer, args.slice(1).map(x => x.toLowerCase()));
-  else if ( command && user.position() == world.constants().POSITION_DEAD )
+  else if ( command && user.position() == world.constants().positions.DEAD )
     user.send(`You can't do that... you are DEAD!\r\n`);
-  else if ( command && user.position() == world.constants().POSITION_INCAPACITATED )
+  else if ( command && user.position() == world.constants().positions.INCAPACITATED )
     user.send(`You can't do that while incapacitated!\r\n`);
-  else if ( command && user.position() == world.constants().POSITION_SLEEPING )
+  else if ( command && user.position() == world.constants().positions.SLEEPING )
     user.send(`You can't do that while sleeping.\r\n`);
-  else if ( command && user.position() == world.constants().POSITION_MEDITATING )
+  else if ( command && user.position() == world.constants().positions.MEDITATING )
     user.send(`You can't do that while meditating.\r\n`);
-  else if ( command && user.position() == world.constants().POSITION_LYING_DOWN )
+  else if ( command && user.position() == world.constants().positions.LYING_DOWN )
     user.send(`You can't do that while lying down.\r\n`);
-  else if ( command && user.position() == world.constants().POSITION_KNEELING )
+  else if ( command && user.position() == world.constants().positions.KNEELING )
     user.send(`You can't do that while kneeling.\r\n`);
-  else if ( command && user.position() == world.constants().POSITION_SITTING )
+  else if ( command && user.position() == world.constants().positions.SITTING )
     user.send(`You can't do that while sitting.\r\n`);
-  else if ( command && user.position() == world.constants().POSITION_STANDING )
+  else if ( command && user.position() == world.constants().positions.STANDING )
     user.send(`You can't do that while standing.\r\n`);
-  else if ( command && user.position() == world.constants().POSITION_FIGHTING )
+  else if ( command && user.position() == world.constants().positions.FIGHTING )
     user.send(`You can't do that while fighting!\r\n`);
   else
     user.send(`That action does not exist in this world.\r\n`);
@@ -381,26 +395,26 @@ module.exports.process = async function (world, user, buffer) {
   user.command(true);
   
   /** User is at the name state, first input of the game */
-  if ( user.state() == world.constants().STATE_NAME )
+  if ( user.state() == world.constants().states.NAME )
     await processStateName(world, user, buffer);
 
   /** User submitted name and was found to be previously saved, require old password */
-  else if ( user.state() == world.constants().STATE_OLD_PASSWORD )
+  else if ( user.state() == world.constants().states.OLD_PASSWORD )
     await processStateOldPassword(world, user, buffer);
   
   /** User submitted name and is new, ask for a new password */  
-  else if ( user.state() == world.constants().STATE_NEW_PASSWORD )
+  else if ( user.state() == world.constants().states.NEW_PASSWORD )
     await processStateNewPassword(world, user, buffer);
   
   /** User is new and provided a password, confirm it to be sure they typed it right */
-  else if ( user.state() == world.constants().STATE_CONFIRM_PASSWORD )
+  else if ( user.state() == world.constants().states.CONFIRM_PASSWORD )
     await processStateConfirmPassword(world, user, buffer);
   
   /** User has successfully logged in and is seeing MOTD, pause until they hit enter */
-  else if ( user.state() == world.constants().STATE_MOTD ) 
+  else if ( user.state() == world.constants().states.MOTD ) 
     await processStateMOTD(world, user, buffer);
   
   /** User is connected and in world */
-  else if ( user.state() == world.constants().STATE_CONNECTED )
+  else if ( user.state() == world.constants().states.CONNECTED )
     await processStateConnected(world, user, buffer);
 };

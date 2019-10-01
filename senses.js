@@ -2,7 +2,7 @@ module.exports.createCommands = (world) => {
   return [
     new world.Command({
       name: `look`,
-      positions: world.constants().POSITIONS_AWAKE,
+      positions: world.constants().positionsAwake,
       execute: async (world, user, buffer, args) => {
         if ( typeof args[0] == `string` ) {
           /** If the first argument is 'in'... */
@@ -28,7 +28,7 @@ module.exports.createCommands = (world) => {
             } 
             
             /** Otherwise, if item is not a container, send error */
-            else if ( !items[count - 1].flags().includes(world.constants().ITEM_CONTAINER) ) {
+            else if ( !items[count - 1].flags().includes(world.constants().itemFlags.CONTAINER) ) {
               user.send(`That item is not a container.\r\n`);
             } 
             
@@ -94,23 +94,26 @@ module.exports.createCommands = (world) => {
             if ( targets.length < count )
               return user.send(`You can't find that anywhere.\r\n`);
             
+            /** Define target */
+            const target = targets[count - 1];
+            
             /** If the target is a user... */
-            if ( targets[count - 1] instanceof world.User ) {
+            if ( target instanceof world.User ) {
               /** Send target user's name */
-              user.send(`${targets[count - 1].name()} is standing here.\r\n\r\n`);
+              user.send(`${target.name()} is standing here.\r\n\r\n`);
               
               /** Send target user's equipment */
-              world.sendUserEquipment(user, targets[count - 1]);
+              world.sendUserEquipment(user, target);
             } 
             
             /** Otherwise, if target is a mobile... */
-            else if ( targets[count - 1] instanceof world.MobileInstance ) {
+            else if ( target instanceof world.MobileInstance ) {
               /** Send target mobile's description */
-              user.send(`${world.terminalWrap(world.colorize(targets[count - 1].name()))}\r\n`);
-              user.send(`${world.terminalWrap(world.colorize(targets[count - 1].description()))}\r\n\r\n`);
+              user.send(`${world.terminalWrap(world.colorize(target.name()))}\r\n`);
+              user.send(`${world.terminalWrap(world.colorize(target.description()))}\r\n\r\n`);
               
               /** Send target mobile's equipment */
-              world.sendUserEquipment(user, targets[count - 1]);
+              world.sendUserEquipment(user, target);
             } 
             
             /** Otherwise, if there is a second argument */
@@ -123,23 +126,77 @@ module.exports.createCommands = (world) => {
               const [detailName, detailCount] = world.parseName(user, args, 1);
               
               /** Attempt to find detail on target */
-              const detail = Object.keys(targets[count - 1].details()).filter(x => x.startsWith(detailName))[detailCount - 1];
+              const detail = Object.keys(target.details()).filter(x => x.startsWith(detailName))[detailCount - 1];
               
               /** If detail doesn't exist, send error */
               if ( !detail )
                 return user.send(`You can't find that anywhere.\r\n`);
               
               /** Send detail description */
-              user.send(`${world.terminalWrap(world.colorize(targets[count - 1].details()[detail]))}\r\n`);
+              user.send(`${world.terminalWrap(world.colorize(target.details()[detail]))}\r\n`);
             } 
             
             /** Otherwise... */
             else {
               /** Send item description */
-              user.send(`${world.terminalWrap(world.colorize(targets[count - 1].description()))}\r\n`);
+              user.send(`${world.terminalWrap(world.colorize(target.description()))}\r\n`);
+              
+              /** Define array of stats */
+              const stats = [target.accuracy(), target.air(), target.armor(), target.deflection(), target.dodge(), 
+                             target.earth(), target.fire(), target.life(), target.power(), target.speed(), target.water()];
+              
+              if ( stats.some(x => x > 0) )
+                user.send(`\r\n`);
+              
+              /** If the target is an item... */
+              if ( target instanceof world.ItemInstance ) {
+                /** If the item has accuracy, show it */
+                if ( target.accuracy() > 0 )
+                  user.send(world.colorize(`  #OAccuracy#n    +${target.accuracy()}\r\n`));
+                
+                /** If the item has air, show it */
+                if ( target.air() > 0 )
+                  user.send(world.colorize(`  Air         +${target.air()}\r\n`));
+                
+                /** If the item has armor, show it */
+                if ( target.armor() > 0 )
+                  user.send(world.colorize(`  #KArmor#n       +${target.armor()}\r\n`));
+                
+                /** If the item has deflection, show it */
+                if ( target.deflection() > 0 )
+                  user.send(world.colorize(`  #PDeflection#n  +${target.deflection()}\r\n`));
+                
+                /** If the item has dodge, show it */
+                if ( target.dodge() > 0 )
+                  user.send(world.colorize(`  #cDodge#n       +${target.dodge()}\r\n`));
+                
+                /** If the item has earth, show it */
+                if ( target.earth() > 0 )
+                  user.send(world.colorize(`  #yEarth#n       +${target.earth()}\r\n`));
+                
+                /** If the item has fire, show it */
+                if ( target.fire() > 0 )
+                  user.send(world.colorize(`  #RFire#n        +${target.fire()}\r\n`));
+                
+                /** If the item has life, show it */
+                if ( target.life() > 0 )
+                  user.send(world.colorize(`  #gLife#n        +${target.life()}\r\n`));
+                
+                /** If the item has power, show it */
+                if ( target.power() > 0 )
+                  user.send(world.colorize(`  #oPower#n       +${target.power()}\r\n`));
+                
+                /** If the item has speed, show it */
+                if ( target.speed() > 0 )
+                  user.send(world.colorize(`  #YSpeed#n       +${target.speed()}\r\n`));
+                
+                /** If the item has water, show it */
+                if ( target.water() > 0 )
+                  user.send(world.colorize(`  #BWater#n       +${target.water()}\r\n`));
+              }
               
               /** Create array of detail keys */
-              const keys = Object.keys(targets[count - 1].details());
+              const keys = Object.keys(target.details());
               
               /** If there are details, output heading */
               if ( keys.length > 0 )
@@ -212,17 +269,17 @@ module.exports.createCommands = (world) => {
           /** Loop through each mobile in user's room... */
           user.room().mobiles().forEach((mobile) => {
             /** Send description based on mobile's position and who they're fighting */
-            if ( mobile.position() == world.constants().POSITION_INCAPACITATED )
+            if ( mobile.position() == world.constants().positions.INCAPACITATED )
               user.send(` ${mobile.name()} is lying here incapacitated!\r\n`);
-            else if ( mobile.position() == world.constants().POSITION_SLEEPING )
+            else if ( mobile.position() == world.constants().positions.SLEEPING )
               user.send(` ${mobile.name()} is lying here sleeping\r\n`);
-            else if ( mobile.position() == world.constants().POSITION_MEDITATING )
+            else if ( mobile.position() == world.constants().positions.MEDITATING )
               user.send(` ${mobile.name()} is meditating here\r\n`);
-            else if ( mobile.position() == world.constants().POSITION_LYING_DOWN )
+            else if ( mobile.position() == world.constants().positions.LYING_DOWN )
               user.send(` ${mobile.name()} is lying down here\r\n`);
-            else if ( mobile.position() == world.constants().POSITION_KNEELING )
+            else if ( mobile.position() == world.constants().positions.KNEELING )
               user.send(` ${mobile.name()} is kneeling here\r\n`);
-            else if ( mobile.position() == world.constants().POSITION_SITTING )
+            else if ( mobile.position() == world.constants().positions.SITTING )
               user.send(` ${mobile.name()} is sitting here\r\n`);
             else if ( mobile.fighting() && mobile.fighting() == user )
               user.send(` ${mobile.name()} is here fighting YOU!\r\n`);
@@ -237,23 +294,23 @@ module.exports.createCommands = (world) => {
             /** If user in room is not the looking user... */
             if ( user != other ) {
               /** Send description based on user's position and who they're fighting */
-              if ( other.position() == world.constants().POSITION_INCAPACITATED )
+              if ( other.position() == world.constants().positions.INCAPACITATED )
                 user.send(` ${other.name()} is lying here incapacitated!\r\n`);
-              else if ( other.position() == world.constants().POSITION_SLEEPING )
+              else if ( other.position() == world.constants().positions.SLEEPING )
                 user.send(` ${other.name()} is lying here sleeping\r\n`);
-              else if ( other.position() == world.constants().POSITION_MEDITATING )
+              else if ( other.position() == world.constants().positions.MEDITATING )
                 user.send(` ${other.name()} is meditating here\r\n`);
-              else if ( other.position() == world.constants().POSITION_LYING_DOWN )
+              else if ( other.position() == world.constants().positions.LYING_DOWN )
                 user.send(` ${other.name()} is lying down here\r\n`);
-              else if ( other.position() == world.constants().POSITION_KNEELING )
+              else if ( other.position() == world.constants().positions.KNEELING )
                 user.send(` ${other.name()} is kneeling here\r\n`);
-              else if ( other.position() == world.constants().POSITION_SITTING )
+              else if ( other.position() == world.constants().positions.SITTING )
                 user.send(` ${other.name()} is sitting here\r\n`);
-              else if ( other.position() == world.constants().POSITION_FIGHTING && other.fighting() == user )
+              else if ( other.position() == world.constants().positions.FIGHTING && other.fighting() == user )
                 user.send(` ${other.name()} is here fighting YOU!\r\n`);
-              else if ( other.position() == world.constants().POSITION_FIGHTING && other.fighting() && other.fighting() != user )
+              else if ( other.position() == world.constants().positions.FIGHTING && other.fighting() && other.fighting() != user )
                 user.send(` ${other.name()} is here fighting ${other.fighting().name()}!\r\n`);
-              else if ( other.position() == world.constants().POSITION_STANDING )
+              else if ( other.position() == world.constants().positions.STANDING )
                 user.send(` ${other.name()} is standing here\r\n`);
             }
           });
@@ -263,7 +320,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `equipment`,
-      positions: world.constants().POSITIONS_AWAKE,
+      positions: world.constants().positionsAwake,
       execute: async (world, user, buffer) => {
         /** Send user's equipment */
         world.sendUserEquipment(user, user);
@@ -272,7 +329,7 @@ module.exports.createCommands = (world) => {
     }),
     new world.Command({
       name: `inventory`,
-      positions: world.constants().POSITIONS_AWAKE,
+      positions: world.constants().positionsAwake,
       execute: async (world, user, buffer) => {
         /** Send inventory header */
         user.send(`Inventory:\r\n`);

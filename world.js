@@ -211,11 +211,16 @@ World.prototype.itemFromAnywhere = async function (item) {
     if ( item.character().equipment().indexOf(item) !== -1 ) {
       /** Subtract item stats from character's stats */
       item.character().accuracy(item.character().accuracy() - item.accuracy());
+      item.character().air(item.character().air() - item.air());
       item.character().armor(item.character().armor() - item.armor());
       item.character().deflection(item.character().deflection() - item.deflection());
       item.character().dodge(item.character().dodge() - item.dodge());
+      item.character().earth(item.character().earth() - item.earth());
+      item.character().fire(item.character().fire() - item.fire());
+      item.character().life(item.character().life() - item.life());
       item.character().power(item.character().power() - item.power());
       item.character().speed(item.character().speed() - item.speed());
+      item.character().water(item.character().water() - item.water());
 
       /** Remove item from equipment list */
       item.character().equipment().splice(item.character().equipment().indexOf(item), 1);
@@ -282,12 +287,17 @@ World.prototype.itemToEquipment = async function (item, character) {
   
   /** Add item stats to character's stats */
   character.accuracy(character.accuracy() + item.accuracy());
+  character.air(character.air() + item.air());
   character.armor(character.armor() + item.armor());
   character.deflection(character.deflection() + item.deflection());
   character.dodge(character.dodge() + item.dodge());
+  character.earth(character.earth() + item.earth());
+  character.fire(character.fire() + item.fire());
+  character.life(character.life() + item.life());
   character.power(character.power() + item.power());
   character.speed(character.speed() + item.speed());
-  
+  character.water(character.water() + item.water());
+
   /** Save character */
   await character.update(this.database());
 };
@@ -306,17 +316,67 @@ World.prototype.itemToContainer = async function (item, container) {
   await container.update(this.database());
 };
 
-World.prototype.itemInstanceFromPrototype = async function (prototype) {
+World.prototype.itemInstanceFromPrototype = async function (prototype, level = 1, rarity = constants.rarities.COMMON) {
+  const meanValuePerStat = 0.5 + 0.5 * level;
+  const meanStatsPerItem = 2 + level * (6 - 2) / 1000;
+  const numItems = 14;
+  const meanStat = meanValuePerStat * meanStatsPerItem * numItems / 11;
+  const minStat = Math.max(Math.min(Math.round((1 - this.constants().randomnessFactor) * meanStat), Math.round(meanStat) - 1), 0);
+  const maxStat = Math.min(Math.max(Math.round((1 + this.constants().randomnessFactor) * meanStat), Math.round(meanStat) + 1), 999);
+  const minStatsPerItem = Math.max(Math.min(Math.round((1 - this.constants().randomnessFactor) * meanStatsPerItem), Math.round(meanStatsPerItem) - 1), 0);
+  const maxStatsPerItem = Math.min(Math.round((1 + this.constants().randomnessFactor) * meanStatsPerItem), 7);
+  const numStats = prototype.type() == this.constants().itemTypes.OTHER ? 0 : Math.floor(Math.random() * (maxStatsPerItem - minStatsPerItem + 1)) + minStatsPerItem;
+  
+  /** Determine stat multiplier due to rarity, starting by assuming common multipler of 0.85 */
+  let multiplier = 0.85;
+  
+  /** If rarity is uncommon, change multiplier to 1.1 */
+  if ( rarity == this.constants().rarities.UNCOMMON )
+    multiplier = 1.1;
+  
+  /** Otherwise, if rarity is rare, change multiplier to 1.35 */
+  else if ( rarity == this.constants().rarities.RARE )
+    multiplier = 1.35;
+  
+  /** Otherwise, if rarity is epic, change multiplier to 1.75 */
+  else if ( rarity == this.constants().rarities.EPIC )
+    multiplier = 1.75;
+  
+  /** Otherwise, if rarity is legendary, change multiplier to 2 */
+  else if ( rarity == this.constants().rarities.LEGENDARY )
+    multiplier = 2;
+  
+  /** If the item is a 2H weapon, double the stat values */
+  const weaponMultiplier = prototype.type() == this.constants().itemTypes.WEAPON_2H ? 2 : 1;
+  
+  /** Create an array for the stat types this item will have */
+  const stats = [];
+  
+  /** For each stat we're allowed, pick a random stat and append to array */
+  for ( let i = 0, iMax = numStats; i < iMax; i++ )
+    stats.push(Math.floor(multiplier * Math.random() * Object.keys(this.constants().stats).length));
+  
   const itemInstance = new this.ItemInstance({
-    prototype: prototype,
+    accuracy: stats.includes(this.constants().stats.ACCURACY) ? Math.floor(weaponMultiplier * multiplier * Math.random() * (maxStat - minStat + 1)) + minStat : 0,
+    air: stats.includes(this.constants().stats.AIR) ? Math.floor(weaponMultiplier * multiplier * Math.random() * (maxStat - minStat + 1)) + minStat : 0,
+    armor: stats.includes(this.constants().stats.ARMOR) ? Math.floor(weaponMultiplier * multiplier * Math.random() * (maxStat - minStat + 1)) + minStat : 0,
+    deflection: stats.includes(this.constants().stats.DEFLECTION) ? Math.floor(weaponMultiplier * multiplier * Math.random() * (maxStat - minStat + 1)) + minStat : 0,
+    description: prototype.description(),
+    details: prototype.details(),
+    dodge: stats.includes(this.constants().stats.DODGE) ? Math.floor(weaponMultiplier * multiplier * Math.random() * (maxStat - minStat + 1)) + minStat : 0,
+    earth: stats.includes(this.constants().stats.EARTH) ? Math.floor(weaponMultiplier * multiplier * Math.random() * (maxStat - minStat + 1)) + minStat : 0,
+    fire: stats.includes(this.constants().stats.FIRE) ? Math.floor(weaponMultiplier * multiplier * Math.random() * (maxStat - minStat + 1)) + minStat : 0,
+    flags: prototype.flags(),
+    life: stats.includes(this.constants().stats.LIFE) ? Math.floor(weaponMultiplier * multiplier * Math.random() * (maxStat - minStat + 1)) + minStat : 0,
     name: prototype.name(),
     names: prototype.names(),
-    description: prototype.description(),
+    power: stats.includes(this.constants().stats.POWER) ? Math.floor(weaponMultiplier * multiplier * Math.random() * (maxStat - minStat + 1)) + minStat : 0,
+    prototype: prototype,
     roomDescription: prototype.roomDescription(),
-    details: prototype.details(),
-    type: prototype.type(),
     slot: prototype.slot(),
-    flags: prototype.flags()
+    speed: stats.includes(this.constants().stats.SPEED) ? Math.floor(weaponMultiplier * multiplier * Math.random() * (maxStat - minStat + 1)) + minStat : 0,
+    type: prototype.type(),
+    water: stats.includes(this.constants().stats.WATER) ? Math.floor(weaponMultiplier * multiplier * Math.random() * (maxStat - minStat + 1)) + minStat : 0
   });
   
   await itemInstance.insert(this.database());
@@ -324,7 +384,7 @@ World.prototype.itemInstanceFromPrototype = async function (prototype) {
   return itemInstance;
 };
 
-World.prototype.mobileInstanceFromPrototype = async function (prototype) {
+World.prototype.mobileInstanceFromPrototype = async function (prototype, level = 1) {
   const mobileInstance = new this.MobileInstance({
     prototype: prototype,
     name: prototype.name(),
@@ -355,25 +415,25 @@ World.prototype.send = function (text, exclude = []) {
 World.prototype.sendUserEquipment = function (user, other) {
   user.send(`Equipment:\r\n`);
 
-  user.send(this.colorize(`  #y[Head       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_HEAD) ? other.equipment().find(x => x.slot() == this.constants().SLOT_HEAD).name() : `nothing`}\r\n`));
-  user.send(this.colorize(`  #y[Face       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_FACE) ? other.equipment().find(x => x.slot() == this.constants().SLOT_FACE).name() : `nothing`}\r\n`));
-  user.send(this.colorize(`  #y[Neck       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_NECK) ? other.equipment().find(x => x.slot() == this.constants().SLOT_NECK).name() : `nothing`}\r\n`));
-  user.send(this.colorize(`  #y[Shoulders  ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_SHOULDERS) ? other.equipment().find(x => x.slot() == this.constants().SLOT_SHOULDERS).name() : `nothing`}\r\n`));
-  user.send(this.colorize(`  #y[Chest      ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_CHEST) ? other.equipment().find(x => x.slot() == this.constants().SLOT_CHEST).name() : `nothing`}\r\n`));
-  user.send(this.colorize(`  #y[Back       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_BACK) ? other.equipment().find(x => x.slot() == this.constants().SLOT_BACK).name() : `nothing`}\r\n`));
-  user.send(this.colorize(`  #y[Arms       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_ARMS) ? other.equipment().find(x => x.slot() == this.constants().SLOT_ARMS).name() : `nothing`}\r\n`));
-  user.send(this.colorize(`  #y[Wrists     ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_WRISTS) ? other.equipment().find(x => x.slot() == this.constants().SLOT_WRISTS).name() : `nothing`}\r\n`));
-  user.send(this.colorize(`  #y[Gloves     ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_GLOVES) ? other.equipment().find(x => x.slot() == this.constants().SLOT_GLOVES).name() : `nothing`}\r\n`));
-  user.send(this.colorize(`  #y[Waist      ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_WAIST) ? other.equipment().find(x => x.slot() == this.constants().SLOT_WAIST).name() : `nothing`}\r\n`));
-  user.send(this.colorize(`  #y[Legs       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_LEGS) ? other.equipment().find(x => x.slot() == this.constants().SLOT_LEGS).name() : `nothing`}\r\n`));
-  user.send(this.colorize(`  #y[Feet       ]#n ${other.equipment().find(x => x.slot() == this.constants().SLOT_FEET) ? other.equipment().find(x => x.slot() == this.constants().SLOT_FEET).name() : `nothing`}\r\n`));
+  user.send(this.colorize(`  #y[Head       ]#n ${other.equipment().find(x => x.slot() == this.constants().slots.HEAD) ? other.equipment().find(x => x.slot() == this.constants().slots.HEAD).name() : `nothing`}\r\n`));
+  user.send(this.colorize(`  #y[Face       ]#n ${other.equipment().find(x => x.slot() == this.constants().slots.FACE) ? other.equipment().find(x => x.slot() == this.constants().slots.FACE).name() : `nothing`}\r\n`));
+  user.send(this.colorize(`  #y[Neck       ]#n ${other.equipment().find(x => x.slot() == this.constants().slots.NECK) ? other.equipment().find(x => x.slot() == this.constants().slots.NECK).name() : `nothing`}\r\n`));
+  user.send(this.colorize(`  #y[Shoulders  ]#n ${other.equipment().find(x => x.slot() == this.constants().slots.SHOULDERS) ? other.equipment().find(x => x.slot() == this.constants().slots.SHOULDERS).name() : `nothing`}\r\n`));
+  user.send(this.colorize(`  #y[Chest      ]#n ${other.equipment().find(x => x.slot() == this.constants().slots.CHEST) ? other.equipment().find(x => x.slot() == this.constants().slots.CHEST).name() : `nothing`}\r\n`));
+  user.send(this.colorize(`  #y[Back       ]#n ${other.equipment().find(x => x.slot() == this.constants().slots.BACK) ? other.equipment().find(x => x.slot() == this.constants().slots.BACK).name() : `nothing`}\r\n`));
+  user.send(this.colorize(`  #y[Arms       ]#n ${other.equipment().find(x => x.slot() == this.constants().slots.ARMS) ? other.equipment().find(x => x.slot() == this.constants().slots.ARMS).name() : `nothing`}\r\n`));
+  user.send(this.colorize(`  #y[Wrists     ]#n ${other.equipment().find(x => x.slot() == this.constants().slots.WRISTS) ? other.equipment().find(x => x.slot() == this.constants().slots.WRISTS).name() : `nothing`}\r\n`));
+  user.send(this.colorize(`  #y[Gloves     ]#n ${other.equipment().find(x => x.slot() == this.constants().slots.GLOVES) ? other.equipment().find(x => x.slot() == this.constants().slots.GLOVES).name() : `nothing`}\r\n`));
+  user.send(this.colorize(`  #y[Waist      ]#n ${other.equipment().find(x => x.slot() == this.constants().slots.WAIST) ? other.equipment().find(x => x.slot() == this.constants().slots.WAIST).name() : `nothing`}\r\n`));
+  user.send(this.colorize(`  #y[Legs       ]#n ${other.equipment().find(x => x.slot() == this.constants().slots.LEGS) ? other.equipment().find(x => x.slot() == this.constants().slots.LEGS).name() : `nothing`}\r\n`));
+  user.send(this.colorize(`  #y[Feet       ]#n ${other.equipment().find(x => x.slot() == this.constants().slots.FEET) ? other.equipment().find(x => x.slot() == this.constants().slots.FEET).name() : `nothing`}\r\n`));
 
-  const wieldedItems = other.equipment().filter(x => x.slot() == this.constants().SLOT_WIELD);
+  const wieldedItems = other.equipment().filter(x => x.slot() == this.constants().slots.WIELD);
 
   if ( wieldedItems.length == 2 ) {
     user.send(this.colorize(`  #y[Right Hand ]#n ${wieldedItems[0].name()}\r\n`));
     user.send(this.colorize(`  #y[Left Hand  ]#n ${wieldedItems[1].name()}\r\n`));
-  } else if ( wieldedItems.length == 1 && wieldedItems[0].type() == this.constants().ITEM_2H_WEAPON ) {
+  } else if ( wieldedItems.length == 1 && wieldedItems[0].type() == this.constants().itemTypes.WEAPON_2H ) {
     user.send(this.colorize(`  #y[Hands      ]#n ${wieldedItems[0].name()}\r\n`));
   } else if ( wieldedItems.length == 1 ) {
     user.send(this.colorize(`  #y[Right Hand ]#n ${wieldedItems[0].name()}\r\n`));
@@ -868,7 +928,7 @@ World.prototype.listen = async function () {
 
         /** Zero the user's socket and update their state to disconnected, but leave them in game */
         user.socket(null);
-        user.state(constants.STATE_DISCONNECTED);
+        user.state(constants.states().DISCONNECTED);
       } 
       
       /** Otherwise just log disconnected socket */

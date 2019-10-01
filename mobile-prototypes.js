@@ -10,6 +10,7 @@ module.exports.configMobilePrototype = (world, ext, extConfig) => {
       { name: `created`, type: `datetime`, default: new Date() },
       { name: `description`, type: `varchar`, length: 512, default: `They look like the most boring person you could possibly imagine.` },
       { name: `names`, type: `Array`, arrayOf: { type: `varchar`, length: 32 }, default: [`person`] },
+      { name: `rarity`, type: `int` },
       { name: `room`, instanceOf: `Room`, store: false },
       { name: `roomDescription`, type: `varchar`, length: 80, default: `a boring person stands here` },
       { name: `scripts`, type: `Array`, arrayOf: { type: `function` } }

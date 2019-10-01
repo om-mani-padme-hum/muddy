@@ -2,7 +2,7 @@ module.exports.createCommands = (world) => {
   return [
     new world.Command({
       name: `kill`,
-      positions: [world.constants().POSITION_STANDING, world.constants().POSITION_FIGHTING],
+      positions: [world.constants().positions.STANDING, world.constants().positions.FIGHTING],
       execute: async (world, user, buffer, args) => {
         /** Parse name and count of argument */
         const [name, count] = world.parseName(user, args, 0);
@@ -37,8 +37,8 @@ module.exports.createCommands = (world) => {
         user.room().send(`${user.name()} starts attacking ${target.name()}!\r\n`, [user, target]);
         
         /** Update character's positions to fighting */
-        user.position(world.constants().POSITION_FIGHTING);
-        target.position(world.constants().POSITION_FIGHTING);
+        user.position(world.constants().positions.FIGHTING);
+        target.position(world.constants().positions.FIGHTING);
 
         /** Set user and target as fighting each other */
         user.fighting(target);
@@ -57,8 +57,8 @@ module.exports.updateFighting = (world, character) => {
   /** If character is no longer in same room as target... */
   if ( character.room() != character.fighting().room() ) {
     /** Update character's position */
-    character.fighting().position(world.constants().POSITION_STANDING);
-    character.position(world.constants().POSITION_STANDING);
+    character.fighting().position(world.constants().positions.STANDING);
+    character.position(world.constants().positions.STANDING);
     
     /** Stop character's from fighting */
     character.fighting().fighting(null);
@@ -71,8 +71,8 @@ module.exports.updateFighting = (world, character) => {
     character.send(`That being cannot be attacked right now.\r\n`);
     
     /** Update character's position */
-    character.fighting().position(world.constants().POSITION_STANDING);
-    character.position(world.constants().POSITION_STANDING);
+    character.fighting().position(world.constants().positions.STANDING);
+    character.position(world.constants().positions.STANDING);
     
     /** Stop character's from fighting */
     character.fighting().fighting(null);
@@ -126,8 +126,8 @@ module.exports.updateFighting = (world, character) => {
       character.room().send(`${character.name()} has knocked ${character.fighting().name()} unconscious!\r\n`, [character, character.fighting()]);
 
       /** Update character's positions */
-      character.fighting().position(world.constants().POSITION_INCAPACITATED);      
-      character.position(world.constants().POSITION_STANDING);
+      character.fighting().position(world.constants().positions.INCAPACITATED);      
+      character.position(world.constants().positions.STANDING);
       
       /** Stop character's from fighting */
       character.fighting().fighting(null);
@@ -146,8 +146,8 @@ module.exports.updateFighting = (world, character) => {
       character.room().send(`${character.fighting().name()} has knocked ${character.name()} unconscious!\r\n`, [character, character.fighting()]);
 
       /** Update character's positions */
-      character.fighting().position(world.constants().POSITION_STANDING);
-      character.position(world.constants().POSITION_INCAPACITATED);
+      character.fighting().position(world.constants().positions.STANDING);
+      character.position(world.constants().positions.INCAPACITATED);
       
       /** Stop character's from fighting */
       character.fighting().fighting(null);
