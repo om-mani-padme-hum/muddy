@@ -668,7 +668,7 @@ module.exports.webBuilder = (world, port = 7001) => {
       if ( index >= Math.ceil(world.constants().itemFlagNames.length / 3) )
         return;
       
-      p.input('inputSet').id(world.constants().itemFlagShortcuts[index]).name(world.constants().itemFlagShortcuts[index]).label(itemFlagName).value(index).type(`checkbox`).checked(item.flags().includes(index));
+      p.input(`inputSet`).id(world.constants().itemFlagShortcuts[index]).name(world.constants().itemFlagShortcuts[index]).label(itemFlagName).value(index).type(`checkbox`).checked(item.flags().includes(index));
     });
     
     p.col(`row`).size(4);
@@ -679,7 +679,7 @@ module.exports.webBuilder = (world, port = 7001) => {
       if ( index < Math.ceil(world.constants().itemFlagNames.length / 3) || index >= 2 * Math.ceil(world.constants().itemFlagNames.length / 3) )
         return;
       
-      p.input('inputSet').id(world.constants().itemFlagShortcuts[index]).name(world.constants().itemFlagShortcuts[index]).label(itemFlagName).value(index).type(`checkbox`).checked(item.flags().includes(index));
+      p.input(`inputSet`).id(world.constants().itemFlagShortcuts[index]).name(world.constants().itemFlagShortcuts[index]).label(itemFlagName).value(index).type(`checkbox`).checked(item.flags().includes(index));
     });
     
     p.col(`row`).size(4);
@@ -690,7 +690,7 @@ module.exports.webBuilder = (world, port = 7001) => {
       if ( index < 2 * Math.ceil(world.constants().itemFlagNames.length / 3) )
         return;
       
-      p.input('inputSet').id(world.constants().itemFlagShortcuts[index]).name(world.constants().itemFlagShortcuts[index]).label(itemFlagName).value(index).type(`checkbox`).checked(item.flags().includes(index));
+      p.input(`inputSet`).id(world.constants().itemFlagShortcuts[index]).name(world.constants().itemFlagShortcuts[index]).label(itemFlagName).value(index).type(`checkbox`).checked(item.flags().includes(index));
     });
     
     p.row(`form`);
