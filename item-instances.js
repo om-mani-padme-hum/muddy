@@ -24,6 +24,7 @@ module.exports.configItemInstance = (world) => {
       { name: `names`, type: `Array`, default: [`sphere`, `energy`], arrayOf: { type: `varchar`, length: 32 } },
       { name: `power`, type: `int` },
       { name: `prototype`, instanceOf: `ItemPrototype`, loadTransform: x => new world.ItemPrototype({ id: x }) },
+      { name: `rarity`, type: `int` },
       { name: `room`, instanceOf: `Room`, store: false },
       { name: `roomDescription`, type: `varchar`, length: 80, default: `a translucent sphere of energy is floating here` },
       { name: `slot`, type: `int`, default: world.constants().slots.NONE },
