@@ -1,4 +1,4 @@
-# Muddy v0.11.2 [![HitCount](http://hits.dwyl.com/om-mani-padme-hum/muddy.svg)](http://hits.dwyl.com/om-mani-padme-hum/muddy)
+# Muddy v0.11.3 [![HitCount](http://hits.dwyl.com/om-mani-padme-hum/muddy.svg)](http://hits.dwyl.com/om-mani-padme-hum/muddy)
 
 A Node.js Multi-User Dungeon (MUD) Framework
 
@@ -76,6 +76,7 @@ For the web builder, browse to:
 * north
 * northeast (ne)
 * northwest (nw)
+* put
 * quit
 * remove
 * rlist
