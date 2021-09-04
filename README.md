@@ -1,4 +1,4 @@
-# Muddy v0.11.5 [![HitCount](http://hits.dwyl.com/om-mani-padme-hum/muddy.svg)](http://hits.dwyl.com/om-mani-padme-hum/muddy)
+# Muddy v0.11.6 [![HitCount](http://hits.dwyl.com/om-mani-padme-hum/muddy.svg)](http://hits.dwyl.com/om-mani-padme-hum/muddy)
 
 A Node.js Multi-User Dungeon (MUD) Framework
 
@@ -100,6 +100,7 @@ For the web builder, browse to:
 
 ## Latest Changes
 
+* Database SQL updated to match code
 * Added mobile instance and prototype editing in game
 * Ability to create exits in game
 * Added elemental properties to characters
