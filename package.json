@@ -29,17 +29,17 @@
   "homepage": "https://github.com/om-mani-padme-hum/muddy#readme",
   "devDependencies": {
     "docket-parser": "^0.7.5",
-    "eslint": "^5.16.0"
+    "eslint": "^8.13.0"
   },
   "jshintConfig": {
     "esversion": 6,
     "node": true
   },
   "dependencies": {
-    "body-parser": "^1.19.0",
-    "express": "^4.17.1",
+    "body-parser": "^1.20.0",
+    "express": "^4.17.3",
     "ezobjects-mysql": "^6.2.3",
-    "moment": "^2.29.1",
+    "moment": "^2.29.2",
     "strapped": "^0.6.9",
     "winston": "^2.4.5"
   }
